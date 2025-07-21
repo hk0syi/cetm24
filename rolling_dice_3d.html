@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fast 3D Dice Roller with Timing</title>
+  <title>3D Dice Rotation with Rotations Per Roll</title>
   <style>
     body {
       display: flex;
@@ -28,7 +28,7 @@
       position: relative;
       transform-style: preserve-3d;
       transform: rotateX(0deg) rotateY(0deg);
-      transition: transform 0.3s ease-in-out; /* Reduced duration for faster roll */
+      transition: transform 1s ease-in-out; /* Initial transition */
     }
 
     .face {
@@ -89,26 +89,41 @@
 </div>
 <button onclick="rollDice()">Roll Dice</button>
 <div class="time-display" id="timeDisplay">Rolling Time: 0 ms</div>
+<div class="time-display" id="rotationDisplay">Rotations: 0 X, 0 Y</div>
 
 <script>
   function rollDice() {
     const dice = document.getElementById('dice');
     const timeDisplay = document.getElementById('timeDisplay');
+    const rotationDisplay = document.getElementById('rotationDisplay');
 
-    const startTime = performance.now(); // Start timing
+    const baseDuration = 1000; // Base duration in milliseconds (1 second)
+    const rotationsX = Math.floor(Math.random() * 5) + 1; // Random full rotations (1 to 5)
+    const rotationsY = Math.floor(Math.random() * 5) + 1; // Random full rotations (1 to 5)
+    const currentDuration = baseDuration; // Fixed duration for each roll
 
-    // Random X and Y rotation
-    const xRand = Math.floor(Math.random() * 4) * 90;
-    const yRand = Math.floor(Math.random() * 4) * 90;
+    // Start timing
+    const startTime = performance.now();
 
+    // Calculate random rotations
+    const xRand = Math.random() * 360 + rotationsX * 360; // Add full 360-degree rotations
+    const yRand = Math.random() * 360 + rotationsY * 360; // Add full 360-degree rotations
+
+    // Update the transition duration dynamically
+    dice.style.transition = `transform ${currentDuration / 1000}s ease-in-out`;
+
+    // Apply the transformation for the dice roll
     dice.style.transform = `rotateX(${xRand}deg) rotateY(${yRand}deg)`;
 
     // Wait for the animation to finish and then calculate the time
     setTimeout(() => {
       const endTime = performance.now(); // End timing
       const rollingTime = Math.round(endTime - startTime); // Calculate elapsed time
+
+      // Update the displays
       timeDisplay.textContent = `Rolling Time: ${rollingTime} ms`;
-    }, 300); // Match the transition duration (0.3s)
+      rotationDisplay.textContent = `Rotations: ${rotationsX} X, ${rotationsY} Y`;
+    }, currentDuration); // Wait for the current duration to finish
   }
 </script>
 
