@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Tossing Probability Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #container {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        canvas {
+            display: block;
+            margin: 20px auto;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Dice Tossing Probability Lab</h1>
+        <div class="controls">
+            <label for="numDice">Number of Dice:</label>
+            <input type="number" id="numDice" value="1" min="1" max="6">
+            <label for="numRolls">Number of Rolls:</label>
+            <input type="number" id="numRolls" value="10" min="10" max="10000">
+            <button onclick="runSimulation()">Run Simulation</button>
+        </div>
+        <canvas id="histogram" width="800" height="400"></canvas>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sum</th>
+                    <th>Frequency</th>
+                    <th>Empirical Probability</th>
+                    <th>Relative Frequency Formula</th>
+                    <th>Theoretical Probability</th>
+                    <th>Theoretical Probability Formula</th>
+                </tr>
+            </thead>
+            <tbody id="results">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const canvas = document.getElementById('histogram');
+        const ctx = canvas.getContext('2d');
+
+        function rollDice(numDice) {
+            let sum = 0;
+            for (let i = 0; i < numDice; i++) {
+                sum += Math.floor(Math.random() * 6) + 1;
+            }
+            return sum;
+        }
+
+        function calculateTheoretical(numDice) {
+            const outcomes = {};
+            const totalOutcomes = Math.pow(6, numDice);
+
+            function generateSums(diceLeft, currentSum) {
+                if (diceLeft === 0) {
+                    outcomes[currentSum] = (outcomes[currentSum] || 0) + 1;
+                    return;
+                }
+                for (let i = 1; i <= 6; i++) {
+                    generateSums(diceLeft - 1, currentSum + i);
+                }
+            }
+
+            generateSums(numDice, 0);
+
+            const probabilities = {};
+            for (const sum in outcomes) {
+                probabilities[sum] = {
+                    probability: outcomes[sum] / totalOutcomes,
+                    formula: `(${outcomes[sum]} / ${totalOutcomes})`
+                };
+            }
+            return probabilities;
+        }
+
+        function updateTable(frequencies, relativeFrequencies, theoretical, numRolls) {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            const sums = Object.keys(frequencies).sort((a, b) => a - b);
+
+            sums.forEach(sum => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sum}</td>
+                    <td>${frequencies[sum]}</td>
+                    <td>${relativeFrequencies[sum].toFixed(3)}</td>
+                    <td>${frequencies[sum]} / ${numRolls}</td>
+                    <td>${(theoretical[sum]?.probability || 0).toFixed(4)}</td>
+                    <td>${theoretical[sum]?.formula || ''}</td>
+                `;
+                results.appendChild(row);
+            });
+        }
+
+        function drawHistogram(frequencies, relativeFrequencies, theoretical) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const sums = Object.keys(frequencies).map(Number).sort((a, b) => a - b);
+            const maxFreq = Math.max(...Object.values(relativeFrequencies));
+            const barWidth = canvas.width / (sums.length * 2);
+
+            sums.forEach((sum, index) => {
+                const x = index * barWidth * 2 + barWidth * 0.5; // Adjust bar alignment
+                const barHeightRel = (relativeFrequencies[sum] / maxFreq) * canvas.height * 0.7;
+                const barHeightTheo = (theoretical[sum]?.probability || 0) / maxFreq * canvas.height * 0.7;
+
+                // Draw relative frequency bar
+                ctx.fillStyle = 'green';
+                ctx.fillRect(x, canvas.height - barHeightRel - 20, barWidth * 0.9, barHeightRel);
+
+                // Draw theoretical probability bar
+                ctx.fillStyle = 'black';
+                ctx.fillRect(x + barWidth, canvas.height - barHeightTheo - 20, barWidth * 0.9, barHeightTheo);
+
+                // Draw sum label
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.fillText(sum, x + barWidth / 2, canvas.height - 5);
+            });
+
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText('Relative Frequency (Green) vs Theoretical Probability (Black)', 10, 20);
+        }
+
+        function runSimulation() {
+            const numDice = parseInt(document.getElementById('numDice').value, 10);
+            const numRolls = parseInt(document.getElementById('numRolls').value, 10);
+
+            const frequencies = {};
+            const relativeFrequencies = {};
+            const theoretical = calculateTheoretical(numDice);
+
+            for (let i = 0; i < numRolls; i++) {
+                const sum = rollDice(numDice);
+                frequencies[sum] = (frequencies[sum] || 0) + 1;
+            }
+
+            const sums = Array.from({ length: 6 * numDice - numDice + 1 }, (_, i) => i + numDice);
+            sums.forEach(sum => {
+                relativeFrequencies[sum] = (frequencies[sum] || 0) / numRolls;
+            });
+
+            updateTable(frequencies, relativeFrequencies, theoretical, numRolls);
+            drawHistogram(frequencies, relativeFrequencies, theoretical);
+        }
+    </script>
+</body>
+</html>
