@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fast 3D Dice Roller</title>
+  <title>Fast 3D Dice Roller with Timing</title>
   <style>
     body {
       display: flex;
@@ -67,6 +67,12 @@
     button:hover {
       background: #0056b3;
     }
+
+    .time-display {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -82,14 +88,27 @@
   </div>
 </div>
 <button onclick="rollDice()">Roll Dice</button>
+<div class="time-display" id="timeDisplay">Rolling Time: 0 ms</div>
 
 <script>
   function rollDice() {
     const dice = document.getElementById('dice');
-    const xRand = Math.floor(Math.random() * 4) * 90; // Random X rotation
-    const yRand = Math.floor(Math.random() * 4) * 90; // Random Y rotation
-    
+    const timeDisplay = document.getElementById('timeDisplay');
+
+    const startTime = performance.now(); // Start timing
+
+    // Random X and Y rotation
+    const xRand = Math.floor(Math.random() * 4) * 90;
+    const yRand = Math.floor(Math.random() * 4) * 90;
+
     dice.style.transform = `rotateX(${xRand}deg) rotateY(${yRand}deg)`;
+
+    // Wait for the animation to finish and then calculate the time
+    setTimeout(() => {
+      const endTime = performance.now(); // End timing
+      const rollingTime = Math.round(endTime - startTime); // Calculate elapsed time
+      timeDisplay.textContent = `Rolling Time: ${rollingTime} ms`;
+    }, 300); // Match the transition duration (0.3s)
   }
 </script>
 
