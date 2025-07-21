@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fast 3D Dice Roller</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    .scene {
+      width: 200px;
+      height: 200px;
+      perspective: 800px;
+    }
+
+    .dice {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      transition: transform 0.3s ease-in-out; /* Reduced duration for faster roll */
+    }
+
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border: 2px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 40px;
+      font-weight: bold;
+      box-sizing: border-box;
+    }
+
+    /* Correct face positions and orientation */
+    .face:nth-child(1) { transform: rotateY(0deg) translateZ(100px); }   /* Front: 1 */
+    .face:nth-child(2) { transform: rotateY(180deg) translateZ(100px); } /* Back: 6 */
+    .face:nth-child(3) { transform: rotateX(90deg) translateZ(100px); }  /* Top: 5 */
+    .face:nth-child(4) { transform: rotateX(-90deg) translateZ(100px); } /* Bottom: 2 */
+    .face:nth-child(5) { transform: rotateY(90deg) translateZ(100px); }  /* Left: 4 */
+    .face:nth-child(6) { transform: rotateY(-90deg) translateZ(100px); } /* Right: 3 */
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="dice" id="dice">
+    <div class="face">1</div>
+    <div class="face">6</div>
+    <div class="face">5</div>
+    <div class="face">2</div>
+    <div class="face">4</div>
+    <div class="face">3</div>
+  </div>
+</div>
+<button onclick="rollDice()">Roll Dice</button>
+
+<script>
+  function rollDice() {
+    const dice = document.getElementById('dice');
+    const xRand = Math.floor(Math.random() * 4) * 90; // Random X rotation
+    const yRand = Math.floor(Math.random() * 4) * 90; // Random Y rotation
+    
+    dice.style.transform = `rotateX(${xRand}deg) rotateY(${yRand}deg)`;
+  }
+</script>
+
+</body>
+</html>
