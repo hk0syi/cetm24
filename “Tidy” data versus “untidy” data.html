@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>“Tidy” data versus “untidy” data</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      background: #ddd;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .tab-btn.active {
+      background: #4f46e5;
+      color: white;
+    }
+    .content {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: auto;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.9rem;
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+    .copy-btn {
+      float: right;
+      margin-top: -2rem;
+      margin-right: 1rem;
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .graph-box {
+      text-align: center;
+      font-family: monospace;
+      font-size: 1rem;
+    }
+    .highlight {
+      background: #d1fae5;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 “Tidy” data versus “untidy” data</h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('table')">Table</button>
+    <button class="tab-btn" onclick="showTab('json')">JSON</button>
+    <button class="tab-btn" onclick="showTab('yaml')">YAML</button>
+    <button class="tab-btn" onclick="showTab('xml')">XML</button>
+    <button class="tab-btn" onclick="showTab('ini')">Key-Value (INI)</button>
+    <button class="tab-btn" onclick="showTab('graph')">Graph View</button>
+    <button class="tab-btn" onclick="showTab('python')">Python Dictionary</button>
+    <button class="tab-btn" onclick="showTab('untidy')">Untidy Data</button>
+    <button class="tab-btn" onclick="showTab('rcode')">R Code</button>
+  </div>
+
+  <div class="content" id="table">
+    <table>
+      <thead>
+        <tr><th>id</th><th>name</th><th>number</th><th>has_pet</th></tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <div class="content" id="json" style="display:none;">
+    <button class="copy-btn" onclick="copyText('json-code')">Copy</button>
+    <pre id="json-code"></pre>
+  </div>
+
+  <div class="content" id="yaml" style="display:none;">
+    <button class="copy-btn" onclick="copyText('yaml-code')">Copy</button>
+    <pre id="yaml-code"></pre>
+  </div>
+
+  <div class="content" id="xml" style="display:none;">
+    <button class="copy-btn" onclick="copyText('xml-code')">Copy</button>
+    <pre id="xml-code"></pre>
+  </div>
+
+  <div class="content" id="ini" style="display:none;">
+    <button class="copy-btn" onclick="copyText('ini-code')">Copy</button>
+    <pre id="ini-code"></pre>
+  </div>
+
+  <div class="content" id="graph" style="display:none;">
+    <div class="graph-box" id="graph-box"></div>
+  </div>
+
+  <div class="content" id="python" style="display:none;">
+    <button class="copy-btn" onclick="copyText('python-code')">Copy</button>
+    <pre id="python-code"></pre>
+  </div>
+
+  <div class="content" id="untidy" style="display:none;">
+    <pre id="untidy-text"></pre>
+  </div>
+
+  <div class="content" id="rcode" style="display:none;">
+    <button class="copy-btn" onclick="copyText('rcode-block')">Copy</button>
+    <pre id="rcode-block"></pre>
+  </div>
+
+  <script>
+    const data = [
+      { id: 1, name: 'Amy', number: '123-4567', has_pet: 1 },
+      { id: 2, name: 'Bob', number: '246-8101', has_pet: 0 },
+      { id: 3, name: 'Carl', number: '135-7911', has_pet: 0 },
+      { id: 4, name: 'Dave', number: '765-4321', has_pet: 1 },
+    ];
+
+    // Fill table
+    const tbody = document.getElementById('table-body');
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.id}</td>
+        <td>${row.name}</td>
+        <td>${row.number}</td>
+        <td class="${row.has_pet ? 'highlight' : ''}">${row.has_pet}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // JSON
+    document.getElementById('json-code').textContent = JSON.stringify(data, null, 2);
+
+    // YAML
+    function toYAML(obj) {
+      return obj.map(item => {
+        return `- id: ${item.id}\n  name: ${item.name}\n  number: "${item.number}"\n  has_pet: ${item.has_pet ? 'true' : 'false'}`;
+      }).join('\n');
+    }
+    document.getElementById('yaml-code').textContent = toYAML(data);
+
+    // XML
+    const xml = `<people>\n` + data.map(p => `
+  <person>
+    <id>${p.id}</id>
+    <name>${p.name}</name>
+    <number>${p.number}</number>
+    <has_pet>${p.has_pet}</has_pet>
+  </person>`).join('\n') + `\n</people>`;
+    document.getElementById('xml-code').textContent = xml;
+
+    // INI
+    const ini = data.map((p, i) => `[person${i+1}]
+id=${p.id}
+name=${p.name}
+number=${p.number}
+has_pet=${p.has_pet}
+`).join('\n');
+    document.getElementById('ini-code').textContent = ini;
+
+    // Graph
+    const graphBox = document.getElementById('graph-box');
+    data.forEach(p => {
+      const line = document.createElement('div');
+      line.textContent = `${p.name} -- ${p.has_pet ? '> has pet 🐶' : 'x no pet'}`;
+      if (p.has_pet) line.classList.add('highlight');
+      graphBox.appendChild(line);
+    });
+
+    // Python
+    const python = `data = ${JSON.stringify(data, null, 2).replace(/true/g, 'True').replace(/false/g, 'False')}`;
+    document.getElementById('python-code').textContent = python;
+
+    // Untidy text
+    const untidy = data.map(p => {
+      const pronoun = (p.name === 'Amy') ? 'She' : (p.name === 'Bob' || p.name === 'Carl' || p.name === 'Dave') ? 'He' : 'They';
+      return `${p.name} is listed with ID ${p.id} and phone number ${p.number}. ${pronoun} ${p.has_pet ? 'has a pet.' : 'does not have a pet.'}`;
+    }).join('\n\n');
+    document.getElementById('untidy-text').textContent = untidy;
+
+    // R Code
+    const rCode = `# Load libraries
+library(rpart)
+library(rpart.plot)
+library(gridExtra)
+
+# Create a larger dataset
+df <- data.frame(
+  id = 1:20,
+  name = c("Amy", "Bob", "Carl", "Dave", "Eva", "Frank", "Gina", "Hank", "Ivy", "Jack",
+           "Amy", "Bob", "Carl", "Dave", "Eva", "Frank", "Gina", "Hank", "Ivy", "Jack"),
+  number = c("123-4567", "246-8101", "135-7911", "765-4321", "111-2222",
+             "333-4444", "555-6666", "777-8888", "999-0000", "321-6549",
+             "123-4567", "246-8101", "135-7911", "765-4321", "111-2222",
+             "333-4444", "555-6666", "777-8888", "999-0000", "321-6549"),
+  has_pet = c(1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+              1, 0, 1, 1, 0, 0, 1, 0, 1, 1)
+)
+
+# Convert to factors
+df$name <- as.factor(df$name)
+df$number <- as.factor(df$number)
+
+# Tree 1: Using only name
+tree_name <- rpart(has_pet ~ name, data = df, method = "class")
+
+# Tree 2: Using only number
+tree_number <- rpart(has_pet ~ number, data = df, method = "class")
+
+# Display summaries
+cat("Tree using name:\\n")
+print(tree_name)
+
+cat("\\nTree using number:\\n")
+print(tree_number)
+
+# Plot both trees side by side
+par(mfrow=c(1,2))
+rpart.plot(tree_name, main = "Decision Tree\\n(Predictor: name)")
+rpart.plot(tree_number, main = "Decision Tree\\n(Predictor: number)")
+par(mfrow=c(1,1))`;
+
+    document.getElementById("rcode-block").textContent = rCode;
+
+    // Tab switching
+    function showTab(id) {
+      document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    // Copy code
+    function copyText(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text);
+      alert("Copied to clipboard!");
+    }
+  </script>
+</body>
+</html>
