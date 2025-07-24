@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Independent vs Dependent Variables</title>
   <style>
     body {
@@ -24,6 +24,18 @@
 
     h1, h2 {
       text-align: center;
+    }
+
+    .image-container {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      height: auto;
+      border: 2px solid #ccc;
+      border-radius: 8px;
     }
 
     .toggle {
@@ -107,9 +119,15 @@
 <div class="content">
   <h1>Independent vs Dependent Variables</h1>
 
+  <!-- ✅ Added Image Section -->
+  <div class="image-container">
+    <img src="https://hk0syi.github.io/cetm24/independent.JPG" alt="Diagram of Independent and Dependent Variables">
+  </div>
+
+  <!-- Existing structure continues -->
   <div class="toggle">
     <label>Standard View</label>
-    <input type="checkbox" id="switchMode" />
+    <input type="checkbox" id="switchMode">
     <label>Reversed View</label>
   </div>
 
@@ -137,195 +155,195 @@
   <div class="predictor">
     <h2>🔢 Try a Prediction</h2>
     <p id="predict-label">Enter water amount (mL/day):</p>
-    <input type="number" id="inputValue" />
+    <input type="number" id="inputValue">
     <div class="output" id="outputValue"></div>
   </div>
 </div>
 
 <script>
-const explanation = document.getElementById('explanation');
-const switchMode = document.getElementById('switchMode');
-const input = document.getElementById('inputValue');
-const output = document.getElementById('outputValue');
-const label = document.getElementById('predict-label');
-const canvas = document.getElementById('chartCanvas');
-const ctx = canvas.getContext('2d');
+  const explanation = document.getElementById('explanation');
+  const switchMode = document.getElementById('switchMode');
+  const input = document.getElementById('inputValue');
+  const output = document.getElementById('outputValue');
+  const label = document.getElementById('predict-label');
+  const canvas = document.getElementById('chartCanvas');
+  const ctx = canvas.getContext('2d');
 
-const data = [
-  { water: 0, growth: 0.0 },
-  { water: 50, growth: 1.5 },
-  { water: 100, growth: 3.0 },
-  { water: 150, growth: 2.0 },
-  { water: 200, growth: 0.5 }
-];
+  const data = [
+    { water: 0, growth: 0.0 },
+    { water: 50, growth: 1.5 },
+    { water: 100, growth: 3.0 },
+    { water: 150, growth: 2.0 },
+    { water: 200, growth: 0.5 }
+  ];
 
-let reversed = false;
-let predictionPoint = null;
+  let reversed = false;
+  let predictionPoint = null;
 
-function updateContent(rev) {
-  reversed = rev;
-  predictionPoint = null;
-  if (!rev) {
-    explanation.innerHTML = `
-      <div class="role-box">
-        <strong>Independent:</strong> Water (mL/day) <br>
-        <strong>Dependent:</strong> Growth (cm/week)
-      </div>
-      <div class="note">This is the natural cause-effect relationship.</div>
-    `;
-    label.textContent = "Enter water amount (mL/day):";
-  } else {
-    explanation.innerHTML = `
-      <div class="role-box">
-        <strong>Independent:</strong> Growth (cm/week) <br>
-        <strong>Dependent:</strong> Water (mL/day)
-      </div>
-      <div class="warning">
-        <strong>Warning:</strong> This reversed model is less reliable and can be ambiguous.
-      </div>
-    `;
-    label.textContent = "Enter plant growth (cm/week):";
-  }
-  drawChart();
-  output.textContent = "";
-  input.value = "";
-}
-
-function predict() {
-  const val = parseFloat(input.value);
-  if (isNaN(val)) {
-    output.textContent = "";
+  function updateContent(rev) {
+    reversed = rev;
     predictionPoint = null;
+    if (!rev) {
+      explanation.innerHTML = `
+        <div class="role-box">
+          <strong>Independent:</strong> Water (mL/day) <br>
+          <strong>Dependent:</strong> Growth (cm/week)
+        </div>
+        <div class="note">This is the natural cause-effect relationship.</div>
+      `;
+      label.textContent = "Enter water amount (mL/day):";
+    } else {
+      explanation.innerHTML = `
+        <div class="role-box">
+          <strong>Independent:</strong> Growth (cm/week) <br>
+          <strong>Dependent:</strong> Water (mL/day)
+        </div>
+        <div class="warning">
+          <strong>Warning:</strong> This reversed model is less reliable and can be ambiguous.
+        </div>
+      `;
+      label.textContent = "Enter plant growth (cm/week):";
+    }
     drawChart();
-    return;
+    output.textContent = "";
+    input.value = "";
   }
 
-  let result = "";
-  let x, y;
-
-  if (!reversed) {
-    if (val <= 0) {
-      result = "Predicted growth: 0 cm/week";
-      x = val;
-      y = 0;
-    } else if (val <= 100) {
-      const growth = val * 0.03;
-      result = `Predicted growth: ${growth.toFixed(2)} cm/week`;
-      x = val;
-      y = growth;
-    } else if (val <= 150) {
-      const growth = 3.0 - ((val - 100) * 0.02);
-      result = `Predicted growth: ${growth.toFixed(2)} cm/week`;
-      x = val;
-      y = growth;
-    } else {
-      result = "Predicted growth: Very low or stunted";
-      x = val;
-      y = 0.3;
+  function predict() {
+    const val = parseFloat(input.value);
+    if (isNaN(val)) {
+      output.textContent = "";
+      predictionPoint = null;
+      drawChart();
+      return;
     }
-  } else {
-    if (val <= 0) {
-      result = "Predicted water: 0 mL/day";
-      y = 0;
-      x = val;
-    } else if (val <= 3.0) {
-      const water = val / 0.03;
-      result = `Predicted water: ${water.toFixed(0)} mL/day (approx)`;
-      y = water;
-      x = val;
+
+    let result = "";
+    let x, y;
+
+    if (!reversed) {
+      if (val <= 0) {
+        result = "Predicted growth: 0 cm/week";
+        x = val;
+        y = 0;
+      } else if (val <= 100) {
+        const growth = val * 0.03;
+        result = `Predicted growth: ${growth.toFixed(2)} cm/week`;
+        x = val;
+        y = growth;
+      } else if (val <= 150) {
+        const growth = 3.0 - ((val - 100) * 0.02);
+        result = `Predicted growth: ${growth.toFixed(2)} cm/week`;
+        x = val;
+        y = growth;
+      } else {
+        result = "Predicted growth: Very low or stunted";
+        x = val;
+        y = 0.3;
+      }
     } else {
-      result = "Growth too high — may not be from water alone";
-      y = 200;
-      x = val;
+      if (val <= 0) {
+        result = "Predicted water: 0 mL/day";
+        y = 0;
+        x = val;
+      } else if (val <= 3.0) {
+        const water = val / 0.03;
+        result = `Predicted water: ${water.toFixed(0)} mL/day (approx)`;
+        y = water;
+        x = val;
+      } else {
+        result = "Growth too high — may not be from water alone";
+        y = 200;
+        x = val;
+      }
+    }
+
+    output.textContent = result;
+    predictionPoint = { x, y };
+    drawChart();
+  }
+
+  function drawChart() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const chart = { x0: 50, y0: 350, width: 500, height: 300 };
+
+    // Determine axis limits dynamically
+    let allX = data.map(d => reversed ? d.growth : d.water);
+    let allY = data.map(d => reversed ? d.water : d.growth);
+    if (predictionPoint) {
+      allX.push(predictionPoint.x);
+      allY.push(predictionPoint.y);
+    }
+    const xMax = Math.max(...allX) * 1.1;
+    const yMax = Math.max(...allY) * 1.1;
+
+    // Axes
+    ctx.beginPath();
+    ctx.moveTo(chart.x0, chart.y0);
+    ctx.lineTo(chart.x0 + chart.width, chart.y0);
+    ctx.moveTo(chart.x0, chart.y0);
+    ctx.lineTo(chart.x0, chart.y0 - chart.height);
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Labels
+    ctx.font = "14px Arial";
+    ctx.fillText(reversed ? "Growth (cm/week)" : "Water (mL/day)", chart.x0 + chart.width / 2 - 40, chart.y0 + 40);
+    ctx.save();
+    ctx.translate(10, chart.y0 - chart.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(reversed ? "Water (mL/day)" : "Growth (cm/week)", 0, 0);
+    ctx.restore();
+
+    // Tick marks
+    ctx.font = "12px Arial";
+    for (let i = 0; i <= 5; i++) {
+      const val = (xMax / 5) * i;
+      const x = chart.x0 + (val / xMax) * chart.width;
+      ctx.beginPath();
+      ctx.moveTo(x, chart.y0);
+      ctx.lineTo(x, chart.y0 + 5);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(1), x - 10, chart.y0 + 20);
+    }
+
+    for (let i = 0; i <= 5; i++) {
+      const val = (yMax / 5) * i;
+      const y = chart.y0 - (val / yMax) * chart.height;
+      ctx.beginPath();
+      ctx.moveTo(chart.x0 - 5, y);
+      ctx.lineTo(chart.x0, y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(1), chart.x0 - 40, y + 5);
+    }
+
+    // Plot data points
+    ctx.fillStyle = "#10b981";
+    data.forEach(point => {
+      const xVal = reversed ? point.growth : point.water;
+      const yVal = reversed ? point.water : point.growth;
+      const x = chart.x0 + (xVal / xMax) * chart.width;
+      const y = chart.y0 - (yVal / yMax) * chart.height;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+
+    // Prediction dot
+    if (predictionPoint) {
+      const x = chart.x0 + (predictionPoint.x / xMax) * chart.width;
+      const y = chart.y0 - (predictionPoint.y / yMax) * chart.height;
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, 2 * Math.PI);
+      ctx.fill();
     }
   }
 
-  output.textContent = result;
-  predictionPoint = { x, y };
-  drawChart();
-}
-
-function drawChart() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const chart = { x0: 50, y0: 350, width: 500, height: 300 };
-
-  // Determine data range
-  let allX = data.map(d => reversed ? d.growth : d.water);
-  let allY = data.map(d => reversed ? d.water : d.growth);
-  if (predictionPoint) {
-    allX.push(predictionPoint.x);
-    allY.push(predictionPoint.y);
-  }
-  const xMax = Math.max(...allX) * 1.1;
-  const yMax = Math.max(...allY) * 1.1;
-
-  // Axes
-  ctx.beginPath();
-  ctx.moveTo(chart.x0, chart.y0);
-  ctx.lineTo(chart.x0 + chart.width, chart.y0);
-  ctx.moveTo(chart.x0, chart.y0);
-  ctx.lineTo(chart.x0, chart.y0 - chart.height);
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Labels
-  ctx.font = "14px Arial";
-  ctx.fillText(reversed ? "Growth (cm/week)" : "Water (mL/day)", chart.x0 + chart.width / 2 - 40, chart.y0 + 40);
-  ctx.save();
-  ctx.translate(10, chart.y0 - chart.height / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText(reversed ? "Water (mL/day)" : "Growth (cm/week)", 0, 0);
-  ctx.restore();
-
-  // Tick marks
-  ctx.font = "12px Arial";
-  for (let i = 0; i <= 5; i++) {
-    const val = (xMax / 5) * i;
-    const x = chart.x0 + (val / xMax) * chart.width;
-    ctx.beginPath();
-    ctx.moveTo(x, chart.y0);
-    ctx.lineTo(x, chart.y0 + 5);
-    ctx.stroke();
-    ctx.fillText(val.toFixed(1), x - 10, chart.y0 + 20);
-  }
-
-  for (let i = 0; i <= 5; i++) {
-    const val = (yMax / 5) * i;
-    const y = chart.y0 - (val / yMax) * chart.height;
-    ctx.beginPath();
-    ctx.moveTo(chart.x0 - 5, y);
-    ctx.lineTo(chart.x0, y);
-    ctx.stroke();
-    ctx.fillText(val.toFixed(1), chart.x0 - 40, y + 5);
-  }
-
-  // Plot data points
-  ctx.fillStyle = "#10b981";
-  data.forEach(point => {
-    const xVal = reversed ? point.growth : point.water;
-    const yVal = reversed ? point.water : point.growth;
-    const x = chart.x0 + (xVal / xMax) * chart.width;
-    const y = chart.y0 - (yVal / yMax) * chart.height;
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, 2 * Math.PI);
-    ctx.fill();
-  });
-
-  // Prediction point
-  if (predictionPoint) {
-    const x = chart.x0 + (predictionPoint.x / xMax) * chart.width;
-    const y = chart.y0 - (predictionPoint.y / yMax) * chart.height;
-    ctx.fillStyle = "#ef4444";
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, 2 * Math.PI);
-    ctx.fill();
-  }
-}
-
-switchMode.addEventListener('change', e => updateContent(e.target.checked));
-input.addEventListener('input', predict);
-updateContent(false);
+  switchMode.addEventListener('change', () => updateContent(switchMode.checked));
+  input.addEventListener('input', predict);
+  updateContent(false);
 </script>
 </body>
 </html>
