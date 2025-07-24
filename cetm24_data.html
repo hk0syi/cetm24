@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Learn Data from "Run"</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      max-width: 900px;
+      margin: auto;
+      background: #f9fafb;
+    }
+    h1, h2 {
+      color: #1e3a8a;
+      text-align: center;
+    }
+    .step {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #cbd5e1;
+    }
+    .data-box {
+      background: #e0f2fe;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: #1e3a8a;
+      margin-top: 0.5rem;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+      display: inline-block;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📘 Learn Data from the Word "Run"</h1>
+
+  <!-- Step 1: Grammar -->
+  <div class="step" id="step1">
+    <h2>Step 0: What is "Run"?</h2>
+    <p><strong>"Run"</strong> is a <em>verb</em>. In grammar, it's an <strong>action</strong>.</p>
+    <p>In data, this action becomes an <strong>event</strong>.</p>
+    <div class="data-box">
+event: "run"
+    </div>
+    <button onclick="nextStep(2)">Next ➡️</button>
+  </div>
+
+  <!-- Step 2: Add Subject -->
+  <div class="step hidden" id="step2">
+    <h2>Step 1: Who is Running?</h2>
+    <p>Grammatically, we need a <strong>subject</strong>.</p>
+    <p>In data, it’s the <strong>source</strong> — a person, sensor, or user.</p>
+    <div class="data-box">
+event: "run"<br>
+user: "Tom"
+    </div>
+    <button onclick="nextStep(3)">Next ➡️</button>
+  </div>
+
+  <!-- Step 3: Add Time and Location -->
+  <div class="step hidden" id="step3">
+    <h2>Step 2: When and Where?</h2>
+    <p>Adding <strong>context</strong> like time and location makes data more useful.</p>
+    <div class="data-box">
+event: "run"<br>
+user: "Tom"<br>
+time: "6:00 AM"<br>
+location: "Park"
+    </div>
+    <button onclick="nextStep(4)">Next ➡️</button>
+  </div>
+
+  <!-- Step 4: Add Purpose -->
+  <div class="step hidden" id="step4">
+    <h2>Step 3: Why?</h2>
+    <p>The <strong>purpose</strong> gives deeper meaning to the data.</p>
+    <div class="data-box">
+event: "run"<br>
+user: "Tom"<br>
+time: "6:00 AM"<br>
+location: "Park"<br>
+purpose: "exercise"
+    </div>
+    <button onclick="nextStep(5)">Next ➡️</button>
+  </div>
+
+  <!-- Step 5: Sample Data -->
+  <div class="step hidden" id="step5">
+    <h2>Step 4: Sample Data (10 Records)</h2>
+    <p>Here are 10 real-world "run" data entries:</p>
+    <div class="data-box" id="sampleData">
+      Loading data...
+    </div>
+    <button onclick="nextStep(6)">Next ➡️</button>
+  </div>
+
+  <!-- Step 6: Analysis -->
+  <div class="step hidden" id="step6">
+    <h2>Step 5: Analyze the Data</h2>
+    <p>Click a button to analyze the dataset:</p>
+    <div>
+      <button onclick="analyze('user')">👤 Most Active Users</button>
+      <button onclick="analyze('location')">📍 Most Popular Locations</button>
+      <button onclick="analyze('time')">⏰ Most Common Times</button>
+      <button onclick="analyze('purpose')">🎯 Common Purposes</button>
+    </div>
+    <div id="analysisResult" class="data-box"></div>
+    <button onclick="restart()">🔁 Restart</button>
+  </div>
+
+  <script>
+    const data = [
+      { user: "Tom", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise" },
+      { user: "Anna", event: "run", time: "7:00 AM", location: "Gym", purpose: "training" },
+      { user: "Tom", event: "run", time: "6:30 AM", location: "Park", purpose: "exercise" },
+      { user: "Liam", event: "run", time: "8:00 AM", location: "Beach", purpose: "relaxation" },
+      { user: "Anna", event: "run", time: "6:00 AM", location: "Gym", purpose: "training" },
+      { user: "Sara", event: "run", time: "5:30 AM", location: "Park", purpose: "exercise" },
+      { user: "Tom", event: "run", time: "7:00 AM", location: "Hill", purpose: "competition" },
+      { user: "Liam", event: "run", time: "6:00 AM", location: "Beach", purpose: "relaxation" },
+      { user: "Sara", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise" },
+      { user: "Anna", event: "run", time: "7:30 AM", location: "Gym", purpose: "training" }
+    ];
+
+    function nextStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`step${step}`).classList.remove('hidden');
+      if (step === 5) {
+        const formatted = JSON.stringify(data, null, 2);
+        document.getElementById('sampleData').textContent = formatted;
+      }
+    }
+
+    function analyze(key) {
+      const count = {};
+      for (const item of data) {
+        const value = item[key];
+        count[value] = (count[value] || 0) + 1;
+      }
+
+      const sorted = Object.entries(count).sort((a, b) => b[1] - a[1]);
+      let result = `🔍 Analysis by "${key}":\n\n`;
+      for (const [value, total] of sorted) {
+        result += `${value}: ${total} runs\n`;
+      }
+
+      document.getElementById('analysisResult').textContent = result;
+    }
+
+    function restart() {
+      nextStep(1);
+    }
+
+    // Start at step 1
+    nextStep(1);
+  </script>
+
+</body>
+</html>
