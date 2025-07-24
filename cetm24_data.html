@@ -59,7 +59,7 @@
 
   <h1>📘 Learn Data from the Word "Run"</h1>
 
-  <!-- STEP 0 -->
+  <!-- Step 0 -->
   <div class="step" id="step1">
     <h2>Step 0: What is "Run"?</h2>
     <p><strong>"Run"</strong> is a <em>verb</em>. In grammar, it's an <strong>action</strong>.</p>
@@ -68,19 +68,16 @@
     <button onclick="nextStep(2)">Next ➡️</button>
   </div>
 
-  <!-- STEP 1 -->
+  <!-- Step 1 -->
   <div class="step hidden" id="step2">
     <h2>Step 1: Who is Running?</h2>
     <p>Grammatically, we need a <strong>subject</strong>.</p>
     <p>In data, it’s the <strong>source</strong> — a person, sensor, or user.</p>
-    <div class="data-box">
-event: "run"<br>
-user: "Tom"
-    </div>
+    <div class="data-box">event: "run"<br>user: "Tom"</div>
     <button onclick="nextStep(3)">Next ➡️</button>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- Step 2 -->
   <div class="step hidden" id="step3">
     <h2>Step 2: When and Where?</h2>
     <p>Adding <strong>context</strong> like time and location makes data more useful.</p>
@@ -93,7 +90,7 @@ location: "Park"
     <button onclick="nextStep(4)">Next ➡️</button>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- Step 3 -->
   <div class="step hidden" id="step4">
     <h2>Step 3: Why?</h2>
     <p>The <strong>purpose</strong> gives deeper meaning to the data.</p>
@@ -107,10 +104,10 @@ purpose: "exercise"
     <button onclick="nextStep(5)">Next ➡️</button>
   </div>
 
-  <!-- STEP 4 -->
+  <!-- Step 4 -->
   <div class="step hidden" id="step5">
-    <h2>Step 4: Add Measurable Values</h2>
-    <p>We now include <strong>duration</strong> and <strong>distance</strong> — measurable ratio data.</p>
+    <h2>Step 4: Add Measurable Values "How (Much / Long / Far)"</h2>
+    <p>We now include <strong>duration</strong> and <strong>distance</strong>.</p>
     <div class="data-box">
 event: "run"<br>
 user: "Tom"<br>
@@ -123,18 +120,16 @@ distance: 5.2
     <button onclick="nextStep(6)">Next ➡️</button>
   </div>
 
-  <!-- STEP 5 -->
+  <!-- Step 5 -->
   <div class="step hidden" id="step6">
-    <h2>Step 5: Sample Data (10 Records)</h2>
-    <p>Here are 10 real-world "run" data entries:</p>
+    <h2>Step 5: Sample Data</h2>
     <div class="data-box" id="sampleData">Loading...</div>
     <button onclick="nextStep(7)">Next ➡️</button>
   </div>
 
-  <!-- STEP 6 -->
+  <!-- Step 6 -->
   <div class="step hidden" id="step7">
     <h2>Step 6: Analyze the Data</h2>
-    <p>Click a button to analyze the dataset:</p>
     <button onclick="analyze('user')">👤 Most Active Users</button>
     <button onclick="analyze('location')">📍 Most Popular Locations</button>
     <button onclick="analyze('time')">⏰ Most Common Times</button>
@@ -145,21 +140,8 @@ distance: 5.2
     <button onclick="nextStep(8)">Next ➡️</button>
   </div>
 
-  <!-- STEP 7 -->
+  <!-- ✅ Step 8: Classify Fields -->
   <div class="step hidden" id="step8">
-    <h2>Step 7: Understanding Measurement Scales</h2>
-    <p>In statistics, we classify data into four measurement scales:</p>
-    <ul>
-      <li><strong>Nominal</strong>: Categories without order (e.g. user, purpose)</li>
-      <li><strong>Ordinal</strong>: Categories with order (e.g. satisfaction)</li>
-      <li><strong>Interval</strong>: Numbers, but no true zero (e.g. time of day)</li>
-      <li><strong>Ratio</strong>: Numbers with a true zero (e.g. duration, distance)</li>
-    </ul>
-    <button onclick="nextStep(9)">Next ➡️</button>
-  </div>
-
-  <!-- STEP 8 -->
-  <div class="step hidden" id="step9">
     <h2>Step 8: Classify Each Field with Explanation</h2>
     <div class="data-box">
 <strong>user → Nominal</strong><br>
@@ -169,7 +151,7 @@ It's just a name (e.g. "Tom", "Anna"). A label with no numeric meaning.<br><br>
 The verb ("run") is a label — a type of action, not numeric.<br><br>
 
 <strong>time → Interval</strong><br>
-Time has meaningful order (6 AM < 7 AM), but 0 AM is not "no time". No true zero.<br><br>
+Time has meaningful order (6 AM &lt; 7 AM), but 0 AM is not "no time". No true zero.<br><br>
 
 <strong>location → Nominal</strong><br>
 Place names like "Park", "Gym" are categories — not ordered.<br><br>
@@ -183,45 +165,38 @@ Measured in minutes. Has a true zero (0 = no time). Can be averaged and compared
 <strong>distance → Ratio</strong><br>
 Measured in kilometers. Has a true zero (0 = no movement). Supports all math.
     </div>
+    <button onclick="nextStep(9)">Next ➡️</button>
+  </div>
+
+  <!-- ✅ Step 9: Compare Users with Chart -->
+  <div class="step hidden" id="step9">
+    <h2>Step 9: Compare Users</h2>
+    <canvas id="compareChart" height="200"></canvas>
+    <div class="data-box" id="compareSummary">Click the button to compare users.</div>
+    <button onclick="compareUsers()">🔍 Compare Tom & Anna</button>
     <button onclick="nextStep(10)">Next ➡️</button>
   </div>
 
-  <!-- STEP 9 -->
+  <!-- Step 10 -->
   <div class="step hidden" id="step10">
-    <h2>Step 9: Compare Users</h2>
-    <div class="data-box" id="compareUsers">
-Tom → 100 min, 17.7 km
-Anna → 150 min, 14.6 km
-    </div>
-    <button onclick="compareUsers()">🔍 Compare Tom & Anna</button>
-    <button onclick="nextStep(11)">Next ➡️</button>
-  </div>
-
-  <!-- STEP 10 -->
-  <div class="step hidden" id="step11">
     <h2>Step 10: Detect Outliers</h2>
     <p>Outliers = Runs &gt; 50 min or &gt; 8 km</p>
     <button onclick="drawOutliers()">📊 Show Outlier Chart</button>
     <canvas id="outlierChart"></canvas>
-    <div class="data-box" id="outliers">
-Anna → 60 min, 1.5 km
-    </div>
+    <div class="data-box" id="outliers">Click above to show outliers.</div>
+    <button onclick="nextStep(11)">Next ➡️</button>
+  </div>
+
+  <!-- Step 11 -->
+  <div class="step hidden" id="step11">
+    <h2>Step 11: Visual Summary</h2>
+    <div class="data-box" id="summary">Click to generate summary.</div>
+    <button onclick="summarize()">📋 Generate</button>
     <button onclick="nextStep(12)">Next ➡️</button>
   </div>
 
-  <!-- STEP 11 -->
+  <!-- Step 12 -->
   <div class="step hidden" id="step12">
-    <h2>Step 11: Visual Summary</h2>
-    <div class="data-box" id="summary">
-⏰ Most common time: 6:00 AM
-📍 Popular locations: Park, Gym
-    </div>
-    <button onclick="summarize()">📋 Generate</button>
-    <button onclick="nextStep(13)">Next ➡️</button>
-  </div>
-
-  <!-- STEP 12 -->
-  <div class="step hidden" id="step13">
     <h2>Step 12: Data to Decision</h2>
     <ul>
       <li>✅ Most runs are in the <strong>morning</strong></li>
@@ -272,18 +247,60 @@ Anna → 60 min, 1.5 km
     }
 
     function compareUsers() {
-      const users = ['Tom', 'Anna'];
-      const result = { Tom: { duration: 0, distance: 0 }, Anna: { duration: 0, distance: 0 } };
+      const result = {
+        Tom: { duration: 0, distance: 0 },
+        Anna: { duration: 0, distance: 0 }
+      };
+
       data.forEach(d => {
-        if (d.user in result) {
+        if (d.user === "Tom" || d.user === "Anna") {
           result[d.user].duration += d.duration;
           result[d.user].distance += d.distance;
         }
       });
-      const output = users.map(u =>
-        `${u} → ${result[u].duration} min, ${result[u].distance.toFixed(1)} km`
-      ).join('\n');
-      document.getElementById('compareUsers').textContent = output;
+
+      const longerRunner = result.Tom.duration > result.Anna.duration ? "Tom" : "Anna";
+      const fartherRunner = result.Tom.distance > result.Anna.distance ? "Tom" : "Anna";
+
+      const ctx = document.getElementById("compareChart").getContext("2d");
+      if (window.compareChart instanceof Chart) {
+        window.compareChart.destroy();
+      }
+
+      window.compareChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Tom", "Anna"],
+          datasets: [
+            {
+              label: "Duration (min)",
+              data: [result.Tom.duration, result.Anna.duration],
+              backgroundColor: "rgba(59,130,246,0.7)"
+            },
+            {
+              label: "Distance (km)",
+              data: [result.Tom.distance, result.Anna.distance],
+              backgroundColor: "rgba(16,185,129,0.7)"
+            }
+          ]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: {
+            title: { display: true, text: "Compare Tom & Anna" }
+          }
+        }
+      });
+
+      document.getElementById("compareSummary").textContent = `
+🔢 Totals:
+Tom → ${result.Tom.duration} min, ${result.Tom.distance.toFixed(1)} km
+Anna → ${result.Anna.duration} min, ${result.Anna.distance.toFixed(1)} km
+
+✅ Conclusion:
+• ${longerRunner} ran longer
+• ${fartherRunner} ran farther
+`.trim();
     }
 
     function drawOutliers() {
