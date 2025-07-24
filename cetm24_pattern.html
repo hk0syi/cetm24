@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simple Signal-Based Prediction Interactive</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .highlight {
+      background-color: #e0f7fa !important;
+    }
+    .clickable {
+      cursor: pointer;
+      background-color: #f9f9f9;
+    }
+    .clickable:hover {
+      background-color: #eef;
+    }
+    #details {
+      border: 1px solid #ccc;
+      padding: 15px;
+      background: #fcfcfc;
+      margin-top: 1rem;
+    }
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .signal-table td {
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📊 Simple Signal-Based Prediction of Y</h2>
+
+<p>
+  <strong>Formula used to generate Y:</strong><br/>
+  <code>Y = (X1 + X2 + X3 + X4) / X5</code>
+</p>
+
+<p>
+  <strong>Signal Conversion Rule (±0.1 threshold):</strong><br/>
+  - "below" if <code>value &lt; mean - 0.1</code><br/>
+  - "same" if <code>abs(value - mean) ≤ 0.1</code><br/>
+  - "up" if <code>value &gt; mean + 0.1</code>
+</p>
+
+<table id="data-table">
+  <thead>
+    <tr>
+      <th>Row</th>
+      <th>X1</th><th>X2</th><th>X3</th><th>X4</th><th>X5</th>
+      <th>Y</th>
+      <th>Signal Pattern</th>
+      <th>pred(Y)</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="details">
+  <strong>Click any row</strong> above to see step-by-step breakdown.
+</div>
+
+<script>
+const data = [
+  { X1: 45, X2: 85, X3: 25, X4: 70, X5: 50 },
+  { X1: 40, X2: 90, X3: 30, X4: 75, X5: 50 },
+  { X1: 42, X2: 80, X3: 20, X4: 65, X5: 50 },
+  { X1: 43, X2: 82, X3: 22, X4: 68, X5: 50 },
+  { X1: 44, X2: 83, X3: 23, X4: 69, X5: 50 },
+  { X1: 55, X2: 60, X3: 41, X4: 55, X5: 60 },
+  { X1: 56, X2: 62, X3: 42, X4: 56, X5: 60 },
+];
+
+// Step 1: Compute actual Y using formula
+data.forEach(row => {
+  row.Y = +(((row.X1 + row.X2 + row.X3 + row.X4) / row.X5).toFixed(2));
+});
+
+const X_KEYS = ['X1', 'X2', 'X3', 'X4', 'X5'];
+const threshold = 0.1;
+
+// Step 2: Compute means
+const means = {};
+X_KEYS.forEach(key => {
+  means[key] = data.reduce((sum, row) => sum + row[key], 0) / data.length;
+});
+
+// Step 3: Convert to signal
+function getSignal(val, mean) {
+  const diff = val - mean;
+  if (Math.abs(diff) <= threshold) return 'same';
+  if (diff > threshold) return 'up';
+  return 'below';
+}
+
+// Step 4: Assign signals and group by pattern
+const patternGroups = {};
+data.forEach((row, idx) => {
+  const signals = X_KEYS.map(k => getSignal(row[k], means[k]));
+  const pattern = signals.join('|');
+  row.signals = signals;
+  row.pattern = pattern;
+  if (!patternGroups[pattern]) patternGroups[pattern] = [];
+  patternGroups[pattern].push(row);
+});
+
+// Step 5: Compute pred(Y)
+for (const pattern in patternGroups) {
+  const group = patternGroups[pattern];
+  const avgY = group.reduce((sum, r) => sum + r.Y, 0) / group.length;
+  group.forEach(r => r.predY = +avgY.toFixed(2));
+}
+
+// Step 6: Render main table
+const tbody = document.querySelector('#data-table tbody');
+data.forEach((row, idx) => {
+  const tr = document.createElement('tr');
+  tr.classList.add('clickable');
+  tr.setAttribute('data-index', idx);
+  tr.innerHTML = `
+    <td>${idx}</td>
+    ${X_KEYS.map(k => `<td>${row[k]}</td>`).join('')}
+    <td>${row.Y}</td>
+    <td>${row.signals.join(', ')}</td>
+    <td class="highlight">${row.predY}</td>
+  `;
+  tr.addEventListener('click', () => showDetails(idx, row));
+  tbody.appendChild(tr);
+});
+
+// Step 7: Click handler
+function showDetails(index, row) {
+  const details = document.getElementById('details');
+
+  // Reset all highlights
+  document.querySelectorAll('#data-table tbody tr').forEach(tr => {
+    tr.classList.remove('highlight');
+  });
+
+  // Highlight matching signal pattern
+  const groupRows = patternGroups[row.pattern];
+  groupRows.forEach(gr => {
+    const idx = data.indexOf(gr);
+    document.querySelector(`#data-table tr[data-index="${idx}"]`).classList.add('highlight');
+  });
+
+  // Table showing how Y is calculated (no Y column)
+  const groupTable = `
+    <table class="signal-table">
+      <thead>
+        <tr>
+          <th>Row</th>
+          ${X_KEYS.map(k => `<th>${k}</th>`).join('')}
+          <th>Y Calculation</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${groupRows.map(gr => {
+          const sum = gr.X1 + gr.X2 + gr.X3 + gr.X4;
+          const calc = `(${gr.X1} + ${gr.X2} + ${gr.X3} + ${gr.X4}) / ${gr.X5} = ${sum} / ${gr.X5} = ${gr.Y}`;
+          return `
+            <tr>
+              <td>${data.indexOf(gr)}</td>
+              ${X_KEYS.map(k => `<td>${gr[k]}</td>`).join('')}
+              <td><code>${calc}</code></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // Show reason for signal
+  const signalReason = `
+    <table class="signal-table">
+      <thead>
+        <tr><th>Column</th><th>Value</th><th>Mean</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        ${X_KEYS.map((k, i) => {
+          const val = row[k];
+          const mean = means[k];
+          const signal = row.signals[i];
+          let reason = '';
+          if (Math.abs(val - mean) <= threshold) {
+            reason = `|${val} - ${mean.toFixed(2)}| ≤ 0.1 ⇒ same`;
+          } else if (val > mean) {
+            reason = `${val} > ${mean.toFixed(2)} + 0.1 ⇒ up`;
+          } else {
+            reason = `${val} < ${mean.toFixed(2)} - 0.1 ⇒ below`;
+          }
+          return `<tr>
+            <td>${k}</td>
+            <td>${val}</td>
+            <td>${mean.toFixed(2)}</td>
+            <td>${reason}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // pred(Y) calculation
+  const groupY = groupRows.map(r => r.Y);
+  const sumY = groupY.reduce((sum, y) => sum + y, 0);
+  const predY = row.predY;
+  const predMath = `
+    ${groupY.join(' + ')} = ${sumY.toFixed(2)}<br/>
+    ${sumY.toFixed(2)} ÷ ${groupY.length} = <strong>${predY}</strong>
+  `;
+
+  // Update panel
+  details.innerHTML = `
+    <h3>🔍 Row ${index} Breakdown</h3>
+
+    <p><strong>Reason for Signal Pattern:</strong></p>
+    ${signalReason}
+
+    <p><strong>Grouped Rows with Same Signal Pattern:</strong></p>
+    ${groupTable}
+
+    <p><strong>How pred(Y) is calculated:</strong><br/>
+      <code>${predMath}</code>
+    </p>
+  `;
+}
+</script>
+
+</body>
+</html>
