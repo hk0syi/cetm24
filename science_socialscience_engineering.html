@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predictability Across Perspectives</title>
+  <style>
+    :root { --pri:#3f51b5; --pri-dark:#1a237e; --warn:#ffc107; --info:#2196f3; }
+    body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; padding:1rem; }
+    h1,h2,h3 { text-align:center; color:#333; margin:0.6rem 0; }
+    .tabs { display:flex; justify-content:center; flex-wrap:wrap; gap:0.6rem; margin:0.6rem 0 1rem; }
+    .tab-btn{ padding:0.6rem 1.1rem; border:none; border-radius:5px; background:var(--pri); color:#fff; cursor:pointer; }
+    .tab-btn.active{ background:var(--pri-dark); }
+    .section{ display:none; }
+    .section.active{ display:block; }
+    table{ width:100%; max-width:900px; margin:1rem auto; border-collapse:collapse; background:#fff; }
+    caption{ text-align:left; padding:0.4rem 0.6rem; font-weight:bold; color:#555; }
+    th,td{ padding:0.6rem; text-align:center; border:1px solid #ccc; }
+    th{ background:var(--pri); color:#fff; }
+    .summary,.explanation{
+      max-width:900px; margin:1rem auto; padding:1rem; border-radius:5px;
+      background:#fff3cd; border-left:5px solid var(--warn);
+    }
+    .explanation{ background:#e3f2fd; border-left-color:var(--info); }
+    select,input[type=range]{ padding:0.45rem; font-size:1rem; margin:0.5rem; }
+    ul{ margin:0.4rem 0 0.6rem 1.1rem; }
+    .controls{ text-align:center; margin:0.5rem 0 1rem; }
+  </style>
+</head>
+<body>
+
+<h1>Predictability Across Perspectives</h1>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('happiness')">Social Science (Probability)</button>
+  <button class="tab-btn" onclick="switchTab('hunger')">Natural Science (Stable)</button>
+  <button class="tab-btn" onclick="switchTab('engineering')">Engineering: Apply & Test</button>
+</div>
+
+<div class="controls">
+  <label for="personFilter"><strong>Filter by person:</strong></label>
+  <select id="personFilter" onchange="renderAll()">
+    <option value="all">All</option>
+    <option value="tom">Tom</option>
+    <option value="mary">Mary</option>
+    <option value="peter">Peter</option>
+  </select>
+  <br/>
+  <label for="noiseSlider"><strong>Add noise to Happiness (simulate context):</strong></label>
+  <input type="range" id="noiseSlider" min="0" max="50" value="0" oninput="applyNoise()">
+  <span id="noiseVal">0%</span>
+</div>
+
+<div class="summary" id="predictPanel"></div>
+
+<!-- Social Science Tab -->
+<section id="happiness" class="section active">
+  <h2>Social Science: Eating & Happiness (Pro"ba"bi"lis"tic)</h2>
+
+  <table aria-label="Happiness table">
+    <caption>Happiness by day/person</caption>
+    <thead>
+      <tr><th>Day</th><th>Person</th><th>Ate?</th><th>Happiness (1–10)</th></tr>
+    </thead>
+    <tbody id="happinessTable"></tbody>
+  </table>
+
+  <table aria-label="Change table">
+    <caption>Change from previous day</caption>
+    <thead>
+      <tr>
+        <th>Person</th><th>Day (prev→curr)</th><th>Ate on curr?</th>
+        <th>Prev Happiness</th><th>Curr Happiness</th><th>Δ</th><th>Decreased?</th>
+      </tr>
+    </thead>
+    <tbody id="changeTable"></tbody>
+  </table>
+
+  <div class="summary" id="happinessSummary"></div>
+</section>
+
+<!-- Natural Science Tab -->
+<section id="hunger" class="section">
+  <h2>Natural Science: Eating & Hunger (Stable)</h2>
+
+  <table aria-label="Hunger table">
+    <caption>Hunger by day/person</caption>
+    <thead>
+      <tr><th>Day</th><th>Person</th><th>Ate?</th><th>Hungry?</th></tr>
+    </thead>
+    <tbody id="hungerTable"></tbody>
+  </table>
+
+  <div class="summary" id="hungerSummary"></div>
+</section>
+
+<!-- Engineering Tab -->
+<section id="engineering" class="section">
+  <h2>Engineering: Apply the Rule + Test It</h2>
+
+  <div class="explanation">
+    <h3>Step 1: What the Data Shows</h3>
+    <ul>
+      <li>✅ <strong>Natural Science (Stable):</strong> Eating prevents hunger — observed every time in this dataset.</li>
+      <li>⚠️ <strong>Social Science (Probabilistic):</strong> Eating doesn’t always prevent a drop in happiness.</li>
+    </ul>
+  </div>
+
+  <div class="explanation">
+    <h3>Step 2: What Engineers Do</h3>
+    <p>Engineers use data to find reliable patterns and account for uncertainty.</p>
+    <ul>
+      <li>🧪 Which rules hold true every time?</li>
+      <li>📊 Which outcomes depend on context?</li>
+    </ul>
+    <p>Then they design practical, flexible systems under real-world constraints (budget, safety, ethics, time...).</p>
+  </div>
+
+  <table aria-label="Engineering combined table">
+    <caption>Combined view for engineering decisions</caption>
+    <thead>
+      <tr><th>Day</th><th>Person</th><th>Ate?</th><th>Hungry?</th><th>Happiness</th></tr>
+    </thead>
+    <tbody id="engDataTable"></tbody>
+  </table>
+
+  <div class="summary" id="engSummary"></div>
+
+  <div class="explanation">
+    <h3>Step 3: Conclusion</h3>
+    <ul>
+      <li>✅ Eating reliably prevents hunger → a stable scientific rule.</li>
+      <li>➕ Happiness change depends on context → probabilistic.</li>
+      <li>🔍 Engineers combine both to hit a target predictability and design for exceptions.</li>
+    </ul>
+    <p><strong>Bottom line:</strong> Design around “humans need regular energy intake” and adapt for variation.</p>
+  </div>
+</section>
+
+<script>
+  // --- Raw dataset ---
+  const data = [
+    { day: 1, person: "tom",   ate: 1, hungry: "no",  happiness: 2 },
+    { day: 1, person: "mary",  ate: 0, hungry: "yes", happiness: 4 },
+    { day: 1, person: "peter", ate: 1, hungry: "no",  happiness: 3 },
+    { day: 2, person: "tom",   ate: 1, hungry: "no",  happiness: 3 },
+    { day: 2, person: "mary",  ate: 0, hungry: "yes", happiness: 3 },
+    { day: 2, person: "peter", ate: 1, hungry: "no",  happiness: 1 }
+  ];
+
+  // --- Copy used for noisy happiness only ---
+  let noisyData = JSON.parse(JSON.stringify(data));
+
+  // --- Helpers ---
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`).classList.add('active');
+  }
+
+  const avg = arr => arr.length ? (arr.reduce((s,d)=>s + d.happiness,0) / arr.length).toFixed(2) : "—";
+  const cap = str => str.charAt(0).toUpperCase() + str.slice(1);
+
+  function filteredFrom(arr){
+    const f = document.getElementById("personFilter").value;
+    return f === "all" ? arr : arr.filter(d => d.person === f);
+  }
+
+  // Build change rows: per person, compare current day with previous
+  function buildChanges(arr){
+    const byPerson = {};
+    arr.forEach(r => {
+      byPerson[r.person] = byPerson[r.person] || [];
+      byPerson[r.person].push(r);
+    });
+    // sort by day then compute diff
+    const rows = [];
+    Object.values(byPerson).forEach(list => {
+      list.sort((a,b)=>a.day-b.day);
+      for(let i=1;i<list.length;i++){
+        const prev=list[i-1], curr=list[i];
+        const delta = curr.happiness - prev.happiness;
+        rows.push({
+          person: curr.person,
+          dayPair: `${prev.day}→${curr.day}`,
+          ateCurr: curr.ate,
+          happyPrev: prev.happiness,
+          happyCurr: curr.happiness,
+          delta: delta,
+          decreased: delta<0 ? "Yes" : "No"
+        });
+      }
+    });
+    return rows;
+  }
+
+  // --- Predictability calculation ---
+  function predictability(rows, predictorFn, actualFn) {
+    if (!rows.length) return "—";
+    let correct = 0;
+    rows.forEach(r => { if (predictorFn(r) === actualFn(r)) correct++; });
+    return (correct / rows.length * 100).toFixed(1) + "%";
+  }
+
+  // Natural science rule
+  const hungerRule   = r => r.ate ? "no"  : "yes";
+  const actualHungry = r => r.hungry;
+
+  // Social sci rule based on decrease
+  // Hypothesis: if you ate, happiness should NOT decrease
+  const decreaseRule   = r => r.ateCurr ? "No" : "Yes";
+  const actualDecrease = r => r.decreased;
+
+  // --- Noise injection for happiness only ---
+  function applyNoise(){
+    const pct = +document.getElementById("noiseSlider").value;
+    document.getElementById("noiseVal").textContent = pct + "%";
+    noisyData = data.map(d => {
+      const jitter = Math.random() * (pct/100) * 10; // happiness scale 1-10
+      let newHappy = d.happiness + (Math.random() < 0.5 ? -jitter : jitter);
+      newHappy = Math.max(1, Math.min(10, Math.round(newHappy)));
+      return {...d, happiness: newHappy};
+    });
+    renderAll();
+  }
+
+  // --- Renderers ---
+  function renderHappiness(filteredNoisy) {
+    // base table
+    const tbody = document.getElementById("happinessTable");
+    tbody.innerHTML = "";
+    filteredNoisy.forEach(row => {
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${row.day}</td>
+          <td>${cap(row.person)}</td>
+          <td>${row.ate ? "Yes" : "No"}</td>
+          <td>${row.happiness}</td>
+        </tr>
+      `);
+    });
+
+    // change table
+    const changes = buildChanges(filteredNoisy);
+    const cbody = document.getElementById("changeTable");
+    cbody.innerHTML = "";
+    changes.forEach(r=>{
+      cbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${cap(r.person)}</td>
+          <td>${r.dayPair}</td>
+          <td>${r.ateCurr ? "Yes" : "No"}</td>
+          <td>${r.happyPrev}</td>
+          <td>${r.happyCurr}</td>
+          <td>${r.delta > 0 ? "+"+r.delta : r.delta}</td>
+          <td>${r.decreased}</td>
+        </tr>
+      `);
+    });
+
+    // summary
+    const ate = filteredNoisy.filter(d => d.ate === 1);
+    const noEat = filteredNoisy.filter(d => d.ate === 0);
+    document.getElementById("happinessSummary").innerHTML = `
+      <strong>Average Happiness (levels)</strong><br>
+      When Ate: ${avg(ate)}<br>
+      When Didn’t Eat: ${avg(noEat)}<br><br>
+      <em>But we now focus on change (↓ or not) to judge predictability.</em>
+    `;
+  }
+
+  function renderHunger(filteredOriginal) {
+    const tbody = document.getElementById("hungerTable");
+    tbody.innerHTML = "";
+    filteredOriginal.forEach(row => {
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${row.day}</td>
+          <td>${cap(row.person)}</td>
+          <td>${row.ate ? "Yes" : "No"}</td>
+          <td>${row.hungry}</td>
+        </tr>
+      `);
+    });
+
+    const ate = filteredOriginal.filter(d => d.ate === 1);
+    const noEat = filteredOriginal.filter(d => d.ate === 0);
+    const ateNotHungry = ate.filter(d => d.hungry === "no").length;
+    const noEatHungry   = noEat.filter(d => d.hungry === "yes").length;
+
+    document.getElementById("hungerSummary").innerHTML = `
+      <strong>Summary:</strong><br>
+      ✅ ${ateNotHungry}/${ate.length || 0} who ate were not hungry${ate.length? " (100%)":""}.<br>
+      ❗ ${noEatHungry}/${noEat.length || 0} who didn’t eat were hungry${noEat.length? " (100%)":""}.<br><br>
+      ➕ Stable natural pattern — humans need food to prevent hunger.
+    `;
+  }
+
+  function renderEngineering(filteredNoisy) {
+    const tbody = document.getElementById("engDataTable");
+    tbody.innerHTML = "";
+    filteredNoisy.forEach(row => {
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${row.day}</td>
+          <td>${cap(row.person)}</td>
+          <td>${row.ate ? "Yes" : "No"}</td>
+          <td>${row.hungry}</td>
+          <td>${row.happiness}</td>
+        </tr>
+      `);
+    });
+
+    const ate = filteredNoisy.filter(d => d.ate === 1);
+    const noEat = filteredNoisy.filter(d => d.ate === 0);
+
+    const ateHappiness   = avg(ate);
+    const noEatHappiness = avg(noEat);
+
+    const ateNotHungry = ate.filter(d => d.hungry === "no").length;
+    const noEatHungry  = noEat.filter(d => d.hungry === "yes").length;
+
+    document.getElementById("engSummary").innerHTML = `
+      <strong>Data Summary:</strong><br>
+      • Avg happiness when ate: ${ateHappiness}<br>
+      • Avg happiness when didn’t eat: ${noEatHappiness}<br>
+      • ${ateNotHungry}/${ate.length || 0} who ate were not hungry${ate.length? " (100%)":""}<br>
+      • ${noEatHungry}/${noEat.length || 0} who didn’t eat were hungry${noEat.length? " (100%)":""}<br><br>
+      ✅ Engineers use this to set targets (e.g., “≤10% happiness drop after meals”) and design accordingly.
+    `;
+  }
+
+  function renderPredictability(filteredOriginal){
+    // Natural science predictability (original data, hunger unaffected by noise)
+    const hungryPred = predictability(filteredOriginal, hungerRule, actualHungry);
+
+    // Social science predictability (use noisy happiness, on change rows)
+    const filteredNoisy = filteredFrom(noisyData);
+    const changeRows = buildChanges(filteredNoisy)
+      .filter(r => {
+        const f = document.getElementById("personFilter").value;
+        return f === "all" || r.person === f;
+      });
+
+    const changePred = predictability(changeRows,
+                                      decreaseRule,
+                                      actualDecrease);
+
+    document.getElementById("predictPanel").innerHTML = `
+      <strong>Predictability Scores (current filter):</strong><br>
+      • Natural Science rule (Eat → Not Hungry): ${hungryPred}<br>
+      • Social Science rule (Eat → No Decrease in Happiness): ${changePred}<br><br>
+      <em>Increase noise to see social outcomes become less predictable.</em>
+    `;
+  }
+
+  function renderAll() {
+    const filteredOriginal = filteredFrom(data);
+    const filteredNoisy    = filteredFrom(noisyData);
+
+    renderHappiness(filteredNoisy);     // noisy for happiness & change
+    renderHunger(filteredOriginal);     // stable
+    renderEngineering(filteredNoisy);   // combined
+
+    renderPredictability(filteredOriginal);
+  }
+
+  // Initial render
+  renderAll();
+</script>
+
+</body>
+</html>
