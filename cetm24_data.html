@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Learn Data from "Run"</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -45,21 +46,12 @@
     button:hover {
       background: #2563eb;
     }
-    .hidden {
-      display: none;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    canvas {
+      max-width: 100%;
       margin-top: 1rem;
     }
-    th, td {
-      text-align: left;
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #f1f5f9;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -67,18 +59,16 @@
 
   <h1>📘 Learn Data from the Word "Run"</h1>
 
-  <!-- Step 1: Grammar -->
+  <!-- STEP 0 -->
   <div class="step" id="step1">
     <h2>Step 0: What is "Run"?</h2>
     <p><strong>"Run"</strong> is a <em>verb</em>. In grammar, it's an <strong>action</strong>.</p>
     <p>In data, this action becomes an <strong>event</strong>.</p>
-    <div class="data-box">
-event: "run"
-    </div>
+    <div class="data-box">event: "run"</div>
     <button onclick="nextStep(2)">Next ➡️</button>
   </div>
 
-  <!-- Step 2: Add Subject -->
+  <!-- STEP 1 -->
   <div class="step hidden" id="step2">
     <h2>Step 1: Who is Running?</h2>
     <p>Grammatically, we need a <strong>subject</strong>.</p>
@@ -90,7 +80,7 @@ user: "Tom"
     <button onclick="nextStep(3)">Next ➡️</button>
   </div>
 
-  <!-- Step 3: Add Time and Location -->
+  <!-- STEP 2 -->
   <div class="step hidden" id="step3">
     <h2>Step 2: When and Where?</h2>
     <p>Adding <strong>context</strong> like time and location makes data more useful.</p>
@@ -103,7 +93,7 @@ location: "Park"
     <button onclick="nextStep(4)">Next ➡️</button>
   </div>
 
-  <!-- Step 4: Add Purpose -->
+  <!-- STEP 3 -->
   <div class="step hidden" id="step4">
     <h2>Step 3: Why?</h2>
     <p>The <strong>purpose</strong> gives deeper meaning to the data.</p>
@@ -117,74 +107,240 @@ purpose: "exercise"
     <button onclick="nextStep(5)">Next ➡️</button>
   </div>
 
-  <!-- Step 5: Sample Data -->
+  <!-- STEP 4 -->
   <div class="step hidden" id="step5">
-    <h2>Step 4: Sample Data (10 Records)</h2>
-    <p>Here are 10 real-world "run" data entries:</p>
-    <div class="data-box" id="sampleData">
-      Loading data...
+    <h2>Step 4: Add Measurable Values</h2>
+    <p>We now include <strong>duration</strong> and <strong>distance</strong> — measurable ratio data.</p>
+    <div class="data-box">
+event: "run"<br>
+user: "Tom"<br>
+time: "6:00 AM"<br>
+location: "Park"<br>
+purpose: "exercise"<br>
+duration: 30<br>
+distance: 5.2
     </div>
     <button onclick="nextStep(6)">Next ➡️</button>
   </div>
 
-  <!-- Step 6: Analysis -->
+  <!-- STEP 5 -->
   <div class="step hidden" id="step6">
-    <h2>Step 5: Analyze the Data</h2>
+    <h2>Step 5: Sample Data (10 Records)</h2>
+    <p>Here are 10 real-world "run" data entries:</p>
+    <div class="data-box" id="sampleData">Loading...</div>
+    <button onclick="nextStep(7)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step hidden" id="step7">
+    <h2>Step 6: Analyze the Data</h2>
     <p>Click a button to analyze the dataset:</p>
-    <div>
-      <button onclick="analyze('user')">👤 Most Active Users</button>
-      <button onclick="analyze('location')">📍 Most Popular Locations</button>
-      <button onclick="analyze('time')">⏰ Most Common Times</button>
-      <button onclick="analyze('purpose')">🎯 Common Purposes</button>
-    </div>
+    <button onclick="analyze('user')">👤 Most Active Users</button>
+    <button onclick="analyze('location')">📍 Most Popular Locations</button>
+    <button onclick="analyze('time')">⏰ Most Common Times</button>
+    <button onclick="analyze('purpose')">🎯 Common Purposes</button>
+    <button onclick="analyze('duration')">⏱️ Total & Average Duration</button>
+    <button onclick="analyze('distance')">📏 Total & Average Distance</button>
     <div id="analysisResult" class="data-box"></div>
+    <button onclick="nextStep(8)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step hidden" id="step8">
+    <h2>Step 7: Understanding Measurement Scales</h2>
+    <p>In statistics, we classify data into four measurement scales:</p>
+    <ul>
+      <li><strong>Nominal</strong>: Categories without order (e.g. user, purpose)</li>
+      <li><strong>Ordinal</strong>: Categories with order (e.g. satisfaction)</li>
+      <li><strong>Interval</strong>: Numbers, but no true zero (e.g. time of day)</li>
+      <li><strong>Ratio</strong>: Numbers with a true zero (e.g. duration, distance)</li>
+    </ul>
+    <button onclick="nextStep(9)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="step hidden" id="step9">
+    <h2>Step 8: Classify Each Field with Explanation</h2>
+    <div class="data-box">
+<strong>user → Nominal</strong><br>
+It's just a name (e.g. "Tom", "Anna"). A label with no numeric meaning.<br><br>
+
+<strong>event → Nominal</strong><br>
+The verb ("run") is a label — a type of action, not numeric.<br><br>
+
+<strong>time → Interval</strong><br>
+Time has meaningful order (6 AM < 7 AM), but 0 AM is not "no time". No true zero.<br><br>
+
+<strong>location → Nominal</strong><br>
+Place names like "Park", "Gym" are categories — not ordered.<br><br>
+
+<strong>purpose → Nominal</strong><br>
+Reasons like "exercise", "training" are types of motivation — just categories.<br><br>
+
+<strong>duration → Ratio</strong><br>
+Measured in minutes. Has a true zero (0 = no time). Can be averaged and compared.<br><br>
+
+<strong>distance → Ratio</strong><br>
+Measured in kilometers. Has a true zero (0 = no movement). Supports all math.
+    </div>
+    <button onclick="nextStep(10)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 9 -->
+  <div class="step hidden" id="step10">
+    <h2>Step 9: Compare Users</h2>
+    <div class="data-box" id="compareUsers">
+Tom → 100 min, 17.7 km
+Anna → 150 min, 14.6 km
+    </div>
+    <button onclick="compareUsers()">🔍 Compare Tom & Anna</button>
+    <button onclick="nextStep(11)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 10 -->
+  <div class="step hidden" id="step11">
+    <h2>Step 10: Detect Outliers</h2>
+    <p>Outliers = Runs &gt; 50 min or &gt; 8 km</p>
+    <button onclick="drawOutliers()">📊 Show Outlier Chart</button>
+    <canvas id="outlierChart"></canvas>
+    <div class="data-box" id="outliers">
+Anna → 60 min, 1.5 km
+    </div>
+    <button onclick="nextStep(12)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 11 -->
+  <div class="step hidden" id="step12">
+    <h2>Step 11: Visual Summary</h2>
+    <div class="data-box" id="summary">
+⏰ Most common time: 6:00 AM
+📍 Popular locations: Park, Gym
+    </div>
+    <button onclick="summarize()">📋 Generate</button>
+    <button onclick="nextStep(13)">Next ➡️</button>
+  </div>
+
+  <!-- STEP 12 -->
+  <div class="step hidden" id="step13">
+    <h2>Step 12: Data to Decision</h2>
+    <ul>
+      <li>✅ Most runs are in the <strong>morning</strong></li>
+      <li>📍 Popular places: <strong>Park, Gym</strong></li>
+      <li>📈 Use data to plan your run efficiently!</li>
+    </ul>
     <button onclick="restart()">🔁 Restart</button>
   </div>
 
   <script>
     const data = [
-      { user: "Tom", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise" },
-      { user: "Anna", event: "run", time: "7:00 AM", location: "Gym", purpose: "training" },
-      { user: "Tom", event: "run", time: "6:30 AM", location: "Park", purpose: "exercise" },
-      { user: "Liam", event: "run", time: "8:00 AM", location: "Beach", purpose: "relaxation" },
-      { user: "Anna", event: "run", time: "6:00 AM", location: "Gym", purpose: "training" },
-      { user: "Sara", event: "run", time: "5:30 AM", location: "Park", purpose: "exercise" },
-      { user: "Tom", event: "run", time: "7:00 AM", location: "Hill", purpose: "competition" },
-      { user: "Liam", event: "run", time: "6:00 AM", location: "Beach", purpose: "relaxation" },
-      { user: "Sara", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise" },
-      { user: "Anna", event: "run", time: "7:30 AM", location: "Gym", purpose: "training" }
+      { user: "Tom", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise", duration: 30, distance: 5.2 },
+      { user: "Anna", event: "run", time: "7:00 AM", location: "Gym", purpose: "training", duration: 40, distance: 6.0 },
+      { user: "Tom", event: "run", time: "6:30 AM", location: "Park", purpose: "exercise", duration: 25, distance: 4.5 },
+      { user: "Liam", event: "run", time: "8:00 AM", location: "Beach", purpose: "relaxation", duration: 20, distance: 3.0 },
+      { user: "Anna", event: "run", time: "6:00 AM", location: "Gym", purpose: "training", duration: 50, distance: 7.1 },
+      { user: "Sara", event: "run", time: "5:30 AM", location: "Park", purpose: "exercise", duration: 35, distance: 5.8 },
+      { user: "Tom", event: "run", time: "7:00 AM", location: "Hill", purpose: "competition", duration: 45, distance: 8.0 },
+      { user: "Liam", event: "run", time: "6:00 AM", location: "Beach", purpose: "relaxation", duration: 22, distance: 3.2 },
+      { user: "Sara", event: "run", time: "6:00 AM", location: "Park", purpose: "exercise", duration: 38, distance: 6.3 },
+      { user: "Anna", event: "run", time: "7:30 AM", location: "Gym", purpose: "training", duration: 60, distance: 1.5 }
     ];
 
     function nextStep(step) {
       document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
       document.getElementById(`step${step}`).classList.remove('hidden');
-      if (step === 5) {
-        const formatted = JSON.stringify(data, null, 2);
-        document.getElementById('sampleData').textContent = formatted;
+      if (step === 6) {
+        document.getElementById('sampleData').textContent = JSON.stringify(data, null, 2);
       }
     }
 
     function analyze(key) {
-      const count = {};
-      for (const item of data) {
-        const value = item[key];
-        count[value] = (count[value] || 0) + 1;
+      const result = {};
+      let total = 0;
+      let isNumeric = typeof data[0][key] === 'number';
+
+      if (isNumeric) {
+        data.forEach(d => total += d[key]);
+        const avg = total / data.length;
+        const unit = key === 'duration' ? 'minutes' : 'km';
+        document.getElementById('analysisResult').textContent =
+          `Total: ${total.toFixed(2)} ${unit}\nAverage: ${avg.toFixed(2)} ${unit}`;
+      } else {
+        data.forEach(d => result[d[key]] = (result[d[key]] || 0) + 1);
+        const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+        document.getElementById('analysisResult').textContent = sorted.map(([k, v]) => `${k}: ${v}`).join('\n');
+      }
+    }
+
+    function compareUsers() {
+      const users = ['Tom', 'Anna'];
+      const result = { Tom: { duration: 0, distance: 0 }, Anna: { duration: 0, distance: 0 } };
+      data.forEach(d => {
+        if (d.user in result) {
+          result[d.user].duration += d.duration;
+          result[d.user].distance += d.distance;
+        }
+      });
+      const output = users.map(u =>
+        `${u} → ${result[u].duration} min, ${result[u].distance.toFixed(1)} km`
+      ).join('\n');
+      document.getElementById('compareUsers').textContent = output;
+    }
+
+    function drawOutliers() {
+      const ctx = document.getElementById('outlierChart').getContext('2d');
+      if (window.outlierChart instanceof Chart) {
+        window.outlierChart.destroy();
       }
 
-      const sorted = Object.entries(count).sort((a, b) => b[1] - a[1]);
-      let result = `🔍 Analysis by "${key}":\n\n`;
-      for (const [value, total] of sorted) {
-        result += `${value}: ${total} runs\n`;
-      }
+      const labels = data.map((d, i) => `${d.user} #${i + 1}`);
+      const durations = data.map(d => d.duration);
+      const distances = data.map(d => d.distance);
+      const colors = data.map(d =>
+        d.duration > 50 || d.distance > 8 ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.7)'
+      );
 
-      document.getElementById('analysisResult').textContent = result;
+      window.outlierChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Distance (km)', data: distances, backgroundColor: colors },
+            { label: 'Duration (min)', data: durations, backgroundColor: colors.map(c => c.replace('0.7', '0.4')) }
+          ]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: {
+            title: { display: true, text: 'Outliers: Run Duration & Distance' },
+            legend: { position: 'top' }
+          }
+        }
+      });
+
+      const outliers = data.filter(d => d.duration > 50 || d.distance > 8);
+      document.getElementById('outliers').textContent =
+        outliers.length === 0
+          ? "✅ No outliers found."
+          : outliers.map(d => `${d.user} → ${d.duration} min, ${d.distance} km`).join('\n');
+    }
+
+    function summarize() {
+      const timeFreq = {};
+      const locFreq = {};
+      data.forEach(d => {
+        timeFreq[d.time] = (timeFreq[d.time] || 0) + 1;
+        locFreq[d.location] = (locFreq[d.location] || 0) + 1;
+      });
+      const topTime = Object.entries(timeFreq).sort((a, b) => b[1] - a[1])[0][0];
+      const topLoc = Object.entries(locFreq).sort((a, b) => b[1] - a[1]).slice(0, 2).map(x => x[0]);
+      document.getElementById('summary').textContent =
+        `⏰ Most common time: ${topTime}\n📍 Popular locations: ${topLoc.join(', ')}`;
     }
 
     function restart() {
       nextStep(1);
     }
 
-    // Start at step 1
     nextStep(1);
   </script>
 
