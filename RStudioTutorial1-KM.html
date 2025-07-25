@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Paired t-test Manual Calculation (with Numbers)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    h2 {
+      margin-top: 2rem;
+    }
+    .step {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-left: 4px solid #007acc;
+    }
+    code {
+      background: #eee;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .formula {
+      font-family: "Courier New", monospace;
+      background: #f0f0f0;
+      padding: 6px;
+      margin: 10px 0;
+      border-left: 3px solid #007acc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Manual Paired t-test Calculation (with Numbers)</h1>
+
+  <h2>Step 1: Raw Data</h2>
+  <table id="data-table">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Before</th>
+        <th>After</th>
+        <th>Difference (Before - After)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Step-by-Step Calculation with Numbers</h2>
+
+  <div class="step" id="step1"></div>
+  <div class="step" id="step2"></div>
+  <div class="step" id="step3"></div>
+  <div class="step" id="step4"></div>
+  <div class="step" id="step5"></div>
+  <div class="step" id="step6"></div>
+  <div class="step" id="step7"></div>
+
+  <script>
+    const before = [140, 125, 154, 121, 115, 156, 150, 154, 130, 106];
+    const after  = [131, 121, 150, 121, 108, 151, 150, 153, 134, 100];
+    const n = before.length;
+    const differences = before.map((b, i) => b - after[i]);
+
+    // Populate table
+    const tbody = document.querySelector("#data-table tbody");
+    before.forEach((b, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>S${i + 1}</td>
+        <td>${b}</td>
+        <td>${after[i]}</td>
+        <td>${differences[i]}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    // Mean
+    const sumDiff = differences.reduce((sum, d) => sum + d, 0);
+    const mean = sumDiff / n;
+
+    // Standard deviation
+    const squaredDiffs = differences.map(d => Math.pow(d - mean, 2));
+    const sumSquaredDiffs = squaredDiffs.reduce((sum, d) => sum + d, 0);
+    const sd = Math.sqrt(sumSquaredDiffs / (n - 1));
+
+    // Standard error
+    const se = sd / Math.sqrt(n);
+
+    // t-statistic
+    const t = mean / se;
+
+    // Confidence interval
+    const df = n - 1;
+    const t_critical = 2.262; // 95% CI for df=9
+    const margin = t_critical * se;
+    const ci_lower = mean - margin;
+    const ci_upper = mean + margin;
+
+    // Formatters
+    const format = x => Number(x).toFixed(3);
+    const join = arr => arr.map(x => format(x)).join(", ");
+
+    // Step-by-step output
+    document.getElementById("step1").innerHTML = `
+      <h3>Step 1: Number of Pairs</h3>
+      <p><strong>n = ${n}</strong></p>
+    `;
+
+    document.getElementById("step2").innerHTML = `
+      <h3>Step 2: Mean of Differences</h3>
+      <p>Differences: [${join(differences)}]</p>
+      <div class="formula">
+        Mean = (Σ Differences) / n = (${sumDiff}) / ${n} = <strong>${format(mean)}</strong>
+      </div>
+    `;
+
+    document.getElementById("step3").innerHTML = `
+      <h3>Step 3: Standard Deviation of Differences</h3>
+      <p>Each (d - mean)²: [${join(squaredDiffs)}]</p>
+      <div class="formula">
+        SD = √[Σ(d - mean)² / (n - 1)] = √(${format(sumSquaredDiffs)} / ${n - 1}) = <strong>${format(sd)}</strong>
+      </div>
+    `;
+
+    document.getElementById("step4").innerHTML = `
+      <h3>Step 4: Standard Error (SE)</h3>
+      <div class="formula">
+        SE = SD / √n = ${format(sd)} / √${n} = <strong>${format(se)}</strong>
+      </div>
+    `;
+
+    document.getElementById("step5").innerHTML = `
+      <h3>Step 5: t-Statistic</h3>
+      <div class="formula">
+        t = Mean / SE = ${format(mean)} / ${format(se)} = <strong>${format(t)}</strong>
+      </div>
+    `;
+
+    document.getElementById("step6").innerHTML = `
+      <h3>Step 6: Degrees of Freedom</h3>
+      <div class="formula">
+        df = n - 1 = ${n} - 1 = <strong>${df}</strong>
+      </div>
+    `;
+
+    document.getElementById("step7").innerHTML = `
+      <h3>Step 7: 95% Confidence Interval (Detailed)</h3>
+      <div class="formula">
+        CI = Mean ± t<sub>crit</sub> × SE
+      </div>
+      <div class="formula">
+        CI = ${format(mean)} ± ${t_critical} × ${format(se)}
+      </div>
+      <div class="formula">
+        Margin of Error = ${t_critical} × ${format(se)} = <strong>${format(margin)}</strong>
+      </div>
+      <div class="formula">
+        Lower = ${format(mean)} - ${format(margin)} = <strong>${format(ci_lower)}</strong><br>
+        Upper = ${format(mean)} + ${format(margin)} = <strong>${format(ci_upper)}</strong>
+      </div>
+      <p><strong>95% Confidence Interval: [${format(ci_lower)}, ${format(ci_upper)}]</strong></p>
+    `;
+  </script>
+</body>
+</html>
