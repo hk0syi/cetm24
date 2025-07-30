@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Key Statistical Concepts Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+    }
+    .concept {
+      margin-bottom: 40px;
+    }
+    .question {
+      font-weight: bold;
+      margin: 15px 0 10px;
+    }
+    .options label {
+      display: block;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .feedback {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e0f7e9;
+      border-left: 4px solid #28a745;
+      display: none;
+    }
+    .wrong {
+      background: #ffe6e6;
+      border-left: 4px solid #e44d4d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Key Statistical Concepts Quiz</h1>
+
+    <!-- 1. Pattern -->
+    <div class="concept">
+      <h2>1. Pattern</h2>
+      <p>Patterns are consistent, recurring trends in data that can help us make predictions or understand behavior over time.</p>
+      <div class="question">Which of the following best illustrates a pattern in data?</div>
+      <div class="options">
+        <label><input type="radio" name="q1" value="a"> A sudden, one‑time spike in website traffic.</label>
+        <label><input type="radio" name="q1" value="b"> Ice cream sales rising every summer.</label>
+        <label><input type="radio" name="q1" value="c"> A single random click on an online ad.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q1', 'b', 'fb1')">Submit</button>
+      <div class="feedback" id="fb1"></div>
+    </div>
+
+    <!-- 2. Probability -->
+    <div class="concept">
+      <h2>2. Probability</h2>
+      <p>Probability measures how likely an event is to occur, expressed as a number between 0 (impossible) and 1 (certain).</p>
+      <div class="question">When flipping a fair coin once, what is the probability of landing on heads?</div>
+      <div class="options">
+        <label><input type="radio" name="q2" value="a"> 0.25</label>
+        <label><input type="radio" name="q2" value="b"> 0.5</label>
+        <label><input type="radio" name="q2" value="c"> 1.0</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q2', 'b', 'fb2')">Submit</button>
+      <div class="feedback" id="fb2"></div>
+    </div>
+
+    <!-- 3. Normal Distribution -->
+    <div class="concept">
+      <h2>3. Normal Distribution</h2>
+      <p>According to the Central Limit Theorem, the distribution of sample means from many independent, random samples tends to form a bell‑shaped (normal) curve.</p>
+      <div class="question">If you repeatedly roll 30 fair dice, take the average each time, and plot those averages, the shape of that plot will be:</div>
+      <div class="options">
+        <label><input type="radio" name="q3" value="a"> Uniform — all averages equally likely.</label>
+        <label><input type="radio" name="q3" value="b"> Normal — most averages near the center.</label>
+        <label><input type="radio" name="q3" value="c"> Triangular — mid‑range averages more likely than extremes.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q3', 'b', 'fb3')">Submit</button>
+      <div class="feedback" id="fb3"></div>
+    </div>
+
+    <!-- 4. Randomness -->
+    <div class="concept">
+      <h2>4. Randomness</h2>
+      <p>Random sampling gives every individual or observation in a population an equal chance of being selected, reducing bias and improving representativeness.</p>
+      <div class="question">Why is random sampling (data collection) critical in statistical studies?</div>
+      <div class="options">
+        <label><input type="radio" name="q4" value="a"> It guarantees the expected result.</label>
+        <label><input type="radio" name="q4" value="b"> It reduces selection bias in the sample.</label>
+        <label><input type="radio" name="q4" value="c"> It increases the total amount of data.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q4', 'b', 'fb4')">Submit</button>
+      <div class="feedback" id="fb4"></div>
+    </div>
+
+    <!-- 5. Law of Large Numbers -->
+    <div class="concept">
+      <h2>5. Law of Large Numbers</h2>
+      <p>As the number of independent trials increases, the sample average converges to the expected (true) value.</p>
+      <div class="question">What will you observe as you flip a fair coin 1,000 times?</div>
+      <div class="options">
+        <label><input type="radio" name="q5" value="a"> You will get exactly 500 heads.</label>
+        <label><input type="radio" name="q5" value="b"> The proportion of heads will get closer to 0.5.</label>
+        <label><input type="radio" name="q5" value="c"> The coin’s fairness will change over time.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q5', 'b', 'fb5')">Submit</button>
+      <div class="feedback" id="fb5"></div>
+    </div>
+
+    <!-- 6. Central Limit Theorem -->
+    <div class="concept">
+      <h2>6. Central Limit Theorem</h2>
+      <p>This theorem allows us to treat sample means as if they follow a normal distribution when the sample size is sufficiently large.</p>
+      <div class="question">How does the Central Limit Theorem benefit statistical analysis?</div>
+      <div class="options">
+        <label><input type="radio" name="q6" value="a"> It makes all raw data normally distributed.</label>
+        <label><input type="radio" name="q6" value="b"> It justifies using normal‑based methods on sample means.</label>
+        <label><input type="radio" name="q6" value="c"> It applies only to very small samples.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q6', 'b', 'fb6')">Submit</button>
+      <div class="feedback" id="fb6"></div>
+    </div>
+
+    <!-- 7. Independent vs. Dependent Variables -->
+    <div class="concept">
+      <h2>7. Independent vs. Dependent Variables</h2>
+      <p>Independent variables are the inputs we control; dependent variables are the outcomes we measure.</p>
+      <div class="question">In a study measuring how study hours affect exam scores, which is the dependent variable?</div>
+      <div class="options">
+        <label><input type="radio" name="q7" value="a"> Number of study hours.</label>
+        <label><input type="radio" name="q7" value="b"> Exam score achieved.</label>
+        <label><input type="radio" name="q7" value="c"> Number of students in the study.</label>
+      </div>
+      <button type="button" onclick="checkAnswer('q7', 'b', 'fb7')">Submit</button>
+      <div class="feedback" id="fb7"></div>
+    </div>
+  </div>
+
+  <script>
+    const explanations = {
+      q1: "Ice cream sales rising every summer is a recurring seasonal trend—a true pattern—whereas one‑time spikes or random clicks are anomalies or noise.",
+      q2: "A fair coin has two sides with equal likelihood, so the probability of heads is 0.5 (50%).",
+      q3: "The Central Limit Theorem tells us that averages of large samples form a bell‑shaped (normal) distribution, even if the underlying data are uniform.",
+      q4: "Random sampling reduces selection bias by giving every unit the same chance of inclusion, making the sample more representative.",
+      q5: "By the Law of Large Numbers, as trials increase, the observed proportion of heads will approach the true probability of 0.5.",
+      q6: "It lets us apply techniques that assume normality—like confidence intervals and hypothesis tests—to sample means, thanks to the CLT.",
+      q7: "The dependent variable is the outcome being measured—in this case, the exam score depends on study hours."
+    };
+
+    function checkAnswer(name, correct, feedbackId) {
+      const opts = document.getElementsByName(name);
+      let selected = null;
+      for (let o of opts) {
+        if (o.checked) { selected = o.value; break; }
+      }
+      const fb = document.getElementById(feedbackId);
+      if (!selected) {
+        alert("Please select an answer!");
+        return;
+      }
+      const isCorrect = selected === correct;
+      fb.className = isCorrect ? "feedback" : "feedback wrong";
+      fb.innerHTML = (isCorrect
+        ? "✅ Correct! "
+        : "❌ Not quite. ")
+        + explanations[name];
+      fb.style.display = "block";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Two Approaches to Data Science</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f6f8fa;
+      color: #333;
+    }
+
+    /* Diagram section */
+    .diagram {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+    .box {
+      width: 160px;
+      padding: 10px;
+      background: #cce5ff;
+      border: 2px solid #3399ff;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.95em;
+    }
+    .arrow {
+      font-size: 24px;
+      margin: 8px 0;
+      line-height: 1;
+    }
+
+    /* Tab section */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tab-button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      cursor: pointer;
+      background-color: #ddd;
+      margin: 0 0.25rem;
+      font-weight: bold;
+      border-radius: 5px 5px 0 0;
+    }
+    .tab-button.active {
+      background-color: #0066cc;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      border: 2px solid #0066cc;
+      border-radius: 0 5px 5px 5px;
+      padding: 1rem;
+      background-color: white;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Table + Quiz section */
+    .highlight {
+      font-weight: bold;
+      color: #0066cc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background-color: white;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background-color: #0066cc;
+      color: white;
+    }
+    .choice-btn {
+      padding: 0.4rem 0.8rem;
+      margin: 0.2rem 0.5rem 0.2rem 0;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: #eee;
+    }
+    .choice-btn:hover {
+      background-color: #d0e6ff;
+    }
+    .correct {
+      background-color: #2ecc71 !important;
+      color: white;
+    }
+    .wrong {
+      background-color: #e74c3c !important;
+      color: white;
+    }
+    .feedback {
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    .explanation {
+      font-style: italic;
+      color: #555;
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
+    }
+    .reset-button {
+      display: block;
+      margin: 2rem auto 0;
+      padding: 0.6rem 1.2rem;
+      background-color: #0066cc;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .reset-button:hover {
+      background-color: #004c99;
+    }
+
+    @media (max-width: 600px) {
+      .tabs {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .diagram {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Diagram -->
+  <div class="diagram">
+    <!-- Left column: Top‑down approach -->
+    <div class="column">
+      <div class="title">Top‑down approach</div>
+      <div class="box">Problem solving</div>
+      <div class="arrow">↓</div>
+      <div class="box">Knowledge</div>
+      <div class="arrow">↓</div>
+      <div class="box">Information</div>
+      <div class="arrow">↓</div>
+      <div class="box">Data/Facts</div>
+    </div>
+
+    <!-- Right column: Bottom‑up approach (fixed arrow direction: ↓) -->
+    <div class="column">
+      <div class="title">Bottom‑up approach</div>
+      <div class="box">Data/Facts</div>
+      <div class="arrow">↓</div>
+      <div class="box">Information</div>
+      <div class="arrow">↓</div>
+      <div class="box">Knowledge</div>
+      <div class="arrow">↓</div>
+      <div class="box">Problem solving</div>
+    </div>
+  </div>
+
+  <!-- Corrected Placement of Title -->
+  <h1>Two Approaches to Data Science</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-button active" onclick="showTab('topdown')">Top-Down</button>
+    <button class="tab-button" onclick="showTab('bottomup')">Bottom-Up</button>
+  </div>
+
+  <div id="topdown" class="tab-content active">
+    <h2>Top-Down Approach</h2>
+    <ul>
+      <li><span class="highlight">Starts with a problem</span> or business question.</li>
+      <li>Then looks for <span class="highlight">data & facts</span> that can help solve that problem.</li>
+      <li>Guided by human thinking, often clear and fast.</li>
+      <li>Best when the question is known and business impact is clear.</li>
+    </ul>
+  </div>
+
+  <div id="bottomup" class="tab-content">
+    <h2>Bottom-Up Approach</h2>
+    <ul>
+      <li><span class="highlight">Starts with available data</span>.</li>
+      <li>Explores what <span class="highlight">problems or opportunities</span> can be discovered from the data.</li>
+      <li>Can reveal hidden patterns, insights, or new business ideas.</li>
+      <li>Best when exploring unstructured datasets or building data-driven platforms.</li>
+    </ul>
+  </div>
+
+  <!-- Quiz Table Section -->
+  <h2 style="margin-top: 2rem;">Which Approach Should You Start With?</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>If you...</th>
+        <th>Choose an Approach</th>
+        <th>Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          Have a <strong>clear business or research question</strong>
+          <div class="explanation">You already know the <span class="highlight">problem</span> — now find the <span class="highlight">data</span> to solve it.</div>
+        </td>
+        <td>
+          <button class="choice-btn" onclick="check(this, 'Top-Down', 1)">Top-Down</button>
+          <button class="choice-btn" onclick="check(this, 'Bottom-Up', 1)">Bottom-Up</button>
+        </td>
+        <td id="feedback1" class="feedback"></td>
+      </tr>
+      <tr>
+        <td>
+          Have <strong>large or interesting datasets</strong> but no specific question yet
+          <div class="explanation">Start with <span class="highlight">data</span> and explore to find <span class="highlight">opportunities</span>.</div>
+        </td>
+        <td>
+          <button class="choice-btn" onclick="check(this, 'Bottom-Up', 2)">Bottom-Up</button>
+          <button class="choice-btn" onclick="check(this, 'Top-Down', 2)">Top-Down</button>
+        </td>
+        <td id="feedback2" class="feedback"></td>
+      </tr>
+      <tr>
+        <td>
+          Want to explore <strong>new insights and opportunities</strong>
+          <div class="explanation">Let the <span class="highlight">data guide</span> you to <span class="highlight">discoveries</span>.</div>
+        </td>
+        <td>
+          <button class="choice-btn" onclick="check(this, 'Bottom-Up', 3)">Bottom-Up</button>
+          <button class="choice-btn" onclick="check(this, 'Top-Down', 3)">Top-Down</button>
+        </td>
+        <td id="feedback3" class="feedback"></td>
+      </tr>
+      <tr>
+        <td>
+          Need to solve an <strong>operational or measurable problem</strong>
+          <div class="explanation">Start with the <span class="highlight">goal</span> and use data to measure and solve it.</div>
+        </td>
+        <td>
+          <button class="choice-btn" onclick="check(this, 'Top-Down', 4)">Top-Down</button>
+          <button class="choice-btn" onclick="check(this, 'Bottom-Up', 4)">Bottom-Up</button>
+        </td>
+        <td id="feedback4" class="feedback"></td>
+      </tr>
+      <tr>
+        <td>
+          Are building a <strong>product or platform</strong> from data
+          <div class="explanation">Use <span class="highlight">data exploration</span> first, then define <span class="highlight">features</span> and <span class="highlight">problems</span> to solve.</div>
+        </td>
+        <td>
+          <button class="choice-btn" onclick="check(this, 'Bottom-Up → Top-Down', 5)">Bottom-Up → Top-Down</button>
+          <button class="choice-btn" onclick="check(this, 'Top-Down', 5)">Top-Down</button>
+        </td>
+        <td id="feedback5" class="feedback"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="reset-button" onclick="resetTable()">🔄 Reset Table</button>
+
+  <script>
+    const correctAnswers = {
+      1: 'Top-Down',
+      2: 'Bottom-Up',
+      3: 'Bottom-Up',
+      4: 'Top-Down',
+      5: 'Bottom-Up → Top-Down'
+    };
+
+    function check(button, answer, row) {
+      const correct = correctAnswers[row];
+      const feedback = document.getElementById(`feedback${row}`);
+      const buttons = button.parentNode.querySelectorAll('.choice-btn');
+
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('correct', 'wrong');
+        if (btn.textContent === correct) {
+          btn.classList.add('correct');
+        } else {
+          btn.classList.add('wrong');
+        }
+      });
+
+      if (answer === correct) {
+        feedback.textContent = '✅ Correct!';
+        feedback.style.color = '#2ecc71';
+      } else {
+        feedback.textContent = `❌ Incorrect. The correct answer is "${correct}".`;
+        feedback.style.color = '#e74c3c';
+      }
+    }
+
+    function resetTable() {
+      for (let i = 1; i <= 5; i++) {
+        const feedback = document.getElementById(`feedback${i}`);
+        feedback.textContent = '';
+        const buttons = feedback.parentNode.querySelectorAll('.choice-btn');
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('correct', 'wrong');
+        });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showTab(tabId) {
+      const tabs = document.querySelectorAll('.tab-content');
+      const buttons = document.querySelectorAll('.tab-button');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      buttons.forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
