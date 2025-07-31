@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data Science Pipeline Diagram</title>
+  <style>
+    :root {
+      --base-width: 800;
+      --base-height: 400;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f5f4f7;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .pipeline {
+      position: relative;
+      width: 60%;
+      max-width: var(--base-width)px;
+      aspect-ratio: var(--base-width) / var(--base-height);
+    }
+
+    .pipeline svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .step {
+      position: absolute;
+      width: 27%;
+      height: 20%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px #0001;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0.5rem;
+      box-sizing: border-box;
+      font-weight: 600;
+      font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+      line-height: 1.2;
+    }
+
+    .step .number {
+      position: absolute;
+      top: 0.4rem;
+      left: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #333;
+      padding: 0.1rem 0.4rem;
+      border-radius: 6px;
+    }
+
+    .step .icon {
+      font-size: 1.4rem;
+      margin-top: 0.25rem;
+    }
+
+    .step .text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .step.multiline .text {
+      white-space: normal;
+      line-height: 1.1;
+    }
+
+    /* Color palette for blocks */
+    .pink   { background: #ffe3e6; }
+    .blue   { background: #eaf3ff; }
+    .cream  { background: #ffffe5; }
+    .lavend { background: #f1ecff; }
+    .green  { background: #e3f5e6; }
+    .greybl { background: #e8ebff; }
+    .mint   { background: #dff7ea; }
+    .rose   { background: #ffe6f5; }
+    .cyan   { background: #e6ffff; }
+
+    /* Step positioning */
+    .c1 { left: 5%; }
+    .c2 { left: 37%; }
+    .c3 { left: 68%; }
+    .r1 { top: 4%; }
+    .r2 { top: 38%; }
+    .r3 { top: 72%; }
+
+    /* Unique number background colors */
+    .num1 { background: #bfdbfe; } /* Light Blue */
+    .num2 { background: #fde68a; } /* Light Yellow */
+    .num3 { background: #fca5a5; } /* Light Red */
+    .num4 { background: #a5f3fc; } /* Light Cyan */
+    .num5 { background: #c4b5fd; } /* Light Purple */
+    .num6 { background: #bbf7d0; } /* Light Green */
+    .num7 { background: #fcd34d; } /* Amber */
+    .num8 { background: #f9a8d4; } /* Pink */
+    .num9 { background: #ddd6fe; } /* Violet */
+  </style>
+</head>
+<body>
+  <div class="pipeline">
+    <h2 style="
+      position: absolute;
+      top: -2.7rem;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      font-size: clamp(1rem, 2vw, 1.4rem);
+    ">
+      What's Data Science Pipeline?
+    </h2>
+
+    <!-- SVG path aligned to vertical mid-levels -->
+    <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+      <circle cx="20" cy="56" r="6" fill="#000"></circle>
+      <circle cx="780" cy="328" r="6" fill="#000"></circle>
+      <path d="M20 56 H780
+               A 130 130 0 0 1 780 192
+               H20
+               A 130 130 0 0 0 20 328
+               H780"
+            fill="none"
+            stroke="#000"
+            stroke-width="4"
+            stroke-linecap="round" />
+    </svg>
+
+    <!-- Step blocks -->
+    <div class="step pink c1 r1">
+      <div class="number num1">1</div>
+      <div class="text">Problem Definition</div>
+      <div class="icon">📝</div>
+    </div>
+
+    <div class="step blue c2 r1">
+      <div class="number num2">2</div>
+      <div class="text">Data Collection</div>
+      <div class="icon">🗃️</div>
+    </div>
+
+    <div class="step cream c3 r1 multiline">
+      <div class="number num3">3</div>
+      <div class="text">Data Cleaning &<br>Preprocessing</div>
+      <div class="icon">🧹</div>
+    </div>
+
+    <div class="step lavend c1 r2">
+      <div class="number num4">4</div>
+      <div class="text">Model Evaluation</div>
+      <div class="icon">🧩</div>
+    </div>
+
+    <div class="step green c2 r2">
+      <div class="number num5">5</div>
+      <div class="text">Data Modeling</div>
+      <div class="icon">⚙️</div>
+    </div>
+
+    <div class="step greybl c3 r2 multiline">
+      <div class="number num6">6</div>
+      <div class="text">Exploratory Data<br>Analysis (EDA)</div>
+      <div class="icon">📊</div>
+    </div>
+
+    <div class="step mint c1 r3">
+      <div class="number num7">7</div>
+      <div class="text">Deployment</div>
+      <div class="icon">🚀</div>
+    </div>
+
+    <div class="step rose c2 r3 multiline">
+      <div class="number num8">8</div>
+      <div class="text">Monitoring &<br>Maintenance</div>
+      <div class="icon">🔧</div>
+    </div>
+
+    <div class="step cyan c3 r3">
+      <div class="number num9">9</div>
+      <div class="text">Reporting</div>
+      <div class="icon">📄</div>
+    </div>
+  </div>
+</body>
+</html>

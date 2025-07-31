@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connecting Research and Data Science</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .timeline .step {
+      background: #fff;
+      border-left: 5px solid #4a90e2;
+      margin: 1rem 0;
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .timeline .step::before {
+      content: attr(data-step);
+      position: absolute;
+      top: 50%;
+      left: -30px;
+      transform: translateY(-50%);
+      background: #4a90e2;
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 0 0 3px #fff;
+    }
+
+    .step-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+      color: #2c3e50;
+    }
+
+    .step-subtitle {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-how,
+    .step-why {
+      font-size: 0.9rem;
+      color: #444;
+      margin: 0.25rem 0;
+    }
+
+    .step-how::before {
+      content: "🔹 How: ";
+      font-weight: bold;
+    }
+
+    .step-why::before {
+      content: "❓ Why: ";
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .timeline .step::before {
+        left: -20px;
+      }
+
+      .timeline .step {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <section>
+    <h2>Connecting Research and Data Science</h2>
+    <div class="timeline">
+      <div class="step" data-step="1">
+        <div class="step-title">Careful, Patient Study → Problem Definition</div>
+        <div class="step-subtitle">Start with curiosity and observation</div>
+        <div class="step-how">Research begins with curiosity; data science begins by clearly defining the problem.</div>
+        <div class="step-why">A clear question ensures measurable outcomes and focused investigation.</div>
+      </div>
+
+      <div class="step" data-step="2">
+        <div class="step-title">Systematic Investigation → Data Collection</div>
+        <div class="step-subtitle">Organize your study with a clear purpose and structure</div>
+        <div class="step-how">Research gathers data methodically; data science collects structured data from various sources.</div>
+        <div class="step-why">Systematic collection ensures relevance and reliability.</div>
+      </div>
+
+      <div class="step" data-step="3">
+        <div class="step-title">Establish Facts & Principles → Data Cleaning</div>
+        <div class="step-subtitle">Analyze evidence to uncover patterns and truths</div>
+        <div class="step-how">Researchers validate facts; data scientists clean and preprocess data to ensure accuracy.</div>
+        <div class="step-why">Clean data leads to reliable models and insights.</div>
+      </div>
+
+      <div class="step" data-step="4">
+        <div class="step-title">Structured Inquiry → Exploratory Data Analysis (EDA)</div>
+        <div class="step-subtitle">Ask focused questions and testable hypotheses</div>
+        <div class="step-how">Exploration helps shape hypotheses in both fields through visualizations and summaries.</div>
+        <div class="step-why">Understanding data patterns leads to better modeling and conclusions.</div>
+      </div>
+
+      <div class="step" data-step="5">
+        <div class="step-title">Scientific Methodology → Data Modeling</div>
+        <div class="step-subtitle">Use experiments, data collection, and analysis</div>
+        <div class="step-how">Researchers create experiments; data scientists build models to simulate outcomes.</div>
+        <div class="step-why">Modeling enables prediction and hypothesis testing at scale.</div>
+      </div>
+
+      <div class="step" data-step="6">
+        <div class="step-title">Solve Problems → Deployment</div>
+        <div class="step-subtitle">Apply results to find answers and improve understanding</div>
+        <div class="step-how">Research findings inform decisions; data models are deployed into systems.</div>
+        <div class="step-why">Solutions must be used in the real world to drive value.</div>
+      </div>
+
+      <div class="step" data-step="7">
+        <div class="step-title">Create New Knowledge → Reporting</div>
+        <div class="step-subtitle">Contribute findings to the broader community</div>
+        <div class="step-how">Research is published; data science results are reported and visualized.</div>
+        <div class="step-why">Knowledge grows when shared and understood by others.</div>
+      </div>
+
+      <div class="step" data-step="8">
+        <div class="step-title">General Applicability → Monitoring & Maintenance</div>
+        <div class="step-subtitle">Make sure your findings apply in other situations</div>
+        <div class="step-how">Researchers test generalizability; data scientists monitor models post-deployment.</div>
+        <div class="step-why">Continuous validation ensures relevance over time.</div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

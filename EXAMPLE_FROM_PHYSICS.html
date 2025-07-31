@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Synchronized Moon and Tide Animation</title>
+  <style>
+    body {
+      margin: 0;
+      background: #001f3f;
+      font-family: sans-serif;
+      color: white;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .image-side {
+      flex: 1 1 50%;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-side img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+    }
+
+    .animation-side {
+      flex: 1 1 50%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .space-container {
+      background: #001f3f;
+      position: relative;
+    }
+
+    .earth {
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle at center, #2e8b57, #013220);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px #0ff;
+      z-index: 2;
+    }
+
+    .observer {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      top: calc(50% + 75px);
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+
+    .observer-label {
+      position: absolute;
+      top: calc(50% + 90px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+      background: rgba(0,0,0,0.5);
+      padding: 2px 6px;
+      border-radius: 6px;
+      z-index: 3;
+    }
+
+    .tide {
+      position: absolute;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 191, 255, 0.3);
+      z-index: 1;
+    }
+
+    .moon-orbit {
+      width: 400px;
+      height: 400px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -200px;
+      margin-left: -200px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .moon {
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #ccc, #999);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: -200px 0;
+      box-shadow: 0 0 10px #fff;
+    }
+
+    .label {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.5);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 1rem;
+      z-index: 3;
+    }
+
+    .legend {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.4);
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 300px;
+      z-index: 3;
+    }
+
+    .tide-container {
+      position: relative;
+      width: 90%;
+      height: 300px;
+      background: #87cefa;
+      border: 4px solid #ffffff50;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .sky {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 50%;
+      background: linear-gradient(to bottom, #002b5c 0%, #87cefa 100%);
+      z-index: 0;
+    }
+
+    .moving-moon {
+      position: absolute;
+      top: 10%;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #fff, #ccc);
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ffffffaa;
+      z-index: 1;
+    }
+
+    .water {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: #0077be;
+      z-index: 2;
+    }
+
+    .tide-marker {
+      position: absolute;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      z-index: 3;
+    }
+
+    .high { top: 20%; }
+    .low { top: 60%; }
+
+    .bottom-label {
+      text-align: center;
+      padding: 10px;
+      font-size: 1rem;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .data-box {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      z-index: 10;
+      text-align: left;
+    }
+
+    #observationOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.95);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #observationOverlay ul {
+      text-align: left;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    #observationOverlay button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #00aced;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Observation Overlay -->
+  <div id="observationOverlay">
+    <h2>🔍 Observation Step</h2>
+    <p>Before we explain anything, just observe:</p>
+    <ul>
+      <li>🌕 How does the Moon move around the Earth?</li>
+      <li>🌊 What happens to the blue tide ring?</li>
+      <li>🔴 What happens at the red observer dot?</li>
+      <li>💧 How does the water level rise and fall?</li>
+    </ul>
+    <button onclick="startAnimation()">Start Observing</button>
+  </div>
+
+  <div class="wrapper">
+    <!-- Image Side -->
+    <div class="image-side">
+      <img src="https://hk0syi.github.io/cetm24/preview-moon-tides.webp" alt="Moon Tide Illustration">
+    </div>
+
+    <!-- Animation Side -->
+    <div class="animation-side">
+      <!-- Top-down view -->
+      <div class="section space-container">
+        <div class="tide" id="tide"></div>
+        <div class="earth"></div>
+        <div class="observer"></div>
+        <div class="observer-label">← You are here (observer)</div>
+        <div class="moon-orbit">
+          <div class="moon" id="moon"></div>
+        </div>
+        <div class="legend">
+          <strong>Top View:</strong><br>
+          🌍 Earth in center<br>
+          🌕 Moon orbits Earth<br>
+          🔴 Red dot = observer<br>
+          🌊 Tidal bulge grows with gravity
+        </div>
+        <div class="label">Top-Down: Earth, Moon & Tides</div>
+        <div class="data-box">
+          🌕 Moon Angle: <span id="moonAngle">0°</span><br>
+          🌊 Tide Strength: <span id="tidePercent">0%</span><br>
+          📈 High Tide: 250px<br>
+          📉 Low Tide: 180px
+        </div>
+      </div>
+
+      <!-- Side view -->
+      <div class="section">
+        <div class="tide-container">
+          <div class="sky"></div>
+          <div class="moving-moon" id="moonSide"></div>
+          <div class="water" id="water"></div>
+          <div class="label">Side-View: Moon & Tide Rise/Fall</div>
+          <div class="tide-marker high">🌊 High Tide</div>
+          <div class="tide-marker low">🌊 Low Tide</div>
+        </div>
+      </div>
+
+      <!-- Scientific process label -->
+      <div class="bottom-label">
+        Observation → Hypothesis → Evaluation → Conclusion
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const moon = document.getElementById("moon");
+    const moonSide = document.getElementById("moonSide");
+    const tide = document.getElementById("tide");
+    const water = document.getElementById("water");
+    const moonAngleSpan = document.getElementById("moonAngle");
+    const tidePercentSpan = document.getElementById("tidePercent");
+
+    let angle = 0;
+    let animationStarted = false;
+
+    function animate() {
+      angle += 0.5;
+      if (angle >= 360) angle = 0;
+
+      const rad = angle * Math.PI / 180;
+      const orbitRadius = 200;
+
+      const x = orbitRadius * Math.cos(rad);
+      const y = orbitRadius * Math.sin(rad);
+      moon.style.transform = `translate(${x}px, ${y}px)`;
+
+      const tideBase = 180;
+      const tideMax = 250;
+      const tideSize = tideBase + 70 * Math.sin(rad);
+      tide.style.width = `${tideSize}px`;
+      tide.style.height = `${tideSize}px`;
+
+      const percent = ((tideSize - tideBase) / (tideMax - tideBase)) * 100;
+      moonAngleSpan.textContent = `${Math.round(angle)}°`;
+      tidePercentSpan.textContent = `${Math.round(percent)}%`;
+
+      moonSide.style.left = `${50 + 50 * Math.cos(rad)}%`;
+
+      const waterBase = 40;
+      const waterMax = 80;
+      const heightPercent = waterBase + (waterMax - waterBase) * Math.sin(rad);
+      water.style.height = `${heightPercent}%`;
+
+      requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+      document.getElementById("observationOverlay").style.display = "none";
+      if (!animationStarted) {
+        animationStarted = true;
+        animate();
+      }
+    }
+  </script>
+
+</body>
+</html>
