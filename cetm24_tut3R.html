@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Explained vs Unexplained Variation (r & r²)</title>
+  <style>
+    :root{
+      --explained: 52; /* percent */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:24px; font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; 
+      background:#0f172a; color:#e5e7eb;
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .card{
+      width:min(1000px, 96vw); background:#111827; border:1px solid #1f2937; border-radius:18px; 
+      box-shadow:0 20px 60px rgba(0,0,0,.35); padding:24px; 
+    }
+    h1{margin:0 0 6px; font-size:clamp(20px, 2.6vw, 34px)}
+    p.sub{margin:0 0 18px; color:#9ca3af}
+    .grid{display:grid; grid-template-columns: 370px 1fr; gap:26px}
+
+    .donut-wrap{display:flex; align-items:center; justify-content:center}
+    .donut{
+      --p: calc(var(--explained) * 1%);
+      width:280px; height:280px; border-radius:50%;
+      background: conic-gradient(#34d399 var(--p), #ef4444 0);
+      display:grid; place-items:center; position:relative; isolation:isolate;
+    }
+    .donut::after{
+      content:""; width:72%; height:72%; background:#111827; border-radius:50%;
+      position:absolute; inset:0; margin:auto; box-shadow:inset 0 0 0 1px #1f2937;
+    }
+    .donut .label{position:relative; text-align:center}
+    .donut .big{font-size:42px; font-weight:700; letter-spacing:.5px}
+    .donut .small{color:#9ca3af; font-size:14px}
+
+    .legend{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
+    .pill{display:flex; align-items:center; gap:10px; background:#0b1220; border:1px solid #1f2937; padding:10px 12px; border-radius:12px}
+    .dot{width:12px; height:12px; border-radius:50%}
+    .dot.expl{background:#34d399}
+    .dot.unexpl{background:#ef4444}
+
+    .panel{background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:16px}
+    label{display:block; font-size:14px; color:#cbd5e1; margin-bottom:8px}
+    input[type="range"]{width:100%}
+    .row{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:12px}
+    .kpi{background:#0a1324; border:1px solid #1f2937; border-radius:10px; padding:12px}
+    .kpi .k{color:#9ca3af; font-size:12px}
+    .kpi .v{font-size:20px; font-weight:600}
+
+    .explain{margin-top:14px; color:#cbd5e1; line-height:1.55}
+    code{background:#0a1324; padding:2px 6px; border-radius:6px; border:1px solid #1f2937}
+
+    .table{margin-top:16px; width:100%; border-collapse:collapse}
+    .table th, .table td{padding:10px 12px; border-bottom:1px solid #1f2937; text-align:left}
+    .table th{color:#9ca3af; font-weight:600}
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .donut{width:240px; height:240px}
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Explained vs Unexplained Variation</h1>
+    <p class="sub">Play with the correlation <strong>r</strong> to see how <strong>r²</strong> (coefficient of determination) splits variance between “explained by X” and “unexplained/other factors”.</p>
+
+    <section class="grid">
+      <div>
+        <div class="donut" id="donut" aria-label="Explained variation donut">
+          <div class="label">
+            <div class="big" id="explainedPct">52%</div>
+            <div class="small">explained by study time</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="pill"><span class="dot expl"></span><span><strong id="legendExpl">52%</strong> explained</span></div>
+          <div class="pill"><span class="dot unexpl"></span><span><strong id="legendUnexpl">48%</strong> unexplained</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <label for="r">Correlation r <span id="rVal" style="opacity:.8">0.721</span></label>
+        <input type="range" id="r" min="-1" max="1" step="0.001" value="0.721" />
+
+        <div class="row">
+          <div class="kpi">
+            <div class="k">r (effect size)</div>
+            <div class="v" id="kpiR">0.721</div>
+          </div>
+          <div class="kpi">
+            <div class="k">r² (variance explained)</div>
+            <div class="v" id="kpiR2">0.519</div>
+          </div>
+          <div class="kpi">
+            <div class="k">Explained %</div>
+            <div class="v" id="kpiPct">52%</div>
+          </div>
+        </div>
+
+        <div class="explain">
+          <p><strong>Interpretation:</strong> With <span id="txtR">r = 0.721</span>, we have <span id="txtR2">r² ≈ 0.519</span>, meaning about <span id="txtPct">52%</span> of the variation in <em>exam score</em> is explained by <em>study time</em>. The remaining <em>48%</em> is due to other variables or noise.</p>
+          <p><strong>Formulae:</strong> <code>r² = r × r</code> and <code>Explained% = r² × 100</code>. Values are illustrative; effect thresholds like <code>|r| ≈ 0.1/0.3/0.5</code> for small/medium/large depend on domain.</p>
+        </div>
+
+        <table class="table" aria-label="Effect size guide">
+          <thead>
+            <tr><th>Absolute r</th><th>Rule of thumb</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>≈ 0.1</td><td>Small effect</td><td>May require large n to detect.</td></tr>
+            <tr><td>≈ 0.3</td><td>Medium effect</td><td>Often detectable with moderate n.</td></tr>
+            <tr><td>≥ 0.5</td><td>Large effect</td><td>Usually obvious even with small n.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const el = {
+      donut: document.getElementById('donut'),
+      explainedPct: document.getElementById('explainedPct'),
+      legendExpl: document.getElementById('legendExpl'),
+      legendUnexpl: document.getElementById('legendUnexpl'),
+      r: document.getElementById('r'),
+      rVal: document.getElementById('rVal'),
+      kpiR: document.getElementById('kpiR'),
+      kpiR2: document.getElementById('kpiR2'),
+      kpiPct: document.getElementById('kpiPct'),
+      txtR: document.getElementById('txtR'),
+      txtR2: document.getElementById('txtR2'),
+      txtPct: document.getElementById('txtPct')
+    };
+
+    function fmt(x, d=3){ return Number(x).toFixed(d); }
+
+    function update(){
+      const r = parseFloat(el.r.value);
+      const r2 = r*r;
+      const pct = Math.round(r2*100);
+
+      document.documentElement.style.setProperty('--explained', pct);
+      el.explainedPct.textContent = pct + '%';
+      el.legendExpl.textContent = pct + '%';
+      el.legendUnexpl.textContent = (100-pct) + '%';
+
+      el.rVal.textContent = fmt(r, 3);
+      el.kpiR.textContent = fmt(r, 3);
+      el.kpiR2.textContent = fmt(r2, 3);
+      el.kpiPct.textContent = pct + '%';
+      el.txtR.textContent = 'r = ' + fmt(r, 3);
+      el.txtR2.textContent = 'r² ≈ ' + fmt(r2, 3);
+      el.txtPct.textContent = pct + '%';
+    }
+
+    el.r.addEventListener('input', update);
+    update();
+  </script>
+</body>
+</html>

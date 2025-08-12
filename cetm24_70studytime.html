@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>How many hours do I need to study to get 70%?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0f172a;--card:#0b1220;--ink:#e5e7eb;--muted:#9aa7be;--line:#1f2937;--accent:#60a5fa;
+    --ok:#a7f3d0;--warn:#fde68a;--info:#93c5fd;--yellow:#fde047;--ink-2:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#0a0f1e,#0d1428);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+  }
+  .wrap{max-width:1050px;margin:34px auto;padding:22px}
+  .card{background:linear-gradient(180deg,#0c1221,#0a1020);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:22px}
+  h1{margin:0 0 10px;font-size:clamp(22px,3.2vw,32px);line-height:1.2}
+  h2{font-size:18px;margin:10px 0}
+  p{color:var(--muted);margin:.4rem 0 .7rem}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+  .panel{background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:14px}
+  .row{display:flex;align-items:center;gap:12px;margin:10px 0}
+  label{min-width:150px;color:var(--ink-2)}
+  input[type="number"],input[type="range"]{width:100%}
+  input[type="number"]{background:#0a0f1c;border:1px solid #233044;color:#e5e7eb;border-radius:10px;padding:10px 12px;font-size:15px}
+  input[type="range"]{accent-color:var(--accent)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .eq{background:#0a1226;border:1px solid #1d2b44;border-radius:12px;padding:12px}
+  .kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+  .k{background:#0a0f1c;border:1px dashed #263246;border-radius:12px;padding:10px}
+  .k div:first-child{font-size:12px;color:#9fb3d2}
+  .k div:last-child{font-weight:700;font-size:18px}
+  .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#0b162b;border:1px solid #1e293b;color:var(--info);font-size:12px;margin-right:6px}
+  .hr{height:1px;background:var(--line);margin:14px 0}
+  .warn{color:var(--warn);font-weight:700}
+  .ok{color:var(--ok);font-weight:700}
+  .yellow{
+    display:inline-block;background:var(--yellow);color:#111827;
+    padding:6px 10px;border-radius:8px;font-weight:700;box-shadow:0 2px 0 #b6a51a
+  }
+
+  /* Slide-style bullets */
+  .slide ul{list-style:none;padding-left:0;margin:0}
+  .slide li{margin:8px 0}
+  .bullet{display:flex;align-items:flex-start;gap:10px}
+  .sq{width:12px;height:12px;border:2px solid #e5e7eb;border-radius:2px;margin-top:3px;flex:0 0 12px}
+  .sub{margin-left:22px}
+  .code-line{color:#93c5fd}
+  .byhand{color:#e2e8f0}
+  .note{color:#9aa7be;font-size:13px}
+
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>How many hours do I need to study to get <span id="targetLabel">70</span>%?</h1>
+    <p>This page matches the diagram’s setup and keeps its “by hand” example while also giving you quick calculators for both directions.</p>
+
+    <!-- Diagram-matching summary -->
+    <div class="panel slide">
+      <h2 style="margin-top:0">Simple straight line graph equation</h2>
+      <div class="yellow mono">Yi = b0 + b1 Xi + εi</div>
+
+      <ul style="margin-top:10px">
+        <li class="bullet"><span class="sq" aria-hidden="true"></span><span><b>Yi</b> = <b>hours to study</b></span></li>
+        <li class="sub bullet"><span class="sq" style="opacity:.55" aria-hidden="true"></span><span><b>b0</b> = coefficient for intercept</span></li>
+        <li class="sub bullet"><span class="sq" style="opacity:.55" aria-hidden="true"></span><span><b>b1</b> = coefficient for Study Time</span></li>
+        <li class="sub bullet"><span class="sq" style="opacity:.55" aria-hidden="true"></span><span><b>Xi</b> = the percentage we want (<span class="mono" id="legendTarget">70</span>%)</span></li>
+
+        <li class="bullet" style="margin-top:12px"><span class="sq" aria-hidden="true"></span><span>You can do it by hand but ensure coeffs in correct order</span></li>
+        <li class="sub mono">
+          <div class="code-line">&gt; # by hand</div>
+          <div class="byhand" id="byHandDiagram">34.4 + (.744 × 70) = <b>86.48</b></div>
+          <div class="note">This reproduces the diagram’s worked example at 70 hours. For “hours needed for 70%”, use the inverse calculator below.</div>
+        </li>
+
+        <li class="bullet" style="margin-top:10px"><span class="sq" aria-hidden="true"></span><span>Or use <span class="mono">predict()</span> with the model you made</span></li>
+        <li class="bullet"><span class="sq" aria-hidden="true"></span><span>Based on historical data we can predict future values of the dependent variable</span></li>
+      </ul>
+    </div>
+
+    <!-- Model details (kept for clarity) -->
+    <div class="eq mono" style="margin-top:12px">
+      <div><b>Fitted model from R:</b> grade = <b>34.4057</b> + <b>0.7446</b> × studytime + ε</div>
+      <div class="hr"></div>
+      <div>Slide-rounded coefs used in the “by hand” line above: b0 ≈ <b>34.4</b>, b1 ≈ <b>0.744</b></div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <!-- A) Target grade -> required hours -->
+      <div class="panel">
+        <h2>A) Target grade ➜ Required hours (inverse of the line)</h2>
+        <div class="row">
+          <label for="target">Target grade (%)</label>
+          <input id="target" type="number" min="0" max="100" step="0.1" value="70" inputmode="decimal">
+        </div>
+        <div class="row">
+          <label for="targetRange">Quick adjust</label>
+          <input id="targetRange" type="range" min="0" max="100" step="1" value="70" aria-label="Target grade slider">
+        </div>
+        <div class="row">
+          <label>Required hours (Yi)</label>
+          <div id="hoursReq" class="mono">--</div>
+        </div>
+        <div class="row">
+          <label>Inverse formula</label>
+          <div id="byHandInverse" class="mono">--</div>
+        </div>
+        <p class="warn mono" id="warnA">Predictions are approximate; uncertainty is not shown on this slide-style view.</p>
+      </div>
+
+      <!-- B) Hours -> predicted grade (with “by hand” line) -->
+      <div class="panel">
+        <h2>B) Study hours ➜ Predicted grade</h2>
+        <div class="row">
+          <label for="hours">Study hours (Xi)</label>
+          <input id="hours" type="number" min="0" max="200" step="0.1" value="70" inputmode="decimal">
+        </div>
+        <div class="row">
+          <label for="hoursRange">Quick adjust</label>
+          <input id="hoursRange" type="range" min="0" max="200" step="1" value="70" aria-label="Study hours slider">
+        </div>
+
+        <div class="kpi">
+          <div class="k">
+            <div>Predicted grade (model coefs)</div>
+            <div id="predGrade">--</div>
+          </div>
+          <div class="k">
+            <div>“By hand” (slide-rounded)</div>
+            <div id="predSlide">--</div>
+          </div>
+        </div>
+
+        <div class="eq mono" style="margin-top:10px">
+          <b>predict()</b> idea: predict(lm(grade ~ studytime), data.frame(studytime = H)) → fitted mean grade at H hours.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <h2 style="margin:0 0 8px">Notes</h2>
+      <ul>
+        <li>The calculators use the fitted R model for computations; the “by hand” line mirrors the diagram with rounded coefficients.</li>
+        <li>To get hours for a target %, we invert the fitted line: hours = (target − b0) / b1.</li>
+        <li>Real outcomes vary around the line; the slide doesn’t include intervals, so this page hides them to match.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fitted numbers from R
+  const B0 = 34.4057;       // intercept (full precision)
+  const B1 = 0.7446;        // slope     (full precision)
+
+  // Slide-rounded numbers for the “by hand” display
+  const B0S = 34.4;
+  const B1S = 0.744;
+
+  // DOM
+  const targetIn  = document.getElementById('target');
+  const targetRg  = document.getElementById('targetRange');
+  const targetLbl = document.getElementById('targetLabel');
+  const legendTarget = document.getElementById('legendTarget');
+  const hoursReq  = document.getElementById('hoursReq');
+  const byHandInv = document.getElementById('byHandInverse');
+
+  const hoursIn   = document.getElementById('hours');
+  const hoursRg   = document.getElementById('hoursRange');
+  const predGrade = document.getElementById('predGrade');
+  const predSlide = document.getElementById('predSlide');
+  const byHandDiagram = document.getElementById('byHandDiagram');
+
+  // A) Target % -> hours (inverse on fitted model)
+  function updateInverse(){
+    let G = parseFloat(targetIn.value);
+    if (Number.isNaN(G)) G = 70;
+    G = Math.max(0, Math.min(100, G));
+    targetIn.value = G.toFixed(1);
+    targetRg.value = Math.round(G);
+    targetLbl.textContent = G.toFixed(0);
+    legendTarget.textContent = G.toFixed(0);
+
+    const H = (G - B0) / B1; // Required hours (Yi) from target %
+    const Hclamped = Math.max(0, H);
+
+    hoursReq.textContent = `${Hclamped.toFixed(2)} hours`;
+    byHandInv.textContent = `(${G.toFixed(1)} − ${B0.toFixed(4)}) / ${B1.toFixed(4)} = ${H.toFixed(4)} hours`;
+  }
+
+  // B) Hours -> predicted grade
+  function updateForward(){
+    let H = parseFloat(hoursIn.value);
+    if (Number.isNaN(H)) H = 70;
+    H = Math.max(0, Math.min(200, H));
+    hoursIn.value = H.toFixed(1);
+    hoursRg.value = Math.round(H);
+
+    const fitFull  = B0 + B1 * H;   // model coefficients
+    const fitSlide = B0S + B1S * H; // slide-rounded “by hand”
+
+    predGrade.textContent = `${fitFull.toFixed(2)} %`;
+    predSlide.textContent = `${fitSlide.toFixed(2)} %`;
+
+    // Update the diagram's by-hand line specifically at 70h (to match screenshot)
+    if (Math.abs(H - 70) < 1e-9) {
+      byHandDiagram.innerHTML = `34.4 + (.744 × 70) = <b>${fitSlide.toFixed(2)}</b>`;
+    } else {
+      byHandDiagram.innerHTML = `34.4 + (.744 × ${H.toFixed(0)}) = <b>${fitSlide.toFixed(2)}</b>`;
+    }
+  }
+
+  // Sync handlers
+  targetIn.addEventListener('input', updateInverse);
+  targetRg.addEventListener('input', e => { targetIn.value = e.target.value; updateInverse(); });
+  hoursIn.addEventListener('input', updateForward);
+  hoursRg.addEventListener('input', e => { hoursIn.value = e.target.value; updateForward(); });
+
+  // init
+  updateInverse();
+  updateForward();
+</script>
+</body>
+</html>
