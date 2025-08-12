@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Regression Results — Clear Comparison with Significance Stars</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --panel:#111827;
+    --muted:#94a3b8;
+    --text:#e5e7eb;
+    --accent:#22d3ee;
+    --good:#10b981;
+    --good2:#34d399;
+    --ok:#60a5fa;
+    --warn:#f59e0b;
+    --bad:#f97316;
+    --border:#1f2937;
+    --chip:#0b1220;
+  }
+  html,body{background:var(--bg); color:var(--text); margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial,"Apple Color Emoji","Segoe UI Emoji"; line-height:1.4;}
+  .wrap{max-width:1100px; margin:0 auto; padding:16px;}
+  h1{font-size:1.25rem; margin:0 0 10px;}
+  .subtitle{color:var(--muted); margin-bottom:16px; font-size:0.95rem;}
+  .cards{display:grid; grid-template-columns:1fr; gap:14px;}
+  @media (min-width:900px){ .cards{grid-template-columns:1fr 1fr;} }
+
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden;}
+  .card header{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--border);}
+  .title{font-weight:600;}
+  .meta{color:var(--muted); font-size:0.9rem;}
+
+  .callout{display:flex; gap:12px; align-items:flex-start; padding:14px; border-left:4px solid var(--accent); border-radius:10px; background:#0b1220; border:1px solid var(--border); margin-bottom:14px;}
+  .callout .icon{width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:rgba(34,211,238,.15); color:var(--accent); font-weight:700;}
+  .callout p{margin:0; color:#cbd5e1;}
+
+  table{width:100%; border-collapse:separate; border-spacing:0; font-size:0.92rem;}
+  th, td{padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  th{color:#c7d2fe; text-align:left; background:#0b1220; position:sticky; top:0; z-index:1;}
+  tbody tr:hover{background:#0c1628;}
+
+  .badge{display:inline-block; padding:2px 8px; border-radius:999px; font-size:0.8rem; border:1px solid var(--border); background:var(--chip); color:var(--muted);}
+  .sig{font-weight:700; letter-spacing:0.5px; border:none;}
+  .sig.none{color:var(--muted);}
+  .sig.dot{color:#cbd5e1;}
+  .sig.star1{color:var(--ok);}
+  .sig.star2{color:var(--good2);}
+  .sig.star3{color:var(--good);}
+
+  .kpi{display:flex; gap:8px; flex-wrap:wrap;}
+  .kpi .badge{background:#0b1220;}
+
+  .legend{margin-top:10px; color:var(--muted); font-size:0.9rem;}
+  .legend span{margin-right:10px;}
+  .legend .chip{padding:2px 8px; border-radius:8px; border:1px solid var(--border); background:#0b1220; margin-right:6px;}
+
+  .compare{margin-top:16px;}
+  .note{color:var(--muted); font-size:0.9rem; margin-top:8px;}
+
+  .tabs{display:flex; gap:8px; margin:12px 0 6px; flex-wrap:wrap;}
+  .tabs button{background:#0b1220; border:1px solid var(--border); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer;}
+  .tabs button.active{border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);}
+
+  .delta-up{color:var(--good);}
+  .delta-down{color:var(--bad);}
+  .mono{font-variant-numeric:tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Model comparison: toxin ~ predictors</h1>
+  <div class="subtitle">Clear tables with significance stars; differences between models are highlighted.</div>
+
+  <!-- Key concept callout -->
+  <div class="callout" role="note" aria-label="Key concept">
+    <div class="icon">i</div>
+    <p><strong>Key concept:</strong> Multicollinearity means strong linear relationships among independent variables (a predictor explained by other predictors), not strong correlation with the dependent variable.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="View switch">
+    <!-- Make FULL the default: active + aria-selected="true" -->
+    <button id="tab-compare" role="tab" aria-selected="false" onclick="showView('compare')">Comparison</button>
+    <button id="tab-full" class="active" role="tab" aria-selected="true" onclick="showView('full')">Full model</button>
+    <button id="tab-reduced" role="tab" aria-selected="false" onclick="showView('reduced')">Reduced model</button>
+  </div>
+
+  <!-- Make COMPARE hidden by default -->
+  <div id="view-compare" class="card compare" role="tabpanel" aria-labelledby="tab-compare" style="display:none">
+    <header>
+      <div class="title">Side‑by‑side significance changes</div>
+      <div class="meta">n = 10</div>
+    </header>
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th>Stars (Full)</th>
+            <th>Stars (Reduced)</th>
+            <th>Change</th>
+            <th class="mono">Estimate (Full)</th>
+            <th class="mono">Estimate (Reduced)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-compare"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><span class="chip">***</span> p &lt; 0.001</span>
+      <span><span class="chip">**</span> p &lt; 0.01</span>
+      <span><span class="chip">*</span> p &lt; 0.05</span>
+      <span><span class="chip">.</span> p &lt; 0.10</span>
+      <span><span class="chip">&nbsp;</span> not significant</span>
+    </div>
+    <div class="note">Sunshine gains significance after removing temp (from none to *).</div>
+  </div>
+
+  <!-- Make FULL visible by default (no display:none) -->
+  <div id="view-full" class="card" role="tabpanel" aria-labelledby="tab-full">
+    <header>
+      <div>
+        <div class="title">Full model</div>
+        <div class="meta">toxin ~ temp + rain + sunshine + wind</div>
+      </div>
+      <div class="kpi">
+        <span class="badge">R² 0.9186</span>
+        <span class="badge">Adj R² 0.8535</span>
+        <span class="badge">RSE 1.574 (df = 5)</span>
+        <span class="badge">F(4,5) = 14.11; p = 0.006232</span>
+      </div>
+    </header>
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th class="mono">Estimate</th>
+            <th class="mono">Std. Error</th>
+            <th class="mono">t value</th>
+            <th class="mono">p value</th>
+            <th>Stars</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-full"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><span class="chip">***</span> p &lt; 0.001</span>
+      <span><span class="chip">**</span> p &lt; 0.01</span>
+      <span><span class="chip">*</span> p &lt; 0.05</span>
+      <span><span class="chip">.</span> p &lt; 0.10</span>
+      <span><span class="chip">&nbsp;</span> not significant</span>
+    </div>
+  </div>
+
+  <div id="view-reduced" class="card" style="display:none" role="tabpanel" aria-labelledby="tab-reduced">
+    <header>
+      <div>
+        <div class="title">Reduced model</div>
+        <div class="meta">toxin ~ rain + sunshine + wind</div>
+      </div>
+      <div class="kpi">
+        <span class="badge">R² 0.9150</span>
+        <span class="badge">Adj R² 0.8726</span>
+        <span class="badge">RSE 1.468 (df = 6)</span>
+        <span class="badge">F(3,6) = 21.54; p = 0.001298</span>
+      </div>
+    </header>
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Term</th>
+            <th class="mono">Estimate</th>
+            <th class="mono">Std. Error</th>
+            <th class="mono">t value</th>
+            <th class="mono">p value</th>
+            <th>Stars</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-reduced"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <span><span class="chip">***</span> p &lt; 0.001</span>
+      <span><span class="chip">**</span> p &lt; 0.01</span>
+      <span><span class="chip">*</span> p &lt; 0.05</span>
+      <span><span class="chip">.</span> p &lt; 0.10</span>
+      <span><span class="chip">&nbsp;</span> not significant</span>
+    </div>
+  </div>
+
+  <div class="note">
+    Tip: In this dataset (n = 10), multicollinearity is mild. Dropping temp keeps R² nearly unchanged and improves precision; sunshine becomes significant (*).
+  </div>
+</div>
+
+<script>
+  const models = {
+    full: {
+      name: "Full model",
+      n: 10,
+      r2: 0.9186, adjr2: 0.8535, rse: 1.574, df: 5, f: 14.11, df1: 4, df2: 5, fp: 0.006232,
+      coefs: [
+        {term:"(Intercept)", est:31.6084, se:7.1051, t:4.449,  p:0.00671},
+        {term:"temp",        est:-0.2375, se:0.5086, t:-0.467, p:0.66018},
+        {term:"rain",        est:7.0676,  se:1.0031, t:7.046,  p:0.00089},
+        {term:"sunshine",    est:-0.4201, se:0.2413, t:-1.741, p:0.14215},
+        {term:"wind",        est:-0.7936, se:0.2977, t:-2.666, p:0.04458}
+      ]
+    },
+    reduced: {
+      name: "Reduced model",
+      n: 10,
+      r2: 0.9150, adjr2: 0.8726, rse: 1.468, df: 6, f: 21.54, df1: 3, df2: 6, fp: 0.001298,
+      coefs: [
+        {term:"(Intercept)", est:31.5651, se:6.6253, t:4.764,  p:0.00311},
+        {term:"rain",        est:7.0108,  se:0.9285, t:7.551,  p:0.00028},
+        {term:"sunshine",    est:-0.4790, se:0.1919, t:-2.495, p:0.04682},
+        {term:"wind",        est:-0.8218, se:0.2718, t:-3.023, p:0.02331}
+      ]
+    }
+  };
+
+  function starClass(p){
+    if (p < 0.001) return {txt:'***', cls:'star3'};
+    if (p < 0.01)  return {txt:'**',  cls:'star2'};
+    if (p < 0.05)  return {txt:'*',   cls:'star1'};
+    if (p < 0.10)  return {txt:'.',   cls:'dot'};
+    return {txt:'', cls:'none'};
+  }
+  function fmt(x, d=4){ return (Math.abs(x) >= 1000 ? x.toExponential(2) : x.toFixed(d)); }
+  function addRow(tbody, row){
+    const tr = document.createElement('tr');
+    tr.innerHTML = row;
+    tbody.appendChild(tr);
+  }
+
+  function renderModel(tbodyId, model){
+    const tb = document.getElementById(tbodyId);
+    tb.innerHTML = '';
+    model.coefs.forEach(c=>{
+      const s = starClass(c.p);
+      addRow(tb, `
+        <td>${c.term}</td>
+        <td class="mono">${fmt(c.est, 4)}</td>
+        <td class="mono">${fmt(c.se, 4)}</td>
+        <td class="mono">${fmt(c.t, 3)}</td>
+        <td class="mono">${fmt(c.p, 5)}</td>
+        <td><span class="sig ${s.cls}">${s.txt || '&nbsp;'}</span></td>
+      `);
+    });
+  }
+
+  function renderCompare(){
+    const tb = document.getElementById('tbody-compare');
+    tb.innerHTML = '';
+    const mapFull = Object.fromEntries(models.full.coefs.map(c=>[c.term, c]));
+    const mapRed  = Object.fromEntries(models.reduced.coefs.map(c=>[c.term, c]));
+    const terms = Array.from(new Set(Object.keys(mapFull).concat(Object.keys(mapRed))))
+      .filter(t => t !== 'temp');
+    terms.forEach(term=>{
+      const a = mapFull[term], b = mapRed[term];
+      const sa = starClass(a?.p ?? 1), sb = starClass(b?.p ?? 1);
+      let changeTxt = '';
+      if (sa.txt !== sb.txt){
+        const direction = ( (sb.txt && !sa.txt) || (sb.txt.length > sa.txt.length) ) ? 'up' : 'down';
+        changeTxt = direction === 'up'
+          ? `<span class="delta-up">▲ stronger</span>`
+          : `<span class="delta-down">▼ weaker</span>`;
+      } else {
+        changeTxt = `<span class="badge">no change</span>`;
+      }
+      addRow(tb, `
+        <td>${term}</td>
+        <td><span class="sig ${sa.cls}">${sa.txt || '&nbsp;'}</span></td>
+        <td><span class="sig ${sb.cls}">${sb.txt || '&nbsp;'}</span></td>
+        <td>${changeTxt}</td>
+        <td class="mono">${a ? fmt(a.est,4) : '—'}</td>
+        <td class="mono">${b ? fmt(b.est,4) : '—'}</td>
+      `);
+    });
+    addRow(tb, `
+      <td>temp</td>
+      <td><span class="sig ${starClass(mapFull['temp'].p).cls}">${starClass(mapFull['temp'].p).txt || '&nbsp;'}</span></td>
+      <td><span class="sig none">&nbsp;</span></td>
+      <td><span class="badge">removed</span></td>
+      <td class="mono">${fmt(mapFull['temp'].est,4)}</td>
+      <td class="mono">—</td>
+    `);
+  }
+
+  function showView(which){
+    const views = ['compare','full','reduced'];
+    views.forEach(v=>{
+      document.getElementById('view-'+v).style.display = (v===which) ? '' : 'none';
+      const tab = document.getElementById('tab-'+v);
+      if (tab){ tab.classList.toggle('active', v===which); tab.setAttribute('aria-selected', v===which ? 'true':'false'); }
+    });
+  }
+
+  // Initial render
+  renderModel('tbody-full', models.full);
+  renderModel('tbody-reduced', models.reduced);
+  renderCompare();
+
+  // Ensure FULL is the default visible tab on load
+  showView('full');
+</script>
+</body>
+</html>
