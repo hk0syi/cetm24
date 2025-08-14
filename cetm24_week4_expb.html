@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Exp(b) Formula</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f8f9fa;
+        padding: 20px;
+    }
+    h1 {
+        color: #5a3e36;
+    }
+    .formula {
+        background: yellow;
+        padding: 15px;
+        border: 2px solid #444;
+        font-style: italic;
+        font-size: 20px;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+    input {
+        width: 70px;
+        padding: 5px;
+        font-size: 16px;
+        text-align: center;
+        margin: 0 5px;
+    }
+    .result {
+        margin-top: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        font-size: 18px;
+    }
+    .increase {
+        color: green;
+        font-weight: bold;
+        font-size: 20px;
+        padding: 5px 10px;
+        border: 2px solid green;
+        border-radius: 5px;
+        display: inline-block;
+        background: #e6ffe6;
+    }
+    .decrease {
+        color: red;
+        font-weight: bold;
+        font-size: 20px;
+        padding: 5px 10px;
+        border: 2px solid red;
+        border-radius: 5px;
+        display: inline-block;
+        background: #ffe6e6;
+    }
+    .neutral {
+        color: #555;
+        font-weight: bold;
+        font-size: 20px;
+        padding: 5px 10px;
+        border: 2px solid #777;
+        border-radius: 5px;
+        display: inline-block;
+        background: #f0f0f0;
+    }
+    button {
+        margin-top: 10px;
+        padding: 8px 15px;
+        font-size: 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+</style>
+</head>
+<body>
+
+<h1>Interactive Exp(b) Odds Ratio</h1>
+
+<div class="formula">
+    Exp(b) = 
+    (<input type="number" id="oddsAfter" step="0.01" value="2">) ÷ 
+    (<input type="number" id="oddsBefore" step="0.01" value="1">)
+</div>
+<br>
+<button onclick="generateRandom()">🎲 Random Numbers</button>
+
+<div id="output" class="result">Enter values to see results.</div>
+
+<script>
+function calculateExpB() {
+    let after = parseFloat(document.getElementById("oddsAfter").value);
+    let before = parseFloat(document.getElementById("oddsBefore").value);
+
+    if (before <= 0) {
+        document.getElementById("output").innerHTML = "⚠ Odds before must be > 0";
+        return;
+    }
+
+    let expB = (after / before).toFixed(2);
+    let interpretation = "";
+    let label = "";
+
+    if (expB > 1) {
+        interpretation = `<span class="increase">Exp(b) > 1 → Predictor ↑ → Probability ↑</span>`;
+    } else if (expB < 1) {
+        interpretation = `<span class="decrease">Exp(b) < 1 → Predictor ↑ → Probability ↓</span>`;
+    } else {
+        interpretation = `<span class="neutral">Exp(b) = 1 → No change in probability</span>`;
+    }
+
+    document.getElementById("output").innerHTML = `
+        <p><strong>Odds Before:</strong> ${before}</p>
+        <p><strong>Odds After:</strong> ${after}</p>
+        <p><strong>Exp(b):</strong> ${expB}</p>
+        <p>${interpretation}</p>
+    `;
+}
+
+function generateRandom() {
+    document.getElementById("oddsAfter").value = (Math.random() * 4.9 + 0.1).toFixed(2);
+    document.getElementById("oddsBefore").value = (Math.random() * 4.9 + 0.1).toFixed(2);
+    calculateExpB();
+}
+
+// Auto-update when typing
+document.getElementById("oddsAfter").addEventListener("input", calculateExpB);
+document.getElementById("oddsBefore").addEventListener("input", calculateExpB);
+
+// Initial calculation
+calculateExpB();
+</script>
+
+</body>
+</html>

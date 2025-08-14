@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>linear/logistic regression modeling</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f7f9fb;
+        color: #333;
+        line-height: 1.6;
+    }
+    header {
+        background: #005f99;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+    }
+    main {
+        padding: 1rem;
+        max-width: 900px;
+        margin: auto;
+    }
+    .section {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    h2 {
+        color: #005f99;
+    }
+    .grid {
+        display: grid;
+        gap: 1rem;
+    }
+    @media (min-width: 700px) {
+        .grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .card {
+        background: #f0f4f8;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 5px solid #005f99;
+    }
+    ul {
+        padding-left: 1.2rem;
+    }
+    .highlight {
+        font-weight: bold;
+        color: #d9534f;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>linear/logistic regression modeling</h1>
+</header>
+
+<main>
+
+    <div class="section">
+        <h2>1. Training vs. Testing</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Training Phase</h3>
+                <ul>
+                    <li>Goal: <span class="highlight">Minimize training error</span> while avoiding overfitting.</li>
+                    <li>Model learns patterns from the data.</li>
+                    <li>Use training loss to guide optimization.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Testing (or Validation) Phase</h3>
+                <ul>
+                    <li>Goal: Measure <span class="highlight">generalization error</span>.</li>
+                    <li>Evaluate on unseen data to check performance.</li>
+                    <li>Metrics here tell if the model is truly good.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>2. Types of Regression</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Linear Regression</h3>
+                <ul>
+                    <li>Predicts continuous values.</li>
+                    <li>Example: Predicting house prices.</li>
+                    <li>Multiple Linear Regression → multiple predictors.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Logistic Regression</h3>
+                <ul>
+                    <li><span class="highlight">Classification task</span>, despite the name.</li>
+                    <li>Predicts probabilities for categories.</li>
+                    <li>Example: Spam vs. Not Spam.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>3. Common Metrics</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>For Regression (Continuous Target)</h3>
+                <ul>
+                    <li>R² → Higher is better.</li>
+                    <li>MSE / RMSE / RSS → Lower is better.</li>
+                    <li>p-values (for statistical significance).</li>
+                </ul>
+<figure style="margin-top:0.5rem; text-align:center;">
+  <svg viewBox="0 0 400 200" width="100%" height="200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Residuals diagram: blue points, red regression line, black residuals -->
+    <line x1="10" y1="23.5" x2="390" y2="156.5" stroke="#8b0000" stroke-width="2"/><line x1="20" y1="2.0" x2="20" y2="27.0" stroke="#222" stroke-width="1.5"/><circle cx="20" cy="2.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="60" y1="1.0" x2="60" y2="41.0" stroke="#222" stroke-width="1.5"/><circle cx="60" cy="1.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="100" y1="45.0" x2="100" y2="55.0" stroke="#222" stroke-width="1.5"/><circle cx="100" cy="45.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="140" y1="84.0" x2="140" y2="69.0" stroke="#222" stroke-width="1.5"/><circle cx="140" cy="84.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="180" y1="91.0" x2="180" y2="83.0" stroke="#222" stroke-width="1.5"/><circle cx="180" cy="91.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="220" y1="79.0" x2="220" y2="97.0" stroke="#222" stroke-width="1.5"/><circle cx="220" cy="79.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="260" y1="146.0" x2="260" y2="111.0" stroke="#222" stroke-width="1.5"/><circle cx="260" cy="146.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="300" y1="117.0" x2="300" y2="125.0" stroke="#222" stroke-width="1.5"/><circle cx="300" cy="117.0" r="4" fill="#1f77b4" stroke="#1f77b4"/><line x1="340" y1="149.0" x2="340" y2="139.0" stroke="#222" stroke-width="1.5"/><circle cx="340" cy="149.0" r="4" fill="#1f77b4" stroke="#1f77b4"/>
+  </svg>
+  <figcaption style="font-size:0.9rem; color:#555;">
+    Residuals (black) from each point to the regression line (red). OLS minimizes Σ e<sub>i</sub><sup>2</sup>.
+  </figcaption>
+</figure>
+
+            </div>
+            <div class="card">
+                <h3>For Classification (Including Logistic Regression)</h3>
+                <ul>
+                    <li>Accuracy → Higher is better.</li>
+                    <li>Precision, Recall, F1-score.</li>
+                    <li>ROC-AUC.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+</body>
+</html>
