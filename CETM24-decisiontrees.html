@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Tree Learning Tool</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f6f8fa; color: #333; }
+    header { background: #1a5276; color: white; padding: 1rem; text-align: center; }
+    nav { display: flex; flex-wrap: wrap; background: #154360; }
+    nav button { flex: 1; padding: 1rem; border: none; background: #154360; color: white; cursor: pointer; font-size: 1rem; }
+    nav button:hover, nav button.active { background: #1a5276; }
+    section { display: none; padding: 1.5rem; max-width: 1000px; margin: auto; }
+    section.active { display: block; }
+    svg { background: white; border: 1px solid #ccc; padding: 1rem; width: 100%; height: auto; }
+    .formula { background: #fff8dc; border: 1px solid #ccc; padding: 0.5rem; margin: 1rem 0; font-family: monospace; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: center; }
+    th { background: #eee; }
+    .interactive-box { background: #eef6ff; padding: 1rem; border: 1px solid #ccc; margin-top: 1rem; }
+    label { display: block; margin-top: 0.5rem; }
+    pre { background: #fdfdfd; border: 1px solid #ccc; padding: 1rem; white-space: pre-wrap; }
+    /* For algorithms diagram */
+    :root { --shadow: drop-shadow(0 6px 14px rgba(0,0,0,.15)); }
+    .wrap-algo { max-width:1400px; margin:0 auto; background:#fff; border-radius:16px; padding:18px 18px 8px; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
+    .wrap-algo svg { filter: var(--shadow); }
+    .node { rx:12; ry:12; stroke-width:2 }
+    .title { font-weight:700 }
+    .small { font-size:13px; fill:#334155 }
+    .link { stroke:#0f172a; stroke-width:2; fill:none }
+    .bullet { font-size:13px; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Interactive Decision Tree Learning</h1>
+    <p>Flowcharts + Worked Example + Interactive Tools for Entropy, Step 5, Algorithms, and Random Forest</p>
+</header>
+
+<nav>
+    <button class="active" onclick="showTab('process')">Tree Building Process</button>
+    <button onclick="showTab('entropy')">Entropy & IG</button>
+    <button onclick="showTab('step5')">Step 5 Flow</button>
+    <button onclick="showTab('algos')">Algorithms</button>
+    <button onclick="showTab('randomforest')">Random Forest</button>
+</nav>
+
+<section id="process" class="active">
+    <h2>Decision Tree Building Process</h2>
+    <svg height="450">
+        <rect x="300" y="20" width="300" height="50" fill="#d6eaf8" stroke="#2980b9"/>
+        <text x="450" y="50" font-size="14" text-anchor="middle">Start with Full Dataset</text>
+        <line x1="450" y1="70" x2="450" y2="100" stroke="black"/>
+        <rect x="250" y="100" width="400" height="50" fill="#fcf3cf" stroke="#b7950b"/>
+        <text x="450" y="130" font-size="14" text-anchor="middle">Calculate Entropy of Target (y)</text>
+        <line x1="450" y1="150" x2="450" y2="180" stroke="black"/>
+        <rect x="200" y="180" width="500" height="50" fill="#d5f5e3" stroke="#1e8449"/>
+        <text x="450" y="210" font-size="14" text-anchor="middle">For each feature (X), calculate Information Gain</text>
+        <line x1="450" y1="230" x2="450" y2="260" stroke="black"/>
+        <rect x="250" y="260" width="400" height="50" fill="#fadbd8" stroke="#c0392b"/>
+        <text x="450" y="290" font-size="14" text-anchor="middle">Choose feature with highest IG → Node Split</text>
+        <line x1="450" y1="310" x2="450" y2="340" stroke="black"/>
+        <rect x="280" y="340" width="340" height="50" fill="#e8daef" stroke="#6c3483"/>
+        <text x="450" y="370" font-size="14" text-anchor="middle">Repeat process for each branch (Step 5)</text>
+    </svg>
+</section>
+
+<section id="entropy">
+    <h2>Entropy & Information Gain</h2>
+    <p><b>Entropy</b> measures impurity:</p>
+    <div class="formula">Entropy(S) = - Σ p<sub>j</sub> log<sub>2</sub> p<sub>j</sub></div>
+    <p><b>Information Gain</b> measures the reduction in entropy after a split:</p>
+    <div class="formula">IG = Entropy(parent) − Weighted Entropy(children)</div>
+
+    <h3>Relationship Between ID3 and Entropy</h3>
+    <p>
+        The relationship between <b>ID3</b> and <b>entropy</b> is that 
+        <b>entropy is the core mathematical measure used by ID3 to decide how to split the data at each step</b>.
+    </p>
+    <p>Let’s break it down:</p>
+    <ol>
+        <li><b>Step 1:</b> ID3 calculates the entropy of the current dataset.</li>
+        <li><b>Step 2:</b> For each attribute, ID3 calculates the <b>Information Gain</b>.</li>
+        <li><b>Step 3:</b> ID3 picks the attribute with the <b>highest Information Gain</b>.</li>
+        <li><b>Step 4:</b> This process repeats for each branch until stopping conditions are met.</li>
+    </ol>
+
+    <h3>Worked Example: PlayTennis Dataset</h3>
+<pre>
+Step 1 — Entropy of the Whole Dataset
+Yes = 9, No = 5  
+Entropy(S) ≈ 0.940  
+
+Step 2 — Information Gain for Each Feature
+Outlook: IG = 0.247  
+Temperature: IG = 0.029  
+Humidity: IG = 0.151  
+Wind: IG = 0.048  
+
+Step 3 — Choose Root
+Root Node = Outlook (highest IG)
+
+Step 4 — Step 5: Repeat for Each Branch
+Sunny → Humidity (pure split)  
+Overcast → Yes (leaf)  
+Rain → Wind (pure split)
+</pre>
+
+    <div class="interactive-box">
+        <h3>Interactive Entropy Calculator</h3>
+        <label>Yes count: <input type="number" id="yesCount" value="9"></label>
+        <label>No count: <input type="number" id="noCount" value="5"></label>
+        <button onclick="calcEntropy()">Calculate Entropy</button>
+        <p id="entropyResult"></p>
+    </div>
+
+    <div class="interactive-box">
+        <h3>PlayTennis ID3 Simulation</h3>
+        <p id="simStepText">Click "Next Step" to start the ID3 process.</p>
+        <table>
+            <thead>
+                <tr><th>Day</th><th>Outlook</th><th>Temperature</th><th>Humidity</th><th>Wind</th><th>PlayTennis?</th></tr>
+            </thead>
+            <tbody id="simBody"></tbody>
+        </table>
+        <button id="simBtn" onclick="nextSimStep()">Next Step</button>
+    </div>
+</section>
+
+<section id="step5">
+    <h2>Step 5 — Repeat for Each Branch</h2>
+    <svg height="400">
+        <rect x="300" y="20" width="300" height="50" fill="#d6eaf8" stroke="#2980b9"/>
+        <text x="450" y="50" font-size="14" text-anchor="middle">Take subset for branch</text>
+        <line x1="450" y1="70" x2="450" y2="100" stroke="black"/>
+        <rect x="250" y="100" width="400" height="50" fill="#fcf3cf" stroke="#b7950b"/>
+        <text x="450" y="130" font-size="14" text-anchor="middle">Calculate subset entropy</text>
+        <line x1="450" y1="150" x2="450" y2="180" stroke="black"/>
+        <rect x="200" y="180" width="500" height="50" fill="#d5f5e3" stroke="#1e8449"/>
+        <text x="450" y="210" font-size="14" text-anchor="middle">Compute IG / Gain Ratio / Gini</text>
+        <line x1="450" y1="230" x2="450" y2="260" stroke="black"/>
+        <rect x="260" y="260" width="380" height="50" fill="#fadbd8" stroke="#c0392b"/>
+        <text x="450" y="290" font-size="14" text-anchor="middle">Choose best split → new branches</text>
+        <line x1="450" y1="310" x2="450" y2="340" stroke="black"/>
+        <rect x="280" y="340" width="340" height="50" fill="#e8daef" stroke="#6c3483"/>
+        <text x="450" y="370" font-size="14" text-anchor="middle">Repeat until pure or stopping</text>
+    </svg>
+</section>
+
+<section id="algos">
+    <h2>Decision Tree Algorithms — Correct Hierarchy</h2>
+    <div class="wrap-algo">
+        <svg viewBox="0 0 1600 560">
+            <!-- connectors -->
+            <path class="link" d="M800,120 L670,180" />
+            <path class="link" d="M800,120 L1350,180" />
+            <path class="link" d="M670,240 L350,320" />
+            <path class="link" d="M670,240 L650,320" />
+            <path class="link" d="M670,240 L1010,320" />
+            <!-- nodes -->
+            <rect class="node" x="620" y="60" width="360" height="60" fill="#cfe8ff" stroke="#60a5fa"/>
+            <text class="title" x="800" y="98" text-anchor="middle" font-size="22">Decision Tree Algorithms</text>
+            <rect class="node" x="520" y="180" width="300" height="60" fill="#dcfce7" stroke="#86efac"/>
+            <text x="670" y="210" text-anchor="middle" font-size="20">Quinlan Family</text>
+            <text class="small" x="670" y="230" text-anchor="middle">ID3 → C4.5 → C5.0</text>
+            <rect class="node" x="1200" y="180" width="300" height="60" fill="#f5e9fe" stroke="#c084fc"/>
+            <text x="1350" y="210" text-anchor="middle" font-size="20">CART</text>
+            <text class="small" x="1350" y="230" text-anchor="middle">Gini / MSE</text>
+            <rect class="node" x="220" y="320" width="260" height="60" fill="#fff7d6" stroke="#facc15"/>
+            <text x="350" y="350" text-anchor="middle" font-size="18">ID3</text>
+            <text class="small" x="350" y="370" text-anchor="middle">Entropy + IG</text>
+            <rect class="node" x="520" y="320" width="260" height="60" fill="#d9f7f4" stroke="#5eead4"/>
+            <text x="650" y="350" text-anchor="middle" font-size="18">C4.5</text>
+            <text class="small" x="650" y="370" text-anchor="middle">Gain Ratio, pruning</text>
+            <rect class="node" x="880" y="320" width="260" height="60" fill="#ffe2e2" stroke="#fda4af"/>
+            <text x="1010" y="355" text-anchor="middle" font-size="18">C5.0</text>
+            <path class="link" d="M1140,350 L1185,350" />
+            <text x="1195" y="340" class="bullet">Commercial successor</text>
+            <text x="1195" y="358" class="bullet">Faster, lower memory</text>
+            <text x="1195" y="376" class="bullet">Boosting / winnowing</text>
+        </svg>
+    </div>
+</section>
+
+<section id="randomforest">
+    <h2>Random Forest Structure</h2>
+    <svg height="400">
+        <rect x="400" y="20" width="200" height="40" fill="#d6eaf8" stroke="#2980b9"/>
+        <text x="500" y="45" font-size="14" text-anchor="middle">Random Forest</text>
+        <line x1="500" y1="60" x2="300" y2="100" stroke="black"/>
+        <rect x="200" y="100" width="200" height="40" fill="#d5f5e3" stroke="#1e8449"/>
+        <text x="300" y="125" font-size="14" text-anchor="middle">Tree 1 (CART)</text>
+        <line x1="500" y1="60" x2="500" y2="100" stroke="black"/>
+        <rect x="400" y="100" width="200" height="40" fill="#d5f5e3" stroke="#1e8449"/>
+        <text x="500" y="125" font-size="14" text-anchor="middle">Tree 2 (CART)</text>
+        <line x1="500" y1="60" x2="700" y2="100" stroke="black"/>
+        <rect x="600" y="100" width="200" height="40" fill="#d5f5e3" stroke="#1e8449"/>
+        <text x="700" y="125" font-size="14" text-anchor="middle">Tree 3 (CART)</text>
+        <line x1="500" y1="140" x2="500" y2="180" stroke="black"/>
+        <rect x="400" y="180" width="200" height="40" fill="#fadbd8" stroke="#c0392b"/>
+        <text x="500" y="205" font-size="14" text-anchor="middle">Voting / Averaging</text>
+    </svg>
+</section>
+
+<script>
+function showTab(id) {
+    document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+}
+function calcEntropy() {
+    const yes = parseFloat(document.getElementById('yesCount').value);
+    const no = parseFloat(document.getElementById('noCount').value);
+    const total = yes + no;
+    if (total === 0) {
+        document.getElementById('entropyResult').innerText = "No data.";
+        return;
+    }
+    const pYes = yes / total;
+    const pNo = no / total;
+    const entropy = -(pYes ? pYes * Math.log2(pYes) : 0) - (pNo ? pNo * Math.log2(pNo) : 0);
+    document.getElementById('entropyResult').innerText = `Entropy = ${entropy.toFixed(3)}`;
+}
+const playTennisData = [
+    ["1","Sunny","Hot","High","Light","No"],["2","Sunny","Hot","High","Strong","No"],
+    ["3","Overcast","Hot","High","Light","Yes"],["4","Rain","Mild","High","Light","Yes"],
+    ["5","Rain","Cool","Normal","Light","Yes"],["6","Rain","Cool","Normal","Strong","No"],
+    ["7","Overcast","Cool","Normal","Strong","Yes"],["8","Sunny","Mild","High","Light","No"],
+    ["9","Sunny","Cool","Normal","Light","Yes"],["10","Rain","Mild","Normal","Light","Yes"],
+    ["11","Sunny","Mild","Normal","Strong","Yes"],["12","Overcast","Mild","High","Strong","Yes"],
+    ["13","Overcast","Hot","Normal","Light","Yes"],["14","Rain","Mild","High","Strong","No"]
+];
+let simStep = 0;
+const simSteps = [
+    "Step 1: Calculate overall entropy (Yes=9, No=5) → Entropy ≈ 0.940",
+    "Step 2: Calculate IG for Outlook, Temperature, Humidity, Wind",
+    "Step 3: Outlook highest IG (0.247) → Root = Outlook",
+    "Step 4: Sunny branch → Humidity pure split",
+    "Step 5: Overcast branch → Leaf = Yes",
+    "Step 6: Rain branch → Wind pure split",
+    "Step 7: Tree complete!"
+];
+function loadTable() {
+    let body = document.getElementById("simBody");
+    body.innerHTML = "";
+    playTennisData.forEach(row => {
+        let tr = document.createElement("tr");
+        row.forEach(cell => {
+            let td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+        });
+        body.appendChild(tr);
+    });
+}
+function nextSimStep() {
+    const btn = document.getElementById("simBtn");
+    if (btn.innerText === "Restart") {
+        simStep = 0;
+        btn.innerText = "Next Step";
+        document.getElementById("simStepText").innerText = "Click \"Next Step\" to start the ID3 process.";
+        return;
+    }
+    if (simStep < simSteps.length) {
+        document.getElementById("simStepText").innerText = simSteps[simStep];
+        simStep++;
+        if (simStep === simSteps.length) {
+            btn.innerText = "Restart";
+        }
+    }
+}
+loadTable();
+</script>
+
+</body>
+</html>

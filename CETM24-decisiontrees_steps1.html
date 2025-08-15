@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Decision Tree Process</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .step {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .step-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .step-number {
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .formula {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            margin: 10px 0;
+            border: 1px solid #bee5eb;
+        }
+        .calculation {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: monospace;
+            border: 1px solid #ffeaa7;
+        }
+        .result {
+            background: #d4edda;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            font-weight: bold;
+            border: 1px solid #c3e6cb;
+        }
+        .tree-node {
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            display: inline-block;
+            min-width: 150px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .tree-node.pure {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+        .tree-node.impure {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .attribute-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .ig-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        .ig-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .ig-card.best {
+            border-color: #f39c12;
+            background: #fef9e7;
+            transform: scale(1.02);
+        }
+        .ig-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .split-details {
+            font-size: 0.9em;
+            margin-top: 8px;
+            color: #7f8c8d;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .data-table th {
+            background: #3498db;
+            color: white;
+        }
+        .data-table tr.yes {
+            background: #d5f4e6;
+        }
+        .data-table tr.no {
+            background: #fdf2f2;
+        }
+        .interactive-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .interactive-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎾 Tennis Decision Tree - Complete Process</h1>
+        
+        <!-- Dataset Overview -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">📊</div>
+                Dataset Overview
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Day</th><th>Outlook</th><th>Temperature</th><th>Humidity</th><th>Wind</th><th>Play Tennis?</th></tr>
+                </thead>
+                <tbody id="dataset-table"></tbody>
+            </table>
+            <div class="result">
+                Total: 14 samples | Yes: 9 (64.3%) | No: 5 (35.7%)
+            </div>
+        </div>
+
+        <!-- Step 1: Root Entropy -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">1</div>
+                Calculate Root Node Entropy
+            </div>
+            <div class="formula">
+                Entropy(S) = -Σ p(ci) × log₂(p(ci))
+            </div>
+            <div class="calculation">
+                Root Entropy = -(9/14) × log₂(9/14) - (5/14) × log₂(5/14)<br>
+                Root Entropy = -(0.643 × -0.637) - (0.357 × -1.487)<br>
+                Root Entropy = 0.410 + 0.531 = <strong>0.940</strong>
+            </div>
+        </div>
+
+        <!-- Step 2: Information Gain Calculations -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">2</div>
+                Calculate Information Gain for Each Attribute
+            </div>
+            <div class="formula">
+                Information Gain(S, A) = Entropy(S) - Σ (|Sv|/|S|) × Entropy(Sv)
+            </div>
+            <div class="attribute-comparison" id="ig-comparison"></div>
+            <button class="interactive-button" onclick="showDetailedCalculations()">Show Detailed Calculations</button>
+            <div id="detailed-calculations" class="hidden"></div>
+        </div>
+
+        <!-- Step 3: Best Split Selection -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">3</div>
+                Select Best Attribute and Create First Split
+            </div>
+            <div class="result">
+                Winner: <strong>OUTLOOK</strong> with Information Gain = 0.247
+            </div>
+            <div class="tree-container">
+                <div class="tree-node">
+                    Outlook<br>
+                    <small>14 samples<br>Entropy: 0.940</small>
+                </div>
+                <div class="tree-level">
+                    <div class="tree-node impure">
+                        Sunny<br>
+                        <small>5 samples<br>Yes: 2, No: 3<br>Entropy: 0.971</small>
+                    </div>
+                    <div class="tree-node pure">
+                        Overcast<br>
+                        <small>4 samples<br>Yes: 4, No: 0<br>Entropy: 0.000<br><strong>→ Yes</strong></small>
+                    </div>
+                    <div class="tree-node impure">
+                        Rain<br>
+                        <small>5 samples<br>Yes: 3, No: 2<br>Entropy: 0.971</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Recursive Splitting -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">4</div>
+                Continue Splitting Non-Pure Branches
+            </div>
+            <button class="interactive-button" onclick="showSunnyBranch()">Analyze Sunny Branch</button>
+            <button class="interactive-button" onclick="showRainBranch()">Analyze Rain Branch</button>
+            
+            <div id="sunny-analysis" class="hidden"></div>
+            <div id="rain-analysis" class="hidden"></div>
+        </div>
+
+        <!-- Final Tree -->
+        <div class="step">
+            <div class="step-title">
+                <div class="step-number">5</div>
+                Final Decision Tree
+            </div>
+            <div class="tree-container" id="final-tree"></div>
+            <button class="interactive-button" onclick="showFinalTree()">Show Complete Tree</button>
+        </div>
+    </div>
+
+    <script>
+        const tennisData = [
+            {day: 1, outlook: 'Sunny', temperature: 'Hot', humidity: 'High', wind: 'Light', playTennis: 'No'},
+            {day: 2, outlook: 'Sunny', temperature: 'Hot', humidity: 'High', wind: 'Strong', playTennis: 'No'},
+            {day: 3, outlook: 'Overcast', temperature: 'Hot', humidity: 'High', wind: 'Light', playTennis: 'Yes'},
+            {day: 4, outlook: 'Rain', temperature: 'Mild', humidity: 'High', wind: 'Light', playTennis: 'Yes'},
+            {day: 5, outlook: 'Rain', temperature: 'Cool', humidity: 'Normal', wind: 'Light', playTennis: 'Yes'},
+            {day: 6, outlook: 'Rain', temperature: 'Cool', humidity: 'Normal', wind: 'Strong', playTennis: 'No'},
+            {day: 7, outlook: 'Overcast', temperature: 'Cool', humidity: 'Normal', wind: 'Strong', playTennis: 'Yes'},
+            {day: 8, outlook: 'Sunny', temperature: 'Mild', humidity: 'High', wind: 'Light', playTennis: 'No'},
+            {day: 9, outlook: 'Sunny', temperature: 'Cool', humidity: 'Normal', wind: 'Light', playTennis: 'Yes'},
+            {day: 10, outlook: 'Rain', temperature: 'Mild', humidity: 'Normal', wind: 'Light', playTennis: 'Yes'},
+            {day: 11, outlook: 'Sunny', temperature: 'Mild', humidity: 'Normal', wind: 'Strong', playTennis: 'Yes'},
+            {day: 12, outlook: 'Overcast', temperature: 'Mild', humidity: 'High', wind: 'Strong', playTennis: 'Yes'},
+            {day: 13, outlook: 'Overcast', temperature: 'Hot', humidity: 'Normal', wind: 'Light', playTennis: 'Yes'},
+            {day: 14, outlook: 'Rain', temperature: 'Mild', humidity: 'High', wind: 'Strong', playTennis: 'No'}
+        ];
+
+        function calculateEntropy(data) {
+            const total = data.length;
+            const yes = data.filter(d => d.playTennis === 'Yes').length;
+            const no = data.filter(d => d.playTennis === 'No').length;
+            
+            if (yes === 0 || no === 0) return 0;
+            
+            const pYes = yes / total;
+            const pNo = no / total;
+            
+            return -(pYes * Math.log2(pYes) + pNo * Math.log2(pNo));
+        }
+
+        function calculateInformationGain(data, attribute) {
+            const totalEntropy = calculateEntropy(data);
+            const groups = {};
+            
+            data.forEach(row => {
+                const value = row[attribute];
+                if (!groups[value]) groups[value] = [];
+                groups[value].push(row);
+            });
+            
+            let weightedEntropy = 0;
+            const details = {};
+            
+            for (const value in groups) {
+                const subset = groups[value];
+                const entropy = calculateEntropy(subset);
+                const weight = subset.length / data.length;
+                weightedEntropy += weight * entropy;
+                
+                const yes = subset.filter(d => d.playTennis === 'Yes').length;
+                const no = subset.filter(d => d.playTennis === 'No').length;
+                
+                details[value] = {
+                    count: subset.length,
+                    yes: yes,
+                    no: no,
+                    entropy: entropy,
+                    weight: weight,
+                    data: subset
+                };
+            }
+            
+            return {
+                attribute: attribute,
+                informationGain: totalEntropy - weightedEntropy,
+                weightedEntropy: weightedEntropy,
+                details: details
+            };
+        }
+
+        function populateDatasetTable() {
+            const tbody = document.getElementById('dataset-table');
+            tennisData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = row.playTennis.toLowerCase();
+                tr.innerHTML = `
+                    <td>${row.day}</td>
+                    <td>${row.outlook}</td>
+                    <td>${row.temperature}</td>
+                    <td>${row.humidity}</td>
+                    <td>${row.wind}</td>
+                    <td><strong>${row.playTennis}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateIGComparison() {
+            const attributes = ['outlook', 'temperature', 'humidity', 'wind'];
+            const igs = attributes.map(attr => calculateInformationGain(tennisData, attr));
+            const container = document.getElementById('ig-comparison');
+            
+            igs.sort((a, b) => b.informationGain - a.informationGain);
+            
+            igs.forEach((ig, index) => {
+                const card = document.createElement('div');
+                card.className = `ig-card ${index === 0 ? 'best' : ''}`;
+                card.innerHTML = `
+                    <h3>${ig.attribute.toUpperCase()}</h3>
+                    <div class="ig-value">${ig.informationGain.toFixed(4)}</div>
+                    <div class="split-details">
+                        Weighted Entropy: ${ig.weightedEntropy.toFixed(4)}<br>
+                        ${index === 0 ? '<strong>🏆 BEST SPLIT</strong>' : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function showDetailedCalculations() {
+            const container = document.getElementById('detailed-calculations');
+            const outlook = calculateInformationGain(tennisData, 'outlook');
+            
+            container.innerHTML = `
+                <h4>Detailed Calculation for OUTLOOK (Best Attribute):</h4>
+                <div class="calculation">
+                    <strong>Sunny:</strong> 5 samples (Yes: 2, No: 3)<br>
+                    Entropy = -(2/5)×log₂(2/5) - (3/5)×log₂(3/5) = 0.971<br><br>
+                    
+                    <strong>Overcast:</strong> 4 samples (Yes: 4, No: 0)<br>
+                    Entropy = -(4/4)×log₂(4/4) = 0.000<br><br>
+                    
+                    <strong>Rain:</strong> 5 samples (Yes: 3, No: 2)<br>
+                    Entropy = -(3/5)×log₂(3/5) - (2/5)×log₂(2/5) = 0.971<br><br>
+                    
+                    <strong>Weighted Entropy:</strong><br>
+                    (5/14)×0.971 + (4/14)×0.000 + (5/14)×0.971 = 0.694<br><br>
+                    
+                    <strong>Information Gain:</strong><br>
+                    0.940 - 0.694 = <strong>0.247</strong>
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+
+        function showSunnyBranch() {
+            const sunnyData = tennisData.filter(d => d.outlook === 'Sunny');
+            const attributes = ['temperature', 'humidity', 'wind'];
+            const igs = attributes.map(attr => calculateInformationGain(sunnyData, attr));
+            const best = igs.reduce((max, current) => current.informationGain > max.informationGain ? current : max);
+            
+            const container = document.getElementById('sunny-analysis');
+            container.innerHTML = `
+                <h4>Sunny Branch Analysis (5 samples: 2 Yes, 3 No)</h4>
+                <div class="attribute-comparison">
+                    ${igs.map(ig => `
+                        <div class="ig-card ${ig.attribute === best.attribute ? 'best' : ''}">
+                            <h5>${ig.attribute.toUpperCase()}</h5>
+                            <div class="ig-value">${ig.informationGain.toFixed(4)}</div>
+                            ${ig.attribute === best.attribute ? '<div><strong>🏆 WINNER</strong></div>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="result">
+                    Best split: <strong>HUMIDITY</strong> (IG = ${best.informationGain.toFixed(4)})
+                </div>
+                <div class="tree-level">
+                    ${Object.keys(best.details).map(value => {
+                        const detail = best.details[value];
+                        const isPure = detail.entropy === 0;
+                        return `
+                            <div class="tree-node ${isPure ? 'pure' : 'impure'}">
+                                Humidity: ${value}<br>
+                                <small>${detail.count} samples<br>Yes: ${detail.yes}, No: ${detail.no}<br>
+                                ${isPure ? `<strong>→ ${detail.yes > 0 ? 'Yes' : 'No'}</strong>` : 'Continue splitting'}</small>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+
+        function showRainBranch() {
+            const rainData = tennisData.filter(d => d.outlook === 'Rain');
+            const attributes = ['temperature', 'humidity', 'wind'];
+            const igs = attributes.map(attr => calculateInformationGain(rainData, attr));
+            const best = igs.reduce((max, current) => current.informationGain > max.informationGain ? current : max);
+            
+            const container = document.getElementById('rain-analysis');
+            container.innerHTML = `
+                <h4>Rain Branch Analysis (5 samples: 3 Yes, 2 No)</h4>
+                <div class="attribute-comparison">
+                    ${igs.map(ig => `
+                        <div class="ig-card ${ig.attribute === best.attribute ? 'best' : ''}">
+                            <h5>${ig.attribute.toUpperCase()}</h5>
+                            <div class="ig-value">${ig.informationGain.toFixed(4)}</div>
+                            ${ig.attribute === best.attribute ? '<div><strong>🏆 WINNER</strong></div>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="result">
+                    Best split: <strong>WIND</strong> (IG = ${best.informationGain.toFixed(4)})
+                </div>
+                <div class="tree-level">
+                    ${Object.keys(best.details).map(value => {
+                        const detail = best.details[value];
+                        const isPure = detail.entropy === 0;
+                        return `
+                            <div class="tree-node ${isPure ? 'pure' : 'impure'}">
+                                Wind: ${value}<br>
+                                <small>${detail.count} samples<br>Yes: ${detail.yes}, No: ${detail.no}<br>
+                                ${isPure ? `<strong>→ ${detail.yes > 0 ? 'Yes' : 'No'}</strong>` : 'Continue splitting'}</small>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+
+        function showFinalTree() {
+            const container = document.getElementById('final-tree');
+            container.innerHTML = `
+                <div style="text-align: center; font-family: monospace; font-size: 14px; line-height: 2;">
+                    <div style="border: 2px solid #3498db; padding: 10px; border-radius: 5px; display: inline-block; margin: 10px; background: #ecf0f1;">
+                        <strong>Outlook</strong><br>
+                        (14 samples)
+                    </div>
+                    <br>
+                    ├─── Sunny ────┬─── Humidity ═ High → <span style="color: #e74c3c; font-weight: bold;">No</span> (3 samples)<br>
+                    │              └─── Humidity ═ Normal → <span style="color: #27ae60; font-weight: bold;">Yes</span> (2 samples)<br>
+                    │<br>
+                    ├─── Overcast → <span style="color: #27ae60; font-weight: bold;">Yes</span> (4 samples)<br>
+                    │<br>
+                    └─── Rain ─────┬─── Wind ═ Light → <span style="color: #27ae60; font-weight: bold;">Yes</span> (3 samples)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─── Wind ═ Strong → <span style="color: #e74c3c; font-weight: bold;">No</span> (2 samples)
+                </div>
+                <div class="result" style="margin-top: 20px;">
+                    <strong>Decision Rules:</strong><br>
+                    1. If Outlook = Overcast → Play Tennis<br>
+                    2. If Outlook = Sunny AND Humidity = High → Don't Play<br>
+                    3. If Outlook = Sunny AND Humidity = Normal → Play Tennis<br>
+                    4. If Outlook = Rain AND Wind = Light → Play Tennis<br>
+                    5. If Outlook = Rain AND Wind = Strong → Don't Play
+                </div>
+            `;
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            populateDatasetTable();
+            populateIGComparison();
+        });
+    </script>
+</body>
+</html>
