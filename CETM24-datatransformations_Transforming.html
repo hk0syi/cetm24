@@ -11,12 +11,16 @@
         margin: 0;
         padding: 20px;
     }
+    h2 {
+        text-align: center;
+        color: #222;
+    }
     .flowchart {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 20px;
-        max-width: 800px;
+        max-width: 900px;
         margin: auto;
     }
     .node {
@@ -26,8 +30,10 @@
         border: 2px solid #333;
         text-align: center;
         width: 90%;
-        max-width: 350px;
+        max-width: 380px;
         box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+        font-size: 1rem;
+        line-height: 1.4;
     }
     .decision {
         background: #fff3cd;
@@ -36,6 +42,14 @@
     .action {
         background: #cce5ff;
         border-color: #3399ff;
+    }
+    .highlight {
+        font-weight: bold;
+        color: #d63384;
+    }
+    .stat-term {
+        font-weight: bold;
+        color: #007bff;
     }
     .arrow {
         font-size: 24px;
@@ -64,36 +78,36 @@
 </head>
 <body>
 
-<h2 style="text-align:center;">Handling Non-Normal Data – Two Approaches</h2>
+<h2>Handling <span class="highlight">Non-Normal Data</span> – Two Approaches</h2>
 
 <div class="flowchart">
 
-    <div class="node action">📊 Data not normally distributed</div>
+    <div class="node action">📊 Data <span class="highlight">not normally distributed</span></div>
     <div class="arrow">⬇️</div>
 
-    <div class="node decision">❓ Decide on analysis goal</div>
+    <div class="node decision">❓ Decide on <span class="highlight">analysis goal</span></div>
     <div class="arrow">⬇️</div>
 
-    <div class="node decision">Is the goal to use mean, SD, and reliable CIs?</div>
+    <div class="node decision">Is the goal to use <span class="stat-term">mean</span>, <span class="stat-term">SD</span>, and reliable <span class="stat-term">CIs</span>?</div>
     <div class="arrow">⬇️</div>
 
     <div class="branches">
         <!-- YES branch -->
         <div class="split">
-            <div class="node action">✅ YES: Transform data to approximate normality<br>(Log, Sqrt, Reciprocal)</div>
+            <div class="node action">✅ <span class="highlight">YES</span>: Transform data to approximate <span class="highlight">normality</span><br>(<span class="stat-term">Log</span>, <span class="stat-term">Sqrt</span>, <span class="stat-term">Reciprocal</span>)</div>
             <div class="arrow">⬇️</div>
-            <div class="node action">🔍 Recheck normality</div>
+            <div class="node action">🔍 Recheck <span class="highlight">normality</span></div>
             <div class="arrow">⬇️</div>
-            <div class="node action">📈 If normal → Use parametric tests<br>(t-test, ANOVA, regression)</div>
+            <div class="node action">📈 If <span class="highlight">normal</span> → Use <span class="stat-term">parametric tests</span><br>(<span class="stat-term">t-test</span>, <span class="stat-term">ANOVA</span>, <span class="stat-term">regression</span>)</div>
             <div class="arrow">⬇️</div>
-            <div class="node action">🔄 Back-transform results for interpretation</div>
+            <div class="node action">🔄 <span class="highlight">Back-transform</span> results for interpretation</div>
         </div>
 
         <!-- NO branch -->
         <div class="split">
-            <div class="node action">❌ NO: Use non-parametric tests<br>(Mann–Whitney, Wilcoxon, Kruskal–Wallis)</div>
+            <div class="node action">❌ <span class="highlight">NO</span>: Use <span class="stat-term">non-parametric tests</span><br>(<span class="stat-term">Mann–Whitney</span>, <span class="stat-term">Wilcoxon</span>, <span class="stat-term">Kruskal–Wallis</span>)</div>
             <div class="arrow">⬇️</div>
-            <div class="node action">⚠️ Works without normality<br>but CIs for mean may be less reliable</div>
+            <div class="node action">⚠️ Works without <span class="highlight">normality</span><br>but <span class="stat-term">CIs</span> for <span class="stat-term">mean</span> may be less reliable</div>
         </div>
     </div>
 
