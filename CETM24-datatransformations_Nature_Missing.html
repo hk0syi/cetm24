@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nature of Missing Values - Income Reporting</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f8f9fa;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .tree {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    .node {
+        background: white;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px;
+        max-width: 300px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        line-height: 1.4em;
+    }
+    .node h2 {
+        margin-top: 0;
+        font-size: 1.2em;
+    }
+    .mcar { border-color: #28a745; }
+    .mar { border-color: #ffc107; }
+    .mnar { border-color: #dc3545; }
+    strong.key {
+        color: #000;
+        background: #fff3cd;
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+    @media (max-width: 600px) {
+        .node {
+            max-width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>Nature of Missing Values (Income Reporting)</h1>
+
+<div class="tree">
+    <div class="node mcar">
+        <h2>MCAR → No reporting pattern</h2>
+        <p><strong class="key">Meaning:</strong> Missingness happens <strong>completely by chance</strong>.</p>
+        <p><strong class="key">Income Example:</strong> <strong>Random loss</strong> of survey forms causes some incomes to be missing.</p>
+        <p><strong class="key">Impact:</strong> <strong>No bias</strong>, only fewer data points.</p>
+    </div>
+    <div class="node mar">
+        <h2>MAR → Reporting pattern explained by other known data</h2>
+        <p><strong class="key">Meaning:</strong> Missingness depends on an <strong>observed variable</strong>, not the missing value itself.</p>
+        <p><strong class="key">Income Example:</strong> People with <strong>lower education</strong> are less likely to report income, but within each education group, missingness is unrelated to income.</p>
+        <p><strong class="key">Impact:</strong> <strong>Bias can be reduced</strong> by adjusting for the observed variable.</p>
+    </div>
+    <div class="node mnar">
+        <h2>MNAR → Reporting pattern tied to the missing value itself</h2>
+        <p><strong class="key">Meaning:</strong> Missingness depends <strong>directly on the value</strong> that is missing.</p>
+        <p><strong class="key">Income Example:</strong> <strong>High-income earners</strong> are less likely to report income to avoid taxes.</p>
+        <p><strong class="key">Impact:</strong> <strong>Causes bias</strong> unless the missingness mechanism is modeled.</p>
+    </div>
+</div>
+
+</body>
+</html>

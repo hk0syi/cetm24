@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handling Non-Normal Data Flowchart</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+    }
+    .flowchart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        max-width: 800px;
+        margin: auto;
+    }
+    .node {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        border: 2px solid #333;
+        text-align: center;
+        width: 90%;
+        max-width: 350px;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }
+    .decision {
+        background: #fff3cd;
+        border-color: #ffcc00;
+    }
+    .action {
+        background: #cce5ff;
+        border-color: #3399ff;
+    }
+    .arrow {
+        font-size: 24px;
+        color: #555;
+    }
+    .split {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    .branches {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+    }
+    @media (max-width: 600px) {
+        .branches {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Handling Non-Normal Data – Two Approaches</h2>
+
+<div class="flowchart">
+
+    <div class="node action">📊 Data not normally distributed</div>
+    <div class="arrow">⬇️</div>
+
+    <div class="node decision">❓ Decide on analysis goal</div>
+    <div class="arrow">⬇️</div>
+
+    <div class="node decision">Is the goal to use mean, SD, and reliable CIs?</div>
+    <div class="arrow">⬇️</div>
+
+    <div class="branches">
+        <!-- YES branch -->
+        <div class="split">
+            <div class="node action">✅ YES: Transform data to approximate normality<br>(Log, Sqrt, Reciprocal)</div>
+            <div class="arrow">⬇️</div>
+            <div class="node action">🔍 Recheck normality</div>
+            <div class="arrow">⬇️</div>
+            <div class="node action">📈 If normal → Use parametric tests<br>(t-test, ANOVA, regression)</div>
+            <div class="arrow">⬇️</div>
+            <div class="node action">🔄 Back-transform results for interpretation</div>
+        </div>
+
+        <!-- NO branch -->
+        <div class="split">
+            <div class="node action">❌ NO: Use non-parametric tests<br>(Mann–Whitney, Wilcoxon, Kruskal–Wallis)</div>
+            <div class="arrow">⬇️</div>
+            <div class="node action">⚠️ Works without normality<br>but CIs for mean may be less reliable</div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCA Decoupled Demo</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 1rem;
+    background: #f9f9f9;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  canvas {
+    background: white;
+    border: 1px solid #ccc;
+  }
+  .chart-container {
+    max-width: 500px;
+    margin: auto;
+  }
+  label {
+    display: block;
+    margin-top: 1rem;
+  }
+  .slider-container {
+    max-width: 500px;
+    margin: auto;
+  }
+  input[type="range"] {
+    width: 100%;
+  }
+  .stats {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+  .highlight {
+    color: red;
+    font-weight: bold;
+  }
+  button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>PCA Rotation vs PCA Result</h2>
+<p>
+  Top: Rotate the original data manually and watch covariance change.  
+  Bottom: See the fixed PCA rotation result for comparison.
+</p>
+
+<button id="newDataBtn">Generate New Data</button>
+
+<!-- Top: Manual Rotation -->
+<h3>Manual Rotation (Original Data)</h3>
+<canvas id="rotationCanvas" width="500" height="500"></canvas>
+<div class="slider-container">
+  <label>
+    <strong>Rotation:</strong> 
+    <span id="angleLabel">0°</span> / <span class="highlight" id="pcaAngleLabel">?</span>° (PCA)
+  </label>
+  <input type="range" id="rotationSlider" min="0" max="90" value="0" step="0.1">
+</div>
+<div class="stats">Covariance: <span id="covLabel">?</span></div>
+
+<hr>
+
+<!-- Bottom: PCA Workflow -->
+<div class="container">
+  <div>
+    <h3>Original Data (Centered)</h3>
+    <canvas id="originalCanvas" width="300" height="300"></canvas>
+  </div>
+  <div>
+    <h3>After PCA Rotation</h3>
+    <canvas id="pcaCanvas" width="300" height="300"></canvas>
+  </div>
+</div>
+
+<div class="chart-container">
+  <h3>Variance Explained</h3>
+  <canvas id="varianceChart" width="400" height="200"></canvas>
+</div>
+
+<label for="componentsSelect">
+  Choose number of components to keep:
+</label>
+<select id="componentsSelect">
+  <option value="1">1 Component</option>
+  <option value="2" selected>2 Components</option>
+</select>
+
+<h3>Reduced Data (Projected)</h3>
+<canvas id="reducedCanvas" width="300" height="300"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let pointsOriginal = [];
+let pcaAngle = 0;
+
+// PCA workflow data
+let centered = [];
+let projected = [];
+let values = [];
+
+// --- PCA helper functions ---
+function generateRandomData() {
+  let arr = [];
+  for (let i = 0; i < 150; i++) {
+    let x = (Math.random() - 0.5) * 200;
+    let y = 0.7 * x + (Math.random() - 0.5) * 80;
+    arr.push([x, y]);
+  }
+  return arr;
+}
+
+function mean(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function centerData(data) {
+  const meanX = mean(data.map(d => d[0]));
+  const meanY = mean(data.map(d => d[1]));
+  return data.map(([x, y]) => [x - meanX, y - meanY]);
+}
+
+function covarianceMatrix(data) {
+  const n = data.length;
+  const meanX = mean(data.map(d => d[0]));
+  const meanY = mean(data.map(d => d[1]));
+  let covXX = 0, covYY = 0, covXY = 0;
+  data.forEach(([x, y]) => {
+    covXX += (x - meanX) * (x - meanX);
+    covYY += (y - meanY) * (y - meanY);
+    covXY += (x - meanX) * (y - meanY);
+  });
+  covXX /= n;
+  covYY /= n;
+  covXY /= n;
+  return [[covXX, covXY], [covXY, covYY]];
+}
+
+function pcaRotationAngle(cov) {
+  const a = cov[0][0];
+  const b = cov[0][1];
+  const d = cov[1][1];
+  return 0.5 * Math.atan2(2 * b, a - d);
+}
+
+function covarianceAfterRotation(data, angle) {
+  const rotated = data.map(([x, y]) => {
+    let Xp = x * Math.cos(angle) - y * Math.sin(angle);
+    let Yp = x * Math.sin(angle) + y * Math.cos(angle);
+    return [Xp, Yp];
+  });
+  const cov = covarianceMatrix(rotated);
+  return cov[0][1];
+}
+
+function eigenDecomposition2x2(m) {
+  const a = m[0][0], b = m[0][1], c = m[1][0], d = m[1][1];
+  const trace = a + d;
+  const det = a * d - b * c;
+  const term = Math.sqrt(trace * trace - 4 * det);
+  const eig1 = (trace + term) / 2;
+  const eig2 = (trace - term) / 2;
+  const v1 = [b, eig1 - a];
+  const v2 = [b, eig2 - a];
+  function normalize(v) {
+    const len = Math.hypot(v[0], v[1]);
+    return [v[0] / len, v[1] / len];
+  }
+  return { values: [eig1, eig2], vectors: [normalize(v1), normalize(v2)] };
+}
+
+function pcaTransform(data) {
+  const centeredData = centerData(data);
+  const cov = covarianceMatrix(centeredData);
+  const { values, vectors } = eigenDecomposition2x2(cov);
+  const projected = centeredData.map(d => [
+    d[0] * vectors[0][0] + d[1] * vectors[0][1],
+    d[0] * vectors[1][0] + d[1] * vectors[1][1]
+  ]);
+  return { projected, values, centered: centeredData };
+}
+
+// --- Drawing functions ---
+function drawRotationScene(angleDeg) {
+  const ctx = document.getElementById("rotationCanvas").getContext("2d");
+  const angle = angleDeg * Math.PI / 180;
+  ctx.clearRect(0, 0, 500, 500);
+
+  ctx.fillStyle = "rgba(0, 100, 255, 0.6)";
+  pointsOriginal.forEach(([x, y]) => {
+    let rotatedX = x * Math.cos(angle) - y * Math.sin(angle);
+    let rotatedY = x * Math.sin(angle) + y * Math.cos(angle);
+    ctx.beginPath();
+    ctx.arc(250 + rotatedX, 250 - rotatedY, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.strokeStyle = "#aaa";
+  ctx.beginPath();
+  ctx.moveTo(250, 0);
+  ctx.lineTo(250, 500);
+  ctx.moveTo(0, 250);
+  ctx.lineTo(500, 250);
+  ctx.stroke();
+
+  ctx.strokeStyle = "red";
+  ctx.beginPath();
+  ctx.moveTo(250 - 250 * Math.cos(angle), 250 + 250 * Math.sin(angle));
+  ctx.lineTo(250 + 250 * Math.cos(angle), 250 - 250 * Math.sin(angle));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(250 - 250 * Math.cos(angle + Math.PI/2), 250 + 250 * Math.sin(angle + Math.PI/2));
+  ctx.lineTo(250 + 250 * Math.cos(angle + Math.PI/2), 250 - 250 * Math.sin(angle + Math.PI/2));
+  ctx.stroke();
+
+  document.getElementById("angleLabel").textContent = angleDeg.toFixed(2);
+  document.getElementById("covLabel").textContent = covarianceAfterRotation(pointsOriginal, angle).toFixed(2);
+}
+
+function drawScatter(canvasId, points, color) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  ctx.clearRect(0, 0, 300, 300);
+  ctx.fillStyle = color;
+  points.forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(150 + x, 150 - y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function updateWorkflowSection() {
+  const { projected: proj, values: vals, centered: cent } = pcaTransform(pointsOriginal);
+  projected = proj;
+  values = vals;
+  centered = cent;
+
+  drawScatter("originalCanvas", centered, "blue");
+  drawScatter("pcaCanvas", projected, "red");
+
+  const totalVar = values[0] + values[1];
+  const explained = values.map(v => v / totalVar * 100);
+
+  new Chart(document.getElementById("varianceChart"), {
+    type: 'bar',
+    data: {
+      labels: ['PC1', 'PC2'],
+      datasets: [{
+        label: 'Variance Explained (%)',
+        data: explained,
+        backgroundColor: ['#ff6666', '#66b3ff']
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, max: 100 } }
+    }
+  });
+
+  updateReducedPlot(parseInt(document.getElementById("componentsSelect").value));
+}
+
+function updateReducedPlot(components) {
+  const reduced = projected.map(d => d.slice(0, components));
+  if (components === 1) {
+    const points1D = reduced.map(d => [d[0], 0]);
+    drawScatter("reducedCanvas", points1D, "green");
+  } else {
+    drawScatter("reducedCanvas", reduced, "green");
+  }
+}
+
+// --- Init ---
+function initAll() {
+  pointsOriginal = generateRandomData();
+  const covOrig = covarianceMatrix(pointsOriginal);
+  pcaAngle = pcaRotationAngle(covOrig);
+  document.getElementById("pcaAngleLabel").textContent = (pcaAngle * 180 / Math.PI).toFixed(2);
+  document.getElementById("rotationSlider").value = 0;
+  drawRotationScene(0);
+  updateWorkflowSection();
+}
+
+document.getElementById("rotationSlider").addEventListener("input", e => {
+  drawRotationScene(parseFloat(e.target.value));
+});
+
+document.getElementById("newDataBtn").addEventListener("click", initAll);
+
+document.getElementById("componentsSelect").addEventListener("change", e => {
+  updateReducedPlot(parseInt(e.target.value));
+});
+
+initAll();
+</script>
+
+</body>
+</html>
