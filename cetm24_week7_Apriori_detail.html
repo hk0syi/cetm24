@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apriori Algorithm Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            color: #2563eb;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .table-container {
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #2563eb;
+            color: white;
+        }
+
+        th, td {
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: white;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 0.5rem;
+            background: #dbeafe;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .slider-info {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .green-slider {
+            background: #dcfce7;
+        }
+
+        .green-value {
+            color: #16a34a;
+        }
+
+        .collapsible-section {
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .chevron {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .chevron.rotated {
+            transform: rotate(90deg);
+        }
+
+        .steps-container {
+            display: none;
+            gap: 1.5rem;
+            flex-direction: column;
+        }
+
+        .steps-container.show {
+            display: flex;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .step-column h5 {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .candidate-item {
+            font-size: 0.875rem;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .frequent {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .infrequent {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .summary-section {
+            background: #eff6ff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .rules-section {
+            background: #f0fdf4;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .blue-table thead {
+            background: #dbeafe;
+            color: #1f2937;
+        }
+
+        .green-table thead {
+            background: #dcfce7;
+            color: #1f2937;
+        }
+
+        .blue-table .table-container {
+            border: 1px solid #bfdbfe;
+        }
+
+        .green-table .table-container {
+            border: 1px solid #bbf7d0;
+        }
+
+        .no-rules {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .lattice-section {
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .lattice-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: white;
+            overflow: auto;
+            position: relative;
+        }
+
+        .lattice-svg {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .itemset-node {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .itemset-node circle {
+            stroke-width: 2;
+            transition: all 0.2s ease;
+        }
+
+        .itemset-node text {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+
+        .itemset-node.frequent circle {
+            fill: #dcfce7;
+            stroke: #16a34a;
+        }
+
+        .itemset-node.frequent text {
+            fill: #166534;
+        }
+
+        .itemset-node.infrequent circle {
+            fill: #fecaca;
+            stroke: #dc2626;
+        }
+
+        .itemset-node.infrequent text {
+            fill: #991b1b;
+        }
+
+        .itemset-node.candidate circle {
+            fill: #f3f4f6;
+            stroke: #6b7280;
+        }
+
+        .itemset-node.candidate text {
+            fill: #374151;
+        }
+
+        .lattice-edge {
+            stroke: #94a3b8;
+            stroke-width: 1;
+            fill: none;
+            opacity: 0.6;
+        }
+
+        .lattice-edge.highlighted {
+            stroke: #2563eb;
+            stroke-width: 2;
+            opacity: 1;
+        }
+
+        .lattice-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid;
+        }
+
+        .legend-frequent {
+            background: #dcfce7;
+            border-color: #16a34a;
+        }
+
+        .legend-infrequent {
+            background: #fecaca;
+            border-color: #dc2626;
+        }
+
+        .legend-candidate {
+            background: #f3f4f6;
+            border-color: #6b7280;
+        }
+
+        .lattice-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #1e40af;
+        }
+
+        .rule-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .rule-row:hover {
+            background-color: #f0fdf4 !important;
+        }
+
+        .rule-details {
+            display: none;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .rule-details.show {
+            display: table-row;
+        }
+
+        .calculation-content {
+            padding: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .calculation-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .calculation-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .calculation-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .formula {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.25rem;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+            color: #1e293b;
+        }
+
+        .calculation-step {
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .step-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .step-value {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .expand-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s ease;
+            margin-left: 0.5rem;
+        }
+
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .lattice-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .lattice-tooltip.show {
+            opacity: 1;
+        }
+
+        .tooltip-header {
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .tooltip-section {
+            margin-bottom: 8px;
+        }
+
+        .tooltip-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .tooltip-label {
+            color: #d1d5db;
+            font-weight: 500;
+        }
+
+        .tooltip-value {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .tooltip-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tooltip-frequent {
+            background: #16a34a;
+            color: white;
+        }
+
+        .tooltip-infrequent {
+            background: #dc2626;
+            color: white;
+        }
+
+        .tooltip-candidate {
+            background: #6b7280;
+            color: white;
+        }
+
+        .tooltip-transactions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 4px 6px;
+            margin-top: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .main-card {
+                padding: 1rem;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <h1>Apriori Algorithm Analysis</h1>
+            </div>
+
+            <!-- Transaction Data Display -->
+            <div class="section">
+                <h2>Transaction Database</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TID</th>
+                                <th>Items</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-tbody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Parameters -->
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label class="control-label">Minimum Support (%)</label>
+                    <div class="slider-container">
+                        <input type="range" id="support-slider" class="slider" min="20" max="80" value="40">
+                        <span id="support-value" class="slider-value">40%</span>
+                    </div>
+                    <p id="support-info" class="slider-info">Minimum support count: 2 transactions</p>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Minimum Confidence (%)</label>
+                    <div class="slider-container">
+                        <input type="range" id="confidence-slider" class="slider green-slider" min="50" max="100" value="50">
+                        <span id="confidence-value" class="slider-value green-value">50%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="results-container" style="display: none;">
+                <!-- Frequent Itemset Generation Lattice -->
+                <div class="lattice-section">
+                    <h3>Frequent Itemset Generation Lattice</h3>
+                    <div class="lattice-info">
+                        <strong>Interactive Lattice Diagram:</strong> This shows all possible itemset combinations. 
+                        Green nodes are frequent itemsets that meet the minimum support threshold. 
+                        Red nodes are infrequent itemsets. Gray nodes are candidates not yet evaluated.
+                        <br><strong>Note:</strong> Given <span id="total-items">6</span> items, there are <span id="total-combinations">2⁶ = 64</span> possible candidate itemsets.
+                    </div>
+                    <div class="lattice-container">
+                        <svg class="lattice-svg" id="lattice-svg">
+                            <!-- SVG content will be generated by JavaScript -->
+                        </svg>
+                        <div class="lattice-tooltip" id="lattice-tooltip">
+                            <!-- Tooltip content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="lattice-legend">
+                        <div class="legend-item">
+                            <div class="legend-circle legend-frequent"></div>
+                            <span>Frequent Itemsets</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-circle legend-infrequent"></div>
+                            <span>Infrequent Itemsets</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-circle legend-candidate"></div>
+                            <span>Candidate Itemsets</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Algorithm Steps -->
+                <div class="collapsible-section">
+                    <button class="collapsible-header" id="steps-toggle">
+                        <svg class="chevron" id="steps-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                        Algorithm Steps
+                    </button>
+                    <div class="steps-container" id="steps-container">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Frequent Itemsets Summary -->
+                <div class="summary-section blue-table">
+                    <h3>Frequent Itemsets Summary</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Itemset</th>
+                                    <th>Support (%)</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="frequent-itemsets-tbody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Association Rules -->
+                <div class="rules-section green-table">
+                    <h3>Association Rules</h3>
+                    <div id="association-rules-content">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Transaction data
+        const transactions = [
+            { tid: 1, items: ['Bread', 'Milk'] },
+            { tid: 2, items: ['Bread', 'Nappies', 'Beer', 'Eggs'] },
+            { tid: 3, items: ['Milk', 'Nappies', 'Beer', 'Coke'] },
+            { tid: 4, items: ['Bread', 'Milk', 'Nappies', 'Beer'] },
+            { tid: 5, items: ['Bread', 'Milk', 'Nappies', 'Coke'] }
+        ];
+
+        const totalTransactions = transactions.length;
+        let minSupport = 40;
+        let minConfidence = 50;
+        let showSteps = false;
+
+        // Initialize the application
+        function init() {
+            populateTransactionTable();
+            setupEventListeners();
+            runApriori();
+        }
+
+        // Populate transaction table
+        function populateTransactionTable() {
+            const tbody = document.getElementById('transactions-tbody');
+            tbody.innerHTML = '';
+            
+            transactions.forEach((transaction, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 500;">${transaction.tid}</td>
+                    <td>${transaction.items.join(', ')}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const supportSlider = document.getElementById('support-slider');
+            const confidenceSlider = document.getElementById('confidence-slider');
+            const stepsToggle = document.getElementById('steps-toggle');
+
+            supportSlider.addEventListener('input', (e) => {
+                minSupport = parseInt(e.target.value);
+                document.getElementById('support-value').textContent = `${minSupport}%`;
+                const minSupportCount = Math.ceil((minSupport / 100) * totalTransactions);
+                document.getElementById('support-info').textContent = `Minimum support count: ${minSupportCount} transactions`;
+                runApriori();
+            });
+
+            confidenceSlider.addEventListener('input', (e) => {
+                minConfidence = parseInt(e.target.value);
+                document.getElementById('confidence-value').textContent = `${minConfidence}%`;
+                runApriori();
+            });
+
+            stepsToggle.addEventListener('click', () => {
+                showSteps = !showSteps;
+                const container = document.getElementById('steps-container');
+                const chevron = document.getElementById('steps-chevron');
+                
+                if (showSteps) {
+                    container.classList.add('show');
+                    chevron.classList.add('rotated');
+                } else {
+                    container.classList.remove('show');
+                    chevron.classList.remove('rotated');
+                }
+            });
+        }
+
+        // Helper function to calculate support
+        function calculateSupport(itemset, transactions) {
+            const count = transactions.filter(transaction => 
+                itemset.every(item => transaction.items.includes(item))
+            ).length;
+            return { count, percentage: (count / totalTransactions) * 100 };
+        }
+
+        // Generate combinations
+        function getCombinations(arr, k) {
+            if (k === 1) return arr.map(x => [x]);
+            if (k === arr.length) return [arr];
+            if (k > arr.length) return [];
+            
+            const combinations = [];
+            for (let i = 0; i <= arr.length - k; i++) {
+                const head = arr[i];
+                const tailCombinations = getCombinations(arr.slice(i + 1), k - 1);
+                for (const tail of tailCombinations) {
+                    combinations.push([head, ...tail]);
+                }
+            }
+            return combinations;
+        }
+
+        // Apriori algorithm implementation
+        function runApriori() {
+            const minSupportCount = Math.ceil((minSupport / 100) * totalTransactions);
+            const frequentItemsets = [];
+            const allSteps = [];
+
+            // Get all unique items
+            const allItems = [...new Set(transactions.flatMap(t => t.items))];
+            
+            // L1: Find frequent 1-itemsets
+            let candidateItemsets = allItems.map(item => [item]);
+            let frequentKItemsets = candidateItemsets.filter(itemset => {
+                const support = calculateSupport(itemset, transactions);
+                return support.count >= minSupportCount;
+            });
+
+            let k = 1;
+            while (frequentKItemsets.length > 0) {
+                const stepData = {
+                    k,
+                    candidates: candidateItemsets.map(itemset => {
+                        const support = calculateSupport(itemset, transactions);
+                        return {
+                            itemset: itemset.join(', '),
+                            support: support.percentage.toFixed(1),
+                            count: support.count,
+                            frequent: support.count >= minSupportCount
+                        };
+                    }),
+                    frequent: frequentKItemsets.map(itemset => {
+                        const support = calculateSupport(itemset, transactions);
+                        return {
+                            itemset: itemset.join(', '),
+                            support: support.percentage.toFixed(1),
+                            count: support.count
+                        };
+                    })
+                };
+
+                allSteps.push(stepData);
+                frequentItemsets.push(...frequentKItemsets.map(itemset => ({
+                    itemset,
+                    support: calculateSupport(itemset, transactions)
+                })));
+
+                // Generate candidates for next iteration
+                if (frequentKItemsets.length < 2) break;
+                
+                const nextCandidates = [];
+                for (let i = 0; i < frequentKItemsets.length; i++) {
+                    for (let j = i + 1; j < frequentKItemsets.length; j++) {
+                        const itemset1 = frequentKItemsets[i];
+                        const itemset2 = frequentKItemsets[j];
+                        
+                        // Join step: merge if first k-2 items are the same
+                        if (k === 1 || 
+                            itemset1.slice(0, -1).every((item, idx) => item === itemset2[idx]) &&
+                            itemset1[itemset1.length - 1] !== itemset2[itemset2.length - 1]) {
+                            
+                            const newCandidate = [...new Set([...itemset1, ...itemset2])].sort();
+                            if (newCandidate.length === k + 1) {
+                                nextCandidates.push(newCandidate);
+                            }
+                        }
+                    }
+                }
+
+                candidateItemsets = nextCandidates;
+                frequentKItemsets = candidateItemsets.filter(itemset => {
+                    const support = calculateSupport(itemset, transactions);
+                    return support.count >= minSupportCount;
+                });
+
+                k++;
+            }
+
+            // Generate association rules
+            const associationRules = [];
+            frequentItemsets.filter(fi => fi.itemset.length >= 2).forEach(frequentItemset => {
+                const items = frequentItemset.itemset;
+                
+                // Generate all possible antecedent/consequent combinations
+                for (let i = 1; i < items.length; i++) {
+                    const antecedentCombinations = getCombinations(items, i);
+                    
+                    antecedentCombinations.forEach(antecedent => {
+                        const consequent = items.filter(item => !antecedent.includes(item));
+                        
+                        const antecedentSupport = calculateSupport(antecedent, transactions);
+                        const confidence = (frequentItemset.support.percentage / antecedentSupport.percentage) * 100;
+                        const lift = confidence / calculateSupport(consequent, transactions).percentage;
+                        
+                        if (confidence >= minConfidence) {
+                            associationRules.push({
+                                antecedent: antecedent.join(', '),
+                                consequent: consequent.join(', '),
+                                support: frequentItemset.support.percentage.toFixed(1),
+                                confidence: confidence.toFixed(1),
+                                lift: lift.toFixed(2)
+                            });
+                        }
+                    });
+                }
+            });
+
+            displayResults({
+                steps: allSteps,
+                frequentItemsets,
+                associationRules,
+                minSupportCount,
+                minSupportPercentage: minSupport
+            });
+        }
+
+        // Generate all possible itemset combinations up to maxSize
+        function generateAllItemsets(items, maxSize = null) {
+            if (maxSize === null) maxSize = items.length;
+            const allItemsets = [];
+            
+            // Add empty set
+            allItemsets.push([]);
+            
+            // Generate all combinations of all sizes
+            for (let size = 1; size <= maxSize; size++) {
+                const combinations = getCombinations(items, size);
+                allItemsets.push(...combinations);
+            }
+            
+            return allItemsets;
+        }
+
+        // Create lattice visualization
+        function createLattice(frequentItemsets, allItems) {
+            const svg = document.getElementById('lattice-svg');
+            const tooltip = document.getElementById('lattice-tooltip');
+            svg.innerHTML = '';
+            
+            // Generate all possible itemsets
+            const allItemsets = generateAllItemsets(allItems);
+            const maxLevel = allItems.length;
+            
+            // Group itemsets by level (size)
+            const levels = [];
+            for (let i = 0; i <= maxLevel; i++) {
+                levels[i] = allItemsets.filter(itemset => itemset.length === i);
+            }
+            
+            // Calculate positions
+            const svgWidth = Math.max(800, levels.reduce((max, level) => Math.max(max, level.length * 80), 0));
+            const svgHeight = 600;
+            const levelHeight = svgHeight / (maxLevel + 2);
+            
+            svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+            
+            const nodePositions = new Map();
+            const frequentSet = new Set(frequentItemsets.map(fi => fi.itemset.sort().join(',')));
+            
+            // Position nodes
+            levels.forEach((level, levelIndex) => {
+                const y = levelHeight * (levelIndex + 1);
+                const startX = (svgWidth - (level.length - 1) * 80) / 2;
+                
+                level.forEach((itemset, itemIndex) => {
+                    const x = startX + itemIndex * 80;
+                    const key = itemset.sort().join(',');
+                    nodePositions.set(key, { x, y, itemset: [...itemset] });
+                });
+            });
+            
+            // Draw edges first (so they appear behind nodes)
+            levels.forEach((level, levelIndex) => {
+                if (levelIndex === 0) return; // Skip empty set
+                
+                level.forEach(itemset => {
+                    const currentKey = itemset.sort().join(',');
+                    const currentPos = nodePositions.get(currentKey);
+                    
+                    // Find parent itemsets (subsets with one less item)
+                    for (let i = 0; i < itemset.length; i++) {
+                        const parentItemset = [...itemset];
+                        parentItemset.splice(i, 1);
+                        const parentKey = parentItemset.sort().join(',');
+                        const parentPos = nodePositions.get(parentKey);
+                        
+                        if (parentPos) {
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', parentPos.x);
+                            line.setAttribute('y1', parentPos.y);
+                            line.setAttribute('x2', currentPos.x);
+                            line.setAttribute('y2', currentPos.y);
+                            line.setAttribute('class', 'lattice-edge');
+                            svg.appendChild(line);
+                        }
+                    }
+                });
+            });
+            
+            // Draw nodes
+            nodePositions.forEach((pos, key) => {
+                const isFrequent = frequentSet.has(key);
+                const support = pos.itemset.length > 0 ? calculateSupport(pos.itemset, transactions) : { count: 5, percentage: 100 };
+                const isEvaluated = key === '' || isFrequent || support.count < Math.ceil((minSupport / 100) * totalTransactions);
+                
+                const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                group.setAttribute('class', `itemset-node ${isFrequent ? 'frequent' : isEvaluated ? 'infrequent' : 'candidate'}`);
+                group.setAttribute('data-itemset', key);
+                
+                // Calculate radius based on itemset size
+                const radius = Math.max(15, Math.min(25, 15 + pos.itemset.length * 2));
+                
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', pos.x);
+                circle.setAttribute('cy', pos.y);
+                circle.setAttribute('r', radius);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', pos.x);
+                text.setAttribute('y', pos.y);
+                
+                // Create display text
+                let displayText;
+                if (key === '') {
+                    displayText = '∅';
+                } else if (pos.itemset.length === 1) {
+                    displayText = pos.itemset[0].charAt(0);
+                } else if (pos.itemset.length <= 3) {
+                    displayText = pos.itemset.map(item => item.charAt(0)).join('');
+                } else {
+                    displayText = pos.itemset.map(item => item.charAt(0)).join('').substring(0, 3) + '...';
+                }
+                
+                text.textContent = displayText;
+                
+                group.appendChild(circle);
+                group.appendChild(text);
+                
+                // Enhanced tooltip interactions
+                group.addEventListener('mouseenter', (e) => {
+                    showLatticeTooltip(e, pos.itemset, support, isFrequent, isEvaluated);
+                });
+                
+                group.addEventListener('mousemove', (e) => {
+                    updateTooltipPosition(e);
+                });
+                
+                group.addEventListener('mouseleave', () => {
+                    hideLatticeTooltip();
+                });
+                
+                svg.appendChild(group);
+            });
+            
+            // Update the combination count display
+            const totalItems = allItems.length;
+            const totalCombinations = Math.pow(2, totalItems);
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('total-combinations').textContent = `2^${totalItems} = ${totalCombinations}`;
+        }
+
+        // Show detailed tooltip for lattice nodes
+        function showLatticeTooltip(event, itemset, support, isFrequent, isEvaluated) {
+            const tooltip = document.getElementById('lattice-tooltip');
+            const minSupportCount = Math.ceil((minSupport / 100) * totalTransactions);
+            
+            // Find transactions that contain this itemset
+            const containingTransactions = transactions.filter(transaction => 
+                itemset.every(item => transaction.items.includes(item))
+            );
+            
+            // Determine status
+            let status, statusClass;
+            if (itemset.length === 0) {
+                status = 'Empty Set';
+                statusClass = 'tooltip-frequent';
+            } else if (isFrequent) {
+                status = 'Frequent';
+                statusClass = 'tooltip-frequent';
+            } else if (isEvaluated) {
+                status = 'Infrequent';
+                statusClass = 'tooltip-infrequent';
+            } else {
+                status = 'Candidate';
+                statusClass = 'tooltip-candidate';
+            }
+            
+            // Create tooltip content
+            let content = `
+                <div class="tooltip-header">
+                    ${itemset.length === 0 ? 'Empty Set (∅)' : `Itemset: {${itemset.join(', ')}}`}
+                </div>
+            `;
+            
+            if (itemset.length > 0) {
+                content += `
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Status:</span> 
+                        <span class="tooltip-status ${statusClass}">${status}</span>
+                    </div>
+                    
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Support Count:</span> 
+                        <span class="tooltip-value">${support.count} / ${totalTransactions}</span>
+                    </div>
+                    
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Support Percentage:</span> 
+                        <span class="tooltip-value">${support.percentage.toFixed(1)}%</span>
+                    </div>
+                    
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Minimum Required:</span> 
+                        <span class="tooltip-value">${minSupportCount} transactions (${minSupport}%)</span>
+                    </div>
+                    
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Itemset Size:</span> 
+                        <span class="tooltip-value">${itemset.length}-itemset</span>
+                    </div>
+                `;
+                
+                if (containingTransactions.length > 0) {
+                    content += `
+                        <div class="tooltip-section">
+                            <span class="tooltip-label">Found in Transactions:</span>
+                            <div class="tooltip-transactions">
+                                ${containingTransactions.map(t => `T${t.tid}`).join(', ')}
+                            </div>
+                        </div>
+                        
+                        <div class="tooltip-section">
+                            <span class="tooltip-label">Transaction Details:</span>
+                            ${containingTransactions.slice(0, 3).map(t => `
+                                <div style="font-size: 11px; margin-top: 2px; color: #d1d5db;">
+                                    T${t.tid}: {${t.items.join(', ')}}
+                                </div>
+                            `).join('')}
+                            ${containingTransactions.length > 3 ? `<div style="font-size: 11px; color: #9ca3af;">... and ${containingTransactions.length - 3} more</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                // Add evaluation explanation
+                if (isFrequent) {
+                    content += `
+                        <div class="tooltip-section" style="color: #86efac;">
+                            ✓ Meets minimum support threshold
+                        </div>
+                    `;
+                } else if (isEvaluated) {
+                    content += `
+                        <div class="tooltip-section" style="color: #fca5a5;">
+                            ✗ Below minimum support threshold
+                        </div>
+                    `;
+                } else {
+                    content += `
+                        <div class="tooltip-section" style="color: #d1d5db;">
+                            ⏳ Not yet evaluated by algorithm
+                        </div>
+                    `;
+                }
+            } else {
+                content += `
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Description:</span> 
+                        <span class="tooltip-value">The empty set contains no items</span>
+                    </div>
+                    
+                    <div class="tooltip-section">
+                        <span class="tooltip-label">Support:</span> 
+                        <span class="tooltip-value">100% (appears in all transactions)</span>
+                    </div>
+                `;
+            }
+            
+            tooltip.innerHTML = content;
+            tooltip.classList.add('show');
+            updateTooltipPosition(event);
+        }
+
+        // Update tooltip position
+        function updateTooltipPosition(event) {
+            const tooltip = document.getElementById('lattice-tooltip');
+            const container = document.querySelector('.lattice-container');
+            const containerRect = container.getBoundingClientRect();
+            
+            const x = event.clientX - containerRect.left + 10;
+            const y = event.clientY - containerRect.top - 10;
+            
+            // Ensure tooltip stays within container bounds
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const maxX = container.clientWidth - tooltipRect.width - 10;
+            const maxY = container.clientHeight - tooltipRect.height - 10;
+            
+            tooltip.style.left = Math.min(x, Math.max(10, maxX)) + 'px';
+            tooltip.style.top = Math.min(y, Math.max(10, maxY)) + 'px';
+        }
+
+        // Hide tooltip
+        function hideLatticeTooltip() {
+            const tooltip = document.getElementById('lattice-tooltip');
+            tooltip.classList.remove('show');
+        }
+
+        // Display results
+        function displayResults(results) {
+            document.getElementById('results-container').style.display = 'block';
+            
+            // Get all unique items for lattice
+            const allItems = [...new Set(transactions.flatMap(t => t.items))];
+            
+            // Create lattice visualization
+            createLattice(results.frequentItemsets, allItems);
+            
+            // Display algorithm steps
+            displaySteps(results.steps);
+            
+            // Display frequent itemsets
+            displayFrequentItemsets(results.frequentItemsets);
+            
+            // Display association rules
+            displayAssociationRules(results.associationRules);
+        }
+
+        // Display algorithm steps
+        function displaySteps(steps) {
+            const container = document.getElementById('steps-container');
+            container.innerHTML = '';
+
+            steps.forEach((step, idx) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step-card';
+                
+                stepDiv.innerHTML = `
+                    <h4 class="step-title">
+                        L${step.k}: ${step.k === 1 ? 'Frequent' : `Frequent ${step.k}-`}Itemsets
+                    </h4>
+                    <div class="step-grid">
+                        <div class="step-column">
+                            <h5>Candidates</h5>
+                            <div>
+                                ${step.candidates.map(candidate => `
+                                    <div class="candidate-item ${candidate.frequent ? 'frequent' : 'infrequent'}">
+                                        ${candidate.itemset}: ${candidate.support}% (${candidate.count})
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="step-column">
+                            <h5>Frequent Itemsets</h5>
+                            <div>
+                                ${step.frequent.map(freq => `
+                                    <div class="candidate-item frequent">
+                                        ${freq.itemset}: ${freq.support}% (${freq.count})
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(stepDiv);
+            });
+        }
+
+        // Display frequent itemsets
+        function displayFrequentItemsets(frequentItemsets) {
+            const tbody = document.getElementById('frequent-itemsets-tbody');
+            tbody.innerHTML = '';
+
+            frequentItemsets.forEach((itemset, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 500;">${itemset.itemset.join(', ')}</td>
+                    <td>${itemset.support.percentage.toFixed(1)}%</td>
+                    <td>${itemset.support.count}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Display association rules with detailed calculations
+        function displayAssociationRules(associationRules) {
+            const container = document.getElementById('association-rules-content');
+            
+            if (associationRules.length > 0) {
+                let tableContent = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rule</th>
+                                    <th>Support (%)</th>
+                                    <th>Confidence (%)</th>
+                                    <th>Lift</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                associationRules.forEach((rule, idx) => {
+                    // Parse the rule components
+                    const antecedentItems = rule.antecedent.split(', ');
+                    const consequentItems = rule.consequent.split(', ');
+                    const unionItems = [...antecedentItems, ...consequentItems];
+
+                    // Calculate support values
+                    const unionSupport = calculateSupport(unionItems, transactions);
+                    const antecedentSupport = calculateSupport(antecedentItems, transactions);
+                    const consequentSupport = calculateSupport(consequentItems, transactions);
+
+                    // Calculate detailed metrics
+                    const confidence = (unionSupport.percentage / antecedentSupport.percentage) * 100;
+                    const lift = confidence / consequentSupport.percentage;
+
+                    tableContent += `
+                        <tr class="rule-row" onclick="toggleRuleDetails(${idx})">
+                            <td style="font-weight: 500;">
+                                ${rule.antecedent} → ${rule.consequent}
+                                <svg class="expand-icon" id="expand-${idx}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </td>
+                            <td>${rule.support}%</td>
+                            <td>${rule.confidence}%</td>
+                            <td>${rule.lift}</td>
+                            <td style="color: #6b7280; font-size: 0.875rem;">Click to expand</td>
+                        </tr>
+                        <tr class="rule-details" id="details-${idx}">
+                            <td colspan="5">
+                                <div class="calculation-content">
+                                    <div class="calculation-section">
+                                        <div class="calculation-title">📊 Support Calculations</div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Support({${rule.antecedent}}):</span> 
+                                            <span class="step-value">${antecedentSupport.count}/${totalTransactions} = ${antecedentSupport.percentage.toFixed(1)}%</span>
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Support({${rule.consequent}}):</span> 
+                                            <span class="step-value">${consequentSupport.count}/${totalTransactions} = ${consequentSupport.percentage.toFixed(1)}%</span>
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Support({${rule.antecedent}, ${rule.consequent}}):</span> 
+                                            <span class="step-value">${unionSupport.count}/${totalTransactions} = ${unionSupport.percentage.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="calculation-section">
+                                        <div class="calculation-title">🎯 Confidence Calculation</div>
+                                        <div class="formula">
+                                            Confidence = Support(Antecedent ∪ Consequent) / Support(Antecedent) × 100%
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Formula:</span> 
+                                            Confidence({${rule.antecedent}} → {${rule.consequent}}) = Support({${rule.antecedent}, ${rule.consequent}}) / Support({${rule.antecedent}}) × 100%
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Substitution:</span> 
+                                            Confidence = ${unionSupport.percentage.toFixed(1)}% / ${antecedentSupport.percentage.toFixed(1)}% × 100%
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Result:</span> 
+                                            <span class="step-value">Confidence = ${confidence.toFixed(1)}%</span>
+                                        </div>
+                                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">
+                                            <strong>Interpretation:</strong> ${confidence.toFixed(1)}% of transactions containing {${rule.antecedent}} also contain {${rule.consequent}}
+                                        </div>
+                                    </div>
+
+                                    <div class="calculation-section">
+                                        <div class="calculation-title">📈 Lift Calculation</div>
+                                        <div class="formula">
+                                            Lift = Confidence / Support(Consequent) = Support(A ∪ B) / (Support(A) × Support(B))
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Method 1 (using confidence):</span> 
+                                            Lift = ${confidence.toFixed(1)}% / ${consequentSupport.percentage.toFixed(1)}% = ${lift.toFixed(3)}
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Method 2 (direct formula):</span> 
+                                            Lift = ${unionSupport.percentage.toFixed(1)}% / (${antecedentSupport.percentage.toFixed(1)}% × ${consequentSupport.percentage.toFixed(1)}%)
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Calculation:</span> 
+                                            Lift = ${unionSupport.percentage.toFixed(1)} / ${(antecedentSupport.percentage * consequentSupport.percentage / 100).toFixed(1)} = ${lift.toFixed(3)}
+                                        </div>
+                                        <div class="calculation-step">
+                                            <span class="step-label">Result:</span> 
+                                            <span class="step-value">Lift = ${lift.toFixed(3)}</span>
+                                        </div>
+                                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">
+                                            <strong>Interpretation:</strong> 
+                                            ${lift > 1 ? 
+                                                `Positive correlation (${lift.toFixed(2)}x more likely than random)` : 
+                                                lift < 1 ? 
+                                                    `Negative correlation (${(1/lift).toFixed(2)}x less likely than random)` : 
+                                                    'No correlation (independent items)'
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="calculation-section">
+                                        <div class="calculation-title">📋 Transaction Analysis</div>
+                                        <div style="font-size: 0.875rem;">
+                                            <div class="calculation-step">
+                                                <span class="step-label">Transactions with {${rule.antecedent}}:</span> 
+                                                ${transactions.filter(t => antecedentItems.every(item => t.items.includes(item))).map(t => `T${t.tid}`).join(', ')}
+                                            </div>
+                                            <div class="calculation-step">
+                                                <span class="step-label">Transactions with {${rule.consequent}}:</span> 
+                                                ${transactions.filter(t => consequentItems.every(item => t.items.includes(item))).map(t => `T${t.tid}`).join(', ')}
+                                            </div>
+                                            <div class="calculation-step">
+                                                <span class="step-label">Transactions with {${rule.antecedent}, ${rule.consequent}}:</span> 
+                                                <span class="step-value">${transactions.filter(t => unionItems.every(item => t.items.includes(item))).map(t => `T${t.tid}`).join(', ')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableContent += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                container.innerHTML = tableContent;
+            } else {
+                container.innerHTML = `
+                    <p class="no-rules">
+                        No association rules found with the current confidence threshold (${minConfidence}%).
+                        Try lowering the minimum confidence.
+                    </p>
+                `;
+            }
+        }
+
+        // Toggle rule details visibility
+        function toggleRuleDetails(ruleIndex) {
+            const detailsRow = document.getElementById(`details-${ruleIndex}`);
+            const expandIcon = document.getElementById(`expand-${ruleIndex}`);
+            
+            if (detailsRow.classList.contains('show')) {
+                detailsRow.classList.remove('show');
+                expandIcon.classList.remove('rotated');
+            } else {
+                // Hide all other details first
+                document.querySelectorAll('.rule-details').forEach(row => row.classList.remove('show'));
+                document.querySelectorAll('.expand-icon').forEach(icon => icon.classList.remove('rotated'));
+                
+                // Show the clicked one
+                detailsRow.classList.add('show');
+                expandIcon.classList.add('rotated');
+            }
+        }
+
+        // Initialize the application when the page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
