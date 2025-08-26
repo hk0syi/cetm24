@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDD Comprehensibility Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 1s ease-out;
+            position: sticky;
+            top: 0;
+            background: rgba(102, 126, 234, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease-out;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-number {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .kdd-definition {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffd700;
+        }
+
+        .quality-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .quality-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quality-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .quality-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .quality-card h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .example-box {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .trivial-rules {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .rule {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+            animation: fadeInLeft 0.5s ease-out;
+        }
+
+        .template-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .template {
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid;
+        }
+
+        .inclusive {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4caf50;
+        }
+
+        .restrictive {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+
+        .stats-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .stat {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .conclusion-box {
+            background: linear-gradient(135deg, #ff6b6b, #ffd700);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .template-demo {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎯 KDD Comprehensibility Journey</h1>
+            <p>Understanding Why "Understandable" Patterns Matter in Knowledge Discovery</p>
+        </div>
+
+        <!-- Section 1: KDD Definition -->
+        <div class="section" id="section1">
+            <div class="section-number">1</div>
+            <h2>🌟 The Foundation: KDD Definition</h2>
+            
+            <div class="kdd-definition">
+                <h3>Knowledge Discovery in Databases (KDD)</h3>
+                <p style="font-style: italic; font-size: 1.2rem; margin: 15px 0;">
+                    "The non-trivial process of identifying valid, novel, potentially useful, and ultimately understandable patterns in data."
+                </p>
+                <p style="text-align: right; opacity: 0.8;">— Fayyad et al., 1996</p>
+            </div>
+
+            <h3>Four Quality Requirements:</h3>
+            <div class="quality-grid">
+                <div class="quality-card" onclick="highlightCard(this)">
+                    <span class="quality-icon">✅</span>
+                    <h3>Valid</h3>
+                    <p>Statistically sound and accurate</p>
+                </div>
+                <div class="quality-card" onclick="highlightCard(this)">
+                    <span class="quality-icon">💡</span>
+                    <h3>Novel</h3>
+                    <p>Surprising, counterintuitive, unexpected</p>
+                </div>
+                <div class="quality-card" onclick="highlightCard(this)">
+                    <span class="quality-icon">🎯</span>
+                    <h3>Useful</h3>
+                    <p>Actionable, supports decisions</p>
+                </div>
+                <div class="quality-card" onclick="highlightCard(this)">
+                    <span class="quality-icon">🧠</span>
+                    <h3>Understandable</h3>
+                    <p>Interpretable by humans</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Motivation for Comprehensibility -->
+        <div class="section" id="section2">
+            <div class="section-number">2</div>
+            <h2>🧠 Why Comprehensibility Matters</h2>
+            
+            <h3>The Human Factor</h3>
+            <p>Users must interpret and validate discovered patterns. Understanding leads to:</p>
+            
+            <div class="quality-grid">
+                <div class="quality-card">
+                    <span class="quality-icon">🤝</span>
+                    <h3>Confidence</h3>
+                    <p>Trust in the results</p>
+                </div>
+                <div class="quality-card">
+                    <span class="quality-icon">⚡</span>
+                    <h3>Actionability</h3>
+                    <p>Better decision making</p>
+                </div>
+                <div class="quality-card">
+                    <span class="quality-icon">📈</span>
+                    <h3>Usefulness</h3>
+                    <p>Practical application</p>
+                </div>
+            </div>
+
+            <h3>Domain Importance Varies</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                <div class="example-box">
+                    <h4>🏥 Medical/Scientific Domains</h4>
+                    <p><strong>Comprehensibility is CRITICAL</strong></p>
+                    <p>Doctors need to understand why a diagnosis was made</p>
+                </div>
+                <div class="example-box" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
+                    <h4>🔍 Pattern Recognition</h4>
+                    <p><strong>Accuracy may matter more</strong></p>
+                    <p>Black box models acceptable if highly accurate</p>
+                </div>
+            </div>
+
+            <h3>Comprehensible Model Types</h3>
+            <div class="trivial-rules">
+                <div class="rule">🌳 Decision Trees</div>
+                <div class="rule">📋 IF-THEN Rules</div>
+                <div class="rule">🔗 Bayesian Networks</div>
+            </div>
+
+            <div class="example-box">
+                <h4>⚠️ Problem</h4>
+                <p>Most measures of comprehensibility are simplistic (e.g., just counting model size), ignoring semantics and actual human understanding.</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Comprehensibility Alone Is Not Enough -->
+        <div class="section" id="section3">
+            <div class="section-number">3</div>
+            <h2>⚠️ Accuracy and comprehensibility do not imply novelty or surprisingness</h2>
+
+            <div class="example-box">
+                <h4>📊 (Brin et al. 1997) found 6,732 rules with a maximum 'conviction' value in Census data, e.g.:</h4>
+                <div class="trivial-rules">
+                    <div class="rule">👶 "five years olds don't work"</div>
+                    <div class="rule">💼 "unemployed residents don't earn income from work"</div>
+                    <div class="rule">👨 "men don't give birth"</div>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <div class="stat">
+                    <div class="stat-number">29,050</div>
+                    <div>Rules found</div>
+                    <div style="color: #ff6b6b;">Only 220 (less than 1%)</div>
+                    <div>considered interesting or surprising by the user</div>
+                    <div style="font-size: 0.8rem;">(Tsumoto 2000)</div>
+                </div>
+            </div>
+
+            <div class="example-box" style="border-color: #4caf50; background: rgba(76, 175, 80, 0.2);">
+                <h4>💡 (Wong & Leung 2000)</h4>
+                <p>Found rules with 40-60% confidence which were considered novel and more accurate than some doctor's domain knowledge</p>
+            </div>
+        </div>
+
+        <!-- Section 4: Ensuring Novelty and Usefulness -->
+        <div class="section" id="section4">
+            <div class="section-number">4</div>
+            <h2>🔍 Filtering for Interest</h2>
+            
+            <h3>The Challenge</h3>
+            <p>Mining produces thousands of rules → Need post-processing to find interesting ones</p>
+
+            <h3>Two Approaches</h3>
+            <div class="template-demo">
+                <div class="template inclusive">
+                    <h4>👤 User-Driven (Subjective)</h4>
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li>Uses domain knowledge</li>
+                        <li>Captures user beliefs & preferences</li>
+                        <li>Focuses on novelty from user's perspective</li>
+                        <li>Personalized surprisingness</li>
+                    </ul>
+                </div>
+                
+                <div class="template restrictive">
+                    <h4>📊 Data-Driven (Objective)</h4>
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li>Statistical measures (support, confidence, lift)</li>
+                        <li>Generic algorithms</li>
+                        <li>User-independent</li>
+                        <li>Standardized metrics</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="conclusion-box">
+                <h4>🎯 Goal</h4>
+                <p>Balance objective validity with subjective novelty and usefulness</p>
+            </div>
+        </div>
+
+        <!-- Section 5: User Templates Example -->
+        <div class="section" id="section5">
+            <div class="section-number">5</div>
+            <h2>🎭 Practical Solution: User Templates (User-driven approach)</h2>
+            
+            <h3>How It Works</h3>
+            <p>A rule is interesting if it matches an <strong>inclusive</strong> template but NOT a <strong>restrictive</strong> template.</p>
+
+            <div class="template-demo">
+                <div class="template inclusive">
+                    <h4>✅ Inclusive Templates</h4>
+                    <p><strong>Specify what IS interesting</strong></p>
+                    <div class="example-box" style="background: rgba(76, 175, 80, 0.1); border-color: #4caf50;">
+                        "Show me rules involving medical side effects"
+                    </div>
+                    <div class="example-box" style="background: rgba(76, 175, 80, 0.1); border-color: #4caf50;">
+                        "Find patterns in customer behavior during holidays"
+                    </div>
+                </div>
+                
+                <div class="template restrictive">
+                    <h4>❌ Restrictive Templates</h4>
+                    <p><strong>Exclude trivial/uninteresting rules</strong></p>
+                    <div class="example-box" style="background: rgba(244, 67, 54, 0.1); border-color: #f44336;">
+                        "Exclude rules that are already known medical facts"
+                    </div>
+                    <div class="example-box" style="background: rgba(244, 67, 54, 0.1); border-color: #f44336;">
+                        "Filter out demographic obviousness"
+                    </div>
+                </div>
+            </div>
+
+            <div class="conclusion-box">
+                <h4>🏆 Result</h4>
+                <p>Discovered knowledge that matches novelty, usefulness, and understandability criteria for your specific domain!</p>
+            </div>
+        </div>
+
+        <!-- Final Conclusion -->
+        <div class="section" id="section6">
+            <div class="section-number">🎯</div>
+            <h2>🏁 The Complete Picture</h2>
+            
+            <div class="kdd-definition">
+                <h3>KDD Success Formula</h3>
+                <div class="quality-grid" style="margin-top: 20px;">
+                    <div class="quality-card" style="background: rgba(76, 175, 80, 0.3);">
+                        <span class="quality-icon">✅</span>
+                        <h3>Valid</h3>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 2rem;">+</div>
+                    <div class="quality-card" style="background: rgba(255, 193, 7, 0.3);">
+                        <span class="quality-icon">💡</span>
+                        <h3>Novel</h3>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 2rem;">+</div>
+                    <div class="quality-card" style="background: rgba(33, 150, 243, 0.3);">
+                        <span class="quality-icon">🎯</span>
+                        <h3>Useful</h3>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 2rem;">+</div>
+                    <div class="quality-card" style="background: rgba(156, 39, 176, 0.3);">
+                        <span class="quality-icon">🧠</span>
+                        <h3>Understandable</h3>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Key Takeaways</h3>
+            <div class="trivial-rules">
+                <div class="rule">🧠 Comprehensibility is essential for user trust and action</div>
+                <div class="rule">⚠️ But accuracy + comprehensibility ≠ interesting</div>
+                <div class="rule">🔍 Post-processing selection is crucial</div>
+                <div class="rule">⚖️ Combine objective and subjective filtering methods</div>
+                <div class="rule">🎯 User templates help ensure domain-relevant novelty</div>
+            </div>
+
+            <div class="conclusion-box" style="margin-top: 30px;">
+                <h3>🌟 Final Insight</h3>
+                <p style="font-size: 1.2rem;">Comprehensibility is the bridge between data mining algorithms and human decision-making. Without it, even the most accurate patterns remain unused in practice.</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
+
+    <script>
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Scroll progress bar
+        function updateProgressBar() {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight - windowHeight;
+            const scrollTop = window.pageYOffset;
+            const progress = (scrollTop / documentHeight) * 100;
+            document.getElementById('progressFill').style.width = Math.min(progress, 100) + '%';
+        }
+
+        // Back to top button visibility
+        function updateBackToTop() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Highlight card function
+        function highlightCard(card) {
+            card.style.background = 'rgba(255, 215, 0, 0.3)';
+            card.style.transform = 'scale(1.05)';
+            
+            setTimeout(() => {
+                card.style.background = 'rgba(255, 255, 255, 0.1)';
+                card.style.transform = 'scale(1)';
+            }, 1000);
+        }
+
+        // Event listeners
+        window.addEventListener('scroll', () => {
+            updateProgressBar();
+            updateBackToTop();
+        });
+
+        // Interactive hover effects
+        document.querySelectorAll('.quality-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.2)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+        });
+
+        // Initialize
+        updateProgressBar();
+        updateBackToTop();
+    </script>
+</body>
+</html>

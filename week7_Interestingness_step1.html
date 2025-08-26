@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interestingness Measures in Data Mining</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            backdrop-filter: blur(15px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .header h1 {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .progress-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .progress-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-20px); }
+            100% { transform: translateX(20px); }
+        }
+
+        .main-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .control-btn:hover::before {
+            left: 100%;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .step {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            border: 2px solid #dee2e6;
+        }
+
+        .step-title-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+        }
+
+        .step-number::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            z-index: -1;
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        .step-title {
+            font-size: 2em;
+            color: #333;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .step-nav-btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .step-nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .problem-section {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-20px, -20px) rotate(10deg); }
+        }
+
+        .problem-section h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .problem-section p {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .method-section {
+            background: white;
+            border: 4px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 50px 40px 40px 40px;
+            margin-bottom: 30px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .method-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #e0e0e0, #e0e0e0);
+            transition: all 0.4s ease;
+        }
+
+        .method-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .method-section.method-a {
+            border-color: #ff6b6b;
+        }
+
+        .method-section.method-a::before {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+        }
+
+        .method-section.method-a:hover {
+            border-color: #ff5252;
+            box-shadow: 0 20px 50px rgba(255, 107, 107, 0.25);
+        }
+
+        .method-section.method-b {
+            border-color: #ffa502;
+        }
+
+        .method-section.method-b::before {
+            background: linear-gradient(90deg, #ffa502, #ff9f43);
+        }
+
+        .method-section.method-b:hover {
+            border-color: #ff9500;
+            box-shadow: 0 20px 50px rgba(255, 165, 2, 0.25);
+        }
+
+        .method-section.method-c {
+            border-color: #2ed573;
+        }
+
+        .method-section.method-c::before {
+            background: linear-gradient(90deg, #2ed573, #20bf6b);
+        }
+
+        .method-section.method-c:hover {
+            border-color: #26de81;
+            box-shadow: 0 20px 50px rgba(46, 213, 115, 0.25);
+        }
+
+        .method-label {
+            position: absolute;
+            top: -18px;
+            left: 40px;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .method-a .method-label { 
+            color: #ff6b6b; 
+            border: 2px solid #ff6b6b;
+        }
+        .method-b .method-label { 
+            color: #ffa502; 
+            border: 2px solid #ffa502;
+        }
+        .method-c .method-label { 
+            color: #2ed573; 
+            border: 2px solid #2ed573;
+        }
+
+        .method-section h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .method-section p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .pattern-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 25px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 2px solid #dee2e6;
+            min-height: 120px;
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        .pattern {
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .pattern:hover::before {
+            left: 100%;
+        }
+
+        .pattern.trivial {
+            background: linear-gradient(135deg, #ffcccb, #ffb3ba);
+            border: 2px solid #ff6b6b;
+            color: #d63031;
+        }
+
+        .pattern.interesting {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 2px solid #2ed573;
+            color: #00b894;
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.2);
+        }
+
+        .pattern.filtered-out {
+            opacity: 0.3;
+            transform: scale(0.85);
+            filter: grayscale(0.7);
+        }
+
+        .pattern:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .filter-demo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            border: 2px solid #dee2e6;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-box {
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            min-width: 180px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+
+        .filter-box strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .arrow {
+            font-size: 2.5em;
+            color: #667eea;
+            margin: 0 15px;
+            animation: bounce-horizontal 2s infinite;
+        }
+
+        @keyframes bounce-horizontal {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        .connection-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .flow-step {
+            text-align: center;
+            flex: 1;
+            padding: 15px;
+            min-width: 120px;
+        }
+
+        .flow-step div:first-child {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            margin: 0 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .feedback-section {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feedback-section::before {
+            content: '💡';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            opacity: 0.3;
+        }
+
+        .user-icon {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 50px;
+            margin-right: 15px;
+            font-size: 1.3em;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .feedback-section p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #2ed573, #00b894);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 15px 35px rgba(46, 213, 115, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        .summary-section h2 {
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .summary-section p, .summary-section ul {
+            font-size: 1.2em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .summary-section ul {
+            margin-left: 25px;
+            margin-top: 20px;
+        }
+
+        .summary-section li {
+            margin-bottom: 12px;
+        }
+
+        .highlight {
+            background: linear-gradient(45deg, #ff6b6b, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .step-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .step-title {
+                font-size: 1.6em;
+            }
+
+            .filter-demo {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .arrow {
+                transform: rotate(90deg);
+                margin: 15px 0;
+            }
+
+            .connection-flow {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 15px 0;
+            }
+
+            .main-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .control-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus states for keyboard navigation */
+        .control-btn:focus,
+        .step-nav-btn:focus,
+        .pattern:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Interestingness Measures in Data Mining</h1>
+            <p>Understanding Methods A, B, C: From Problem to Solution</p>
+            
+            <div class="progress-container">
+                <div class="progress-label">Learning Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-controls">
+            <button class="control-btn" onclick="startDemo()">▶️ Start Demo</button>
+            <button class="control-btn" onclick="resetDemo()">🔄 Reset</button>
+            <button class="control-btn" onclick="autoPlay()">🎬 Auto Play</button>
+        </div>
+
+        <!-- Step 0: The Problem -->
+        <div class="step" id="step0">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">🚨</div>
+                    <div class="step-title">The Starting Problem</div>
+                </div>
+                <button class="step-nav-btn" onclick="nextStep()">⏭️ Next Step</button>
+            </div>
+            
+            <div class="problem-section">
+                <h3>📊 Data Mining Challenge</h3>
+                <p><strong>Problem:</strong> Data mining produces <span class="highlight">too many trivial or obvious patterns</span></p>
+                <p>💡 <strong>Question:</strong> How do we filter or rank patterns so that only the <em>interesting</em> ones are kept?</p>
+                
+                <div class="pattern-demo" id="allPatterns">
+                    <div class="pattern trivial">Sky is blue</div>
+                    <div class="pattern trivial">Water is wet</div>
+                    <div class="pattern interesting">Customers who buy X also buy Y unexpectedly</div>
+                    <div class="pattern trivial">People sleep at night</div>
+                    <div class="pattern interesting">Sales spike during unusual weather patterns</div>
+                    <div class="pattern trivial">Most people have two hands</div>
+                    <div class="pattern interesting">Product returns correlate with social media sentiment</div>
+                    <div class="pattern trivial">Cars need fuel</div>
+                    <div class="pattern trivial">Students attend classes</div>
+                    <div class="pattern interesting">Customer loyalty drops after specific UI changes</div>
+                </div>
+                <p><em>↑ Most patterns discovered are obvious/trivial (red), but some are genuinely interesting (green)!</em></p>
+            </div>
+        </div>
+
+        <!-- Step 1: Method A -->
+        <div class="step" id="step1">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">A</div>
+                    <div class="step-title">Method A: Dredging (Exhaustive Search)</div>
+                </div>
+                <button class="step-nav-btn" onclick="nextStep()">⏭️ Next Step</button>
+            </div>
+            
+            <div class="method-section method-a">
+                <div class="method-label">METHOD A</div>
+                <h3>🏗️ Dredging - Extract All Possible Patterns</h3>
+                <p><strong>Approach:</strong> The system extracts <em>all possible patterns</em> from the database.</p>
+                <p><strong>Problem:</strong> Produces a huge number of patterns (many trivial).</p>
+                <p><strong>Connection to starting issue:</strong> Shows the "raw" problem of too much output.</p>
+                
+                <div class="filter-demo">
+                    <div class="filter-box">
+                        <strong>📊 Raw Database</strong><br>
+                        All data available
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box">
+                        <strong>🔍 Extract Everything</strong><br>
+                        No filtering applied
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box" style="background: #ffcccb; border-color: #ff6b6b;">
+                        <strong>📋 Massive Output</strong><br>
+                        1000s of patterns!<br>
+                        <small>(Mostly trivial)</small>
+                    </div>
+                </div>
+                
+                <div class="pattern-demo" id="methodAPatterns">
+                    <div class="pattern trivial">Sky is blue</div>
+                    <div class="pattern trivial">Water is wet</div>
+                    <div class="pattern interesting">Customers who buy X also buy Y</div>
+                    <div class="pattern trivial">People sleep at night</div>
+                    <div class="pattern interesting">Sales spike in bad weather</div>
+                    <div class="pattern trivial">Most people have two hands</div>
+                    <div class="pattern trivial">Cars need fuel</div>
+                    <div class="pattern trivial">Students attend classes</div>
+                    <div class="pattern trivial">Sun rises in east</div>
+                    <div class="pattern trivial">Ice is cold</div>
+                    <div class="pattern interesting">UI changes affect loyalty</div>
+                    <div class="pattern trivial">Birds can fly</div>
+                </div>
+                <p><strong>Result:</strong> Information overload! Too much noise.</p>
+            </div>
+        </div>
+
+        <!-- Step 2: Method B -->
+        <div class="step" id="step2">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">B</div>
+                    <div class="step-title">Method B: Selective (Using Filters)</div>
+                </div>
+                <button class="step-nav-btn" onclick="nextStep()">⏭️ Next Step</button>
+            </div>
+            
+            <div class="method-section method-b">
+                <div class="method-label">METHOD B</div>
+                <h3>🎯 Selective - Introduce Interestingness Filter</h3>
+                <p><strong>Approach:</strong> Add an <em>interestingness filter</em> before presenting patterns.</p>
+                <p><strong>Benefit:</strong> Only potentially useful/interesting patterns pass through.</p>
+                <p><strong>Connection to starting:</strong> This is the first solution to reduce trivial results.</p>
+                
+                <div class="filter-demo">
+                    <div class="filter-box">
+                        <strong>📊 Raw Database</strong><br>
+                        All data available
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box" style="background: #fff3cd; border-color: #ffc107;">
+                        <strong>🔍 Interestingness Filter</strong><br>
+                        Objective measures:<br>
+                        • Support<br>
+                        • Confidence<br>
+                        • Lift
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box" style="background: #d4edda; border-color: #2ed573;">
+                        <strong>📋 Filtered Output</strong><br>
+                        Fewer, better patterns<br>
+                        <small>(Automatically selected)</small>
+                    </div>
+                </div>
+                
+                <div class="pattern-demo" id="methodBPatterns">
+                    <div class="pattern trivial">Sky is blue</div>
+                    <div class="pattern trivial">Water is wet</div>
+                    <div class="pattern interesting">Customers who buy X also buy Y</div>
+                    <div class="pattern trivial">People sleep at night</div>
+                    <div class="pattern interesting">Sales spike in bad weather</div>
+                    <div class="pattern trivial">Most people have two hands</div>
+                    <div class="pattern trivial">Cars need fuel</div>
+                    <div class="pattern interesting">UI changes affect loyalty</div>
+                    <div class="pattern trivial">Birds can fly</div>
+                </div>
+                <p><strong>Result:</strong> Much better! Automatic filtering removes obvious patterns.</p>
+            </div>
+        </div>
+
+        <!-- Step 3: Method C -->
+        <div class="step" id="step3">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">C</div>
+                    <div class="step-title">Method C: Interactive (User in the Loop)</div>
+                </div>
+                <button class="step-nav-btn" onclick="nextStep()">⏭️ Next Step</button>
+            </div>
+            
+            <div class="method-section method-c">
+                <div class="method-label">METHOD C</div>
+                <h3>🤝 Interactive - User in the Loop</h3>
+                <p><strong>Approach:</strong> Add an <em>interestingness engine + feedback from the user</em>.</p>
+                <p><strong>Benefit:</strong> Patterns get ranked and refined interactively.</p>
+                <p><strong>Connection to starting:</strong> The most advanced solution, ensuring novelty/actionability by involving human judgment.</p>
+                
+                <div class="filter-demo" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div class="filter-box">
+                        <strong>📊 Raw Database</strong><br>
+                        All data available
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box" style="background: #fff3cd; border-color: #ffc107;">
+                        <strong>🔍 Smart Filter + AI</strong><br>
+                        Objective measures<br>
+                        + ML ranking
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box" style="background: #e1ecf4; border-color: #667eea;">
+                        <strong>👤 User Feedback</strong><br>
+                        Human judgment<br>
+                        Interactive ranking
+                    </div>
+                    <div class="arrow">➜</div>
+                    <div class="filter-box pulse" style="background: #d4edda; border: 3px solid #2ed573;">
+                        <strong>🎯 Actionable Knowledge</strong><br>
+                        Truly interesting<br>
+                        Business-relevant<br>
+                        <small><em>Ready for action!</em></small>
+                    </div>
+                </div>
+                
+                <div class="feedback-section">
+                    <div class="user-icon">👤</div>
+                    <strong>User Feedback Loop:</strong>
+                    <p>"This pattern about weather and sales is very interesting for our business!"</p>
+                    <p>"The UI-loyalty correlation needs immediate attention."</p>
+                    <p><em>System learns and adapts ranking based on user preferences.</em></p>
+                </div>
+                
+                <div class="pattern-demo" id="methodCPatterns">
+                    <div class="pattern interesting pulse" style="border-color: #2ed573; border-width: 3px;">⭐ Weather patterns → Sales correlation (User rated: HIGH)</div>
+                    <div class="pattern interesting pulse" style="border-color: #2ed573; border-width: 3px;">⭐ UI changes → Customer loyalty (User rated: URGENT)</div>
+                    <div class="pattern interesting">Customer purchase sequences</div>
+                </div>
+                <p><strong>Result:</strong> Perfect! User-driven ranking ensures truly actionable insights.</p>
+            </div>
+        </div>
+
+        <!-- Step 4: Connection Flow -->
+        <div class="step" id="step4">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">🔗</div>
+                    <div class="step-title">The Complete Flow</div>
+                </div>
+                <button class="step-nav-btn" onclick="nextStep()">⏭️ Final Summary</button>
+            </div>
+            
+            <div class="connection-flow">
+                <div class="flow-step">
+                    <div>🚨</div>
+                    <strong>Problem</strong><br>
+                    Too many<br>trivial patterns
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">
+                    <div>A</div>
+                    <strong>Raw Dredging</strong><br>
+                    Shows the<br>full problem
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">
+                    <div>B</div>
+                    <strong>Automatic Filtering</strong><br>
+                    Objective<br>measures
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">
+                    <div>C</div>
+                    <strong>User-Driven</strong><br>
+                    Subjective<br>ranking
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">
+                    <div>🎯</div>
+                    <strong>Actionable</strong><br>
+                    Knowledge
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="step" id="step5">
+            <div class="step-header">
+                <div class="step-title-group">
+                    <div class="step-number">✅</div>
+                    <div class="step-title">Key Takeaways</div>
+                </div>
+                <button class="step-nav-btn" onclick="resetDemo()">🔄 Start Over</button>
+            </div>
+            
+            <div class="summary-section">
+                <h2>✅ Key Takeaways</h2>
+                <p><strong>Methods A, B, C are not random — they are progressive approaches to applying interestingness measures:</strong></p>
+                <ul>
+                    <li><strong>Method A (Dredging):</strong> Demonstrates the raw problem of information overload</li>
+                    <li><strong>Method B (Selective):</strong> Introduces automatic filtering using objective measures</li>
+                    <li><strong>Method C (Interactive):</strong> Adds human judgment for truly actionable insights</li>
+                </ul>
+                <p style="margin-top: 25px;"><strong>The progression shows how data mining evolves:</strong><br>
+                <em>Just finding patterns → Finding useful patterns → Finding actionable knowledge</em></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = -1;
+        let demoInProgress = false;
+        let autoPlayInterval = null;
+
+        function updateProgress() {
+            const totalSteps = 6;
+            const progress = ((currentStep + 1) / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showStep(stepIndex) {
+            // Hide all steps
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => step.classList.remove('active'));
+            
+            // Show current step
+            if (stepIndex >= 0 && stepIndex < steps.length) {
+                document.getElementById(`step${stepIndex}`).classList.add('active');
+                currentStep = stepIndex;
+                updateProgress();
+                
+                // Add special animations for specific steps
+                if (stepIndex === 2) {
+                    setTimeout(() => {
+                        const trivialPatterns = document.querySelectorAll('#methodBPatterns .trivial');
+                        trivialPatterns.forEach((pattern, index) => {
+                            setTimeout(() => {
+                                pattern.classList.add('filtered-out');
+                            }, index * 200);
+                        });
+                    }, 1000);
+                }
+                
+                if (stepIndex === 3) {
+                    setTimeout(() => {
+                        const interestingPatterns = document.querySelectorAll('#methodCPatterns .pulse');
+                        interestingPatterns.forEach((pattern, index) => {
+                            setTimeout(() => {
+                                pattern.style.animation = 'pulse 2s infinite';
+                            }, index * 500);
+                        });
+                    }, 1000);
+                }
+            }
+        }
+
+        function startDemo() {
+            if (demoInProgress) return;
+            demoInProgress = true;
+            currentStep = -1;
+            nextStep();
+        }
+
+        function nextStep() {
+            if (currentStep < 5) {
+                currentStep++;
+                showStep(currentStep);
+            }
+            if (currentStep === 5) {
+                demoInProgress = false;
+            }
+        }
+
+        function resetDemo() {
+            demoInProgress = false;
+            currentStep = -1;
+            
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+            
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => step.classList.remove('active'));
+            
+            // Reset filtered patterns
+            const filteredPatterns = document.querySelectorAll('.filtered-out');
+            filteredPatterns.forEach(pattern => pattern.classList.remove('filtered-out'));
+            
+            // Reset progress bar
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Scroll to top smoothly
+            window.scrollTo({ 
+                top: 0, 
+                behavior: 'smooth' 
+            });
+        }
+
+        function autoPlay() {
+            resetDemo();
+            setTimeout(() => {
+                startDemo();
+                autoPlayInterval = setInterval(() => {
+                    if (currentStep < 5) {
+                        nextStep();
+                    } else {
+                        clearInterval(autoPlayInterval);
+                        autoPlayInterval = null;
+                    }
+                }, 4000); // 4 seconds per step
+            }, 500);
+        }
+
+        // Interactive pattern clicking
+        document.addEventListener('DOMContentLoaded', function() {
+            const patterns = document.querySelectorAll('.pattern');
+            patterns.forEach(pattern => {
+                pattern.addEventListener('click', function() {
+                    if (this.classList.contains('trivial')) {
+                        this.style.background = 'linear-gradient(135deg, #ffcccb, #ffb3ba)';
+                        this.title = 'Trivial pattern - low business value';
+                    } else if (this.classList.contains('interesting')) {
+                        this.style.background = 'linear-gradient(135deg, #d4edda, #c3e6cb)';
+                        this.title = 'Interesting pattern - high business value!';
+                    }
+                });
+            });
+            
+            // Auto-start demo after 3 seconds
+            setTimeout(() => {
+                if (currentStep === -1) {
+                    startDemo();
+                }
+            }, 3000);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                nextStep();
+            } else if (event.key === 'ArrowLeft') {
+                if (currentStep > 0) {
+                    currentStep -= 2;
+                    nextStep();
+                }
+            } else if (event.key === 'r' || event.key === 'R') {
+                resetDemo();
+            } else if (event.key === 'a' || event.key === 'A') {
+                autoPlay();
+            }
+        });
+
+        // Smooth scrolling for next step buttons
+        function scrollToStep(stepIndex) {
+            const step = document.getElementById(`step${stepIndex}`);
+            if (step) {
+                step.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        }
+
+        // Enhanced next step function with smooth scrolling
+        const originalNextStep = nextStep;
+        nextStep = function() {
+            originalNextStep();
+            setTimeout(() => {
+                scrollToStep(currentStep);
+            }, 200);
+        }
+    </script>
+</body>
+</html>
