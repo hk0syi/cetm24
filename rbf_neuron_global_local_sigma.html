@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RBF Network: Global vs Local σ</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+  h2 { margin-top: 0; }
+  canvas { border: 1px solid #ccc; width: 100%; height: auto; }
+  .controls { margin: 10px 0; }
+  .legend { margin-top: 10px; font-size: 14px; }
+  .legend span { display: inline-block; width: 20px; height: 20px; margin-right: 5px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<h2>RBF Neurons: Global σ vs Local σ</h2>
+<p>This demo shows how individual RBF neurons (Gaussian functions) respond under global vs local spreads.</p>
+
+<div class="controls">
+  <label><input type="radio" name="mode" value="global" checked> Global σ (uniform width)</label>
+  <label><input type="radio" name="mode" value="local"> Local σ (per neuron width)</label>
+</div>
+
+<canvas id="rbfCanvas" width="600" height="400"></canvas>
+
+<div class="legend">
+  <strong>Legend:</strong><br>
+  <span style="background:red"></span> Neuron 1 &nbsp;
+  <span style="background:blue"></span> Neuron 2 &nbsp;
+  <span style="background:green"></span> Neuron 3
+</div>
+
+<script>
+const canvas = document.getElementById("rbfCanvas");
+const ctx = canvas.getContext("2d");
+
+// Example 1D centers (for simplicity visualize in 1D)
+const centers = [2, 5, 8];
+const colors = ["red","blue","green"];
+
+// Compute global sigma
+const dmax = Math.max(...centers) - Math.min(...centers);
+const globalSigma = dmax / Math.sqrt(centers.length);
+
+// Compute local sigmas (distance to nearest neighbor)
+let localSigmas = centers.map((c,i) => {
+  let others = centers.filter((_,j) => j!==i);
+  let nearest = Math.min(...others.map(o => Math.abs(o-c)));
+  return nearest/2; // half nearest distance
+});
+
+// Gaussian RBF
+function rbf(x, c, sigma) {
+  return Math.exp(-((x-c)**2)/(2*sigma*sigma));
+}
+
+// Draw function curves
+function draw(mode="global") {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.lineWidth = 2;
+
+  const scaleX = canvas.width/10; // x range 0-10
+  const scaleY = canvas.height;
+
+  centers.forEach((c,idx) => {
+    ctx.beginPath();
+    ctx.strokeStyle = colors[idx];
+    for(let px=0; px<=canvas.width; px++) {
+      let x = px/scaleX;
+      let sigma = (mode==="global") ? globalSigma : localSigmas[idx];
+      let y = rbf(x,c,sigma);
+      let py = canvas.height - y*scaleY*0.9; // scale to canvas
+      if(px===0) ctx.moveTo(px,py);
+      else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // mark center
+    ctx.fillStyle = colors[idx];
+    ctx.beginPath();
+    ctx.arc(c*scaleX, canvas.height-10, 5, 0, 2*Math.PI);
+    ctx.fill();
+  });
+}
+
+// Initial draw
+draw("global");
+
+// Toggle mode
+document.querySelectorAll("input[name=mode]").forEach(radio => {
+  radio.addEventListener("change", e=>{
+    draw(e.target.value);
+  });
+});
+</script>
+
+</body>
+</html>
