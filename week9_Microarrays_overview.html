@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Microarray: From Biology to Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .key-concept {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .process-container {
+            display: grid;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .step.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #4ecdc4;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .step-content {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .step.active .step-content {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .microarray-simulation {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .chip-container {
+            background: #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            width: fit-content;
+            border: 3px solid #666;
+        }
+
+        .microarray-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 30px);
+            gap: 3px;
+            margin: 20px 0;
+        }
+
+        .probe-spot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .probe-spot:hover {
+            transform: scale(1.2);
+        }
+
+        .probe-spot.healthy { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        .probe-spot.cancer { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        .probe-spot.both { background: #ffff00; box-shadow: 0 0 10px #ffff00; }
+        .probe-spot.none { background: #333; }
+
+        .color-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .transformation-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            color: #4ecdc4;
+            margin: 0 10px;
+        }
+
+        .simulate-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 10px;
+        }
+
+        .simulate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-output {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            display: none;
+        }
+
+        .benefits-problems {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .benefits, .problems {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .benefits {
+            border: 2px solid #4ecdc4;
+        }
+
+        .problems {
+            border: 2px solid #ff6b6b;
+        }
+
+        .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .transformation-flow {
+                flex-direction: column;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+            
+            .benefits-problems {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 DNA Microarray Explorer</h1>
+            <p>Discover how biological material transforms into digital data!</p>
+        </div>
+
+        <div class="key-concept">
+            <h2>🎯 Key Concept</h2>
+            <p><strong>DNA microarray is a data-collection platform, designed in a structured way, that transforms raw biological material (RNA from tissues) into digital, comparable data about gene expression.</strong></p>
+        </div>
+
+        <div class="transformation-flow">
+            <div class="flow-item">
+                <h3>🧫 Biological Material</h3>
+                <p>Raw tissue samples (healthy vs diseased)</p>
+            </div>
+            <div class="flow-arrow">➡️</div>
+            <div class="flow-item">
+                <h3>⚗️ Laboratory Processing</h3>
+                <p>Extract RNA, create labeled cDNA</p>
+            </div>
+            <div class="flow-arrow">➡️</div>
+            <div class="flow-item">
+                <h3>🔬 Microarray Chip</h3>
+                <p>Structured platform with thousands of probes</p>
+            </div>
+            <div class="flow-arrow">➡️</div>
+            <div class="flow-item">
+                <h3>💻 Digital Data</h3>
+                <p>Comparable gene expression patterns</p>
+            </div>
+        </div>
+
+        <div class="process-container">
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">🧫 Collect Samples</div>
+                </div>
+                <div class="step-content">
+                    <p><strong>Example:</strong> Healthy skin tissue vs Cancerous skin tissue</p>
+                    <p>These provide the biological material for testing. Think of this as gathering the "raw ingredients" for our genetic recipe analysis.</p>
+                </div>
+            </div>
+
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">🧪 Isolate mRNA</div>
+                </div>
+                <div class="step-content">
+                    <p>Extract RNA using solvents or columns, then isolate mRNA specifically using beads with poly-T tails that bind to the poly-A tail of mRNA.</p>
+                    <p><strong>Why mRNA?</strong> Because genes are expressed as mRNA - this tells us which genes are actually "switched on"!</p>
+                </div>
+            </div>
+
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">🏷️ Create Labeled cDNA</div>
+                </div>
+                <div class="step-content">
+                    <p>Convert mRNA into cDNA (complementary DNA) using reverse transcriptase.</p>
+                    <p><strong>Add fluorescent labels:</strong></p>
+                    <ul>
+                        <li><span style="color: #00ff00;">🟢 Cyanine 3 (green)</span> → for healthy cells</li>
+                        <li><span style="color: #ff0000;">🔴 Cyanine 5 (red)</span> → for cancerous cells</li>
+                    </ul>
+                    <p>Now we have color-tagged cDNA copies of our original mRNAs!</p>
+                </div>
+            </div>
+
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <div class="step-title">🧬 Hybridization</div>
+                </div>
+                <div class="step-content">
+                    <p>Apply the labeled cDNA onto the microarray plate.</p>
+                    <p>Each cDNA molecule binds to its complementary DNA probe spot - like finding the perfect puzzle piece!</p>
+                </div>
+            </div>
+
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <div class="step-title">📸 Scanning</div>
+                </div>
+                <div class="step-content">
+                    <p>Use a microarray scanner with a laser. The laser makes the fluorescent tags glow, and a camera records the glowing spots.</p>
+                    <p>This is where biology becomes digital data!</p>
+                </div>
+            </div>
+
+            <div class="step" onclick="toggleStep(this)">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <div class="step-title">📊 Data Analysis</div>
+                </div>
+                <div class="step-content">
+                    <p><strong>Color interpretation:</strong></p>
+                    <ul>
+                        <li><span style="color: #00ff00;">🟢 Green spot</span> → more expression in healthy cells</li>
+                        <li><span style="color: #ff0000;">🔴 Red spot</span> → more expression in cancer cells</li>
+                        <li><span style="color: #ffff00;">🟡 Yellow spot</span> → both samples expressed equally</li>
+                        <li><span style="color: #666;">⚫ Black spot</span> → no expression detected</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="microarray-simulation">
+            <h2>🔬 Interactive Microarray Simulation</h2>
+            <p>Click the buttons to simulate different gene expression patterns!</p>
+            
+            <div class="chip-container">
+                <h3>Microarray Chip</h3>
+                <div class="microarray-grid" id="microarray">
+                    <!-- Grid will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00ff00;"></div>
+                    <span>Higher in Healthy</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff0000;"></div>
+                    <span>Higher in Cancer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffff00;"></div>
+                    <span>Equal Expression</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #333;"></div>
+                    <span>No Expression</span>
+                </div>
+            </div>
+
+            <button class="simulate-btn" onclick="simulateHealthyPattern()">🌱 Simulate Healthy Pattern</button>
+            <button class="simulate-btn" onclick="simulateCancerPattern()">🔴 Simulate Cancer Pattern</button>
+            <button class="simulate-btn" onclick="simulateRandomPattern()">🎲 Random Pattern</button>
+            <button class="simulate-btn" onclick="clearArray()">🧹 Clear Array</button>
+
+            <div class="data-output" id="dataOutput">
+                <h4>📊 Digital Data Output:</h4>
+                <pre id="dataContent"></pre>
+            </div>
+        </div>
+
+        <div class="benefits-problems">
+            <div class="benefits">
+                <h3><span class="icon">✅</span>Benefits</h3>
+                <ul>
+                    <li>Tests thousands of genes simultaneously</li>
+                    <li>Small, portable platform</li>
+                    <li>Fast insights for research and medicine</li>
+                    <li>Standardized, reproducible format</li>
+                    <li>Cost-effective for large studies</li>
+                </ul>
+            </div>
+            <div class="problems">
+                <h3><span class="icon">⚠️</span>Limitations</h3>
+                <ul>
+                    <li>Limited dynamic range (on/off rather than precise levels)</li>
+                    <li>Risk of contamination or cross-hybridization</li>
+                    <li>Generates massive datasets requiring analysis</li>
+                    <li>Cannot detect novel sequences</li>
+                    <li>Less sensitive than newer methods</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="key-concept">
+            <h2>💡 Remember</h2>
+            <p>A DNA microarray is like a <strong>genetic fingerprinting chip</strong> that shows which genes are "switched on" or "off". It's a bridge between the messy, complex world of biology and the clean, comparable world of digital data - enabling scientists to spot patterns, identify disease markers, and understand how treatments affect gene expression.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the microarray grid
+        function initializeMicroarray() {
+            const grid = document.getElementById('microarray');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 64; i++) {
+                const spot = document.createElement('div');
+                spot.className = 'probe-spot';
+                spot.dataset.index = i;
+                spot.addEventListener('click', function() {
+                    cycleSpotColor(this);
+                });
+                grid.appendChild(spot);
+            }
+        }
+
+        function cycleSpotColor(spot) {
+            if (spot.classList.contains('healthy')) {
+                spot.className = 'probe-spot cancer';
+            } else if (spot.classList.contains('cancer')) {
+                spot.className = 'probe-spot both';
+            } else if (spot.classList.contains('both')) {
+                spot.className = 'probe-spot none';
+            } else {
+                spot.className = 'probe-spot healthy';
+            }
+            updateDataOutput();
+        }
+
+        function simulateHealthyPattern() {
+            const spots = document.querySelectorAll('.probe-spot');
+            spots.forEach((spot, index) => {
+                const rand = Math.random();
+                if (rand < 0.4) {
+                    spot.className = 'probe-spot healthy';
+                } else if (rand < 0.5) {
+                    spot.className = 'probe-spot cancer';
+                } else if (rand < 0.7) {
+                    spot.className = 'probe-spot both';
+                } else {
+                    spot.className = 'probe-spot none';
+                }
+            });
+            updateDataOutput();
+        }
+
+        function simulateCancerPattern() {
+            const spots = document.querySelectorAll('.probe-spot');
+            spots.forEach((spot, index) => {
+                const rand = Math.random();
+                if (rand < 0.2) {
+                    spot.className = 'probe-spot healthy';
+                } else if (rand < 0.6) {
+                    spot.className = 'probe-spot cancer';
+                } else if (rand < 0.8) {
+                    spot.className = 'probe-spot both';
+                } else {
+                    spot.className = 'probe-spot none';
+                }
+            });
+            updateDataOutput();
+        }
+
+        function simulateRandomPattern() {
+            const spots = document.querySelectorAll('.probe-spot');
+            const patterns = ['healthy', 'cancer', 'both', 'none'];
+            spots.forEach(spot => {
+                const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                spot.className = `probe-spot ${randomPattern}`;
+            });
+            updateDataOutput();
+        }
+
+        function clearArray() {
+            const spots = document.querySelectorAll('.probe-spot');
+            spots.forEach(spot => {
+                spot.className = 'probe-spot';
+            });
+            document.getElementById('dataOutput').style.display = 'none';
+        }
+
+        function updateDataOutput() {
+            const spots = document.querySelectorAll('.probe-spot');
+            let healthyCount = 0;
+            let cancerCount = 0;
+            let bothCount = 0;
+            let noneCount = 0;
+
+            spots.forEach(spot => {
+                if (spot.classList.contains('healthy')) healthyCount++;
+                else if (spot.classList.contains('cancer')) cancerCount++;
+                else if (spot.classList.contains('both')) bothCount++;
+                else noneCount++;
+            });
+
+            const total = spots.length;
+            const dataContent = `
+Gene Expression Analysis Results:
+================================
+Total Probes: ${total}
+
+Healthy-dominant genes: ${healthyCount} (${((healthyCount/total)*100).toFixed(1)}%)
+Cancer-dominant genes:  ${cancerCount} (${((cancerCount/total)*100).toFixed(1)}%)
+Equally expressed:      ${bothCount} (${((bothCount/total)*100).toFixed(1)}%)
+Silent genes:           ${noneCount} (${((noneCount/total)*100).toFixed(1)}%)
+
+Digital Transformation Complete! 
+🧬 → 💻 Biology has become comparable data
+            `.trim();
+
+            document.getElementById('dataContent').textContent = dataContent;
+            document.getElementById('dataOutput').style.display = 'block';
+        }
+
+        function toggleStep(step) {
+            // Close all other steps
+            document.querySelectorAll('.step').forEach(s => {
+                if (s !== step) s.classList.remove('active');
+            });
+            
+            // Toggle current step
+            step.classList.toggle('active');
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initializeMicroarray);
+    </script>
+</body>
+</html>
