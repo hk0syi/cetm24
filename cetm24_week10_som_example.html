@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Self-Organizing Map (SOM)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #1a237e;
+        }
+        #visualization {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 250px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background-color: #3949ab;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #283593;
+        }
+        button:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+        }
+        #info-panel {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #info-panel span {
+            font-weight: bold;
+            color: #c51162;
+        }
+        #explanation {
+            max-width: 800px;
+            margin-top: 20px;
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3949ab;
+        }
+        h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Interactive Self-Organizing Map (SOM) 🧠</h1>
+
+    <div id="visualization">
+        <canvas id="somCanvas" width="600" height="600"></canvas>
+        <div id="controls-panel">
+            <h3>Controls</h3>
+            <button id="startButton">▶️ Start Training</button>
+            <button id="pauseButton" disabled>⏸️ Pause</button>
+            <button id="stepButton">⏯️ Next Step</button>
+            <button id="resetButton">🔄 Reset</button>
+            <div id="info-panel">
+                <p><strong>Epoch:</strong> <span id="epoch">0</span></p>
+                <p><strong>Step (t):</strong> <span id="step">0</span></p>
+                <p><strong>Learning Rate (α):</strong> <span id="alpha">N/A</span></p>
+                <p><strong>Radius (σ):</strong> <span id="sigma">N/A</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="explanation">
+        <h2>How to Teach With This Tool 🧑‍🏫</h2>
+        <p>This visualization shows how a neural network learns to represent data. The goal is for the <strong>red grid of neurons</strong> to stretch and organize itself to match the shape of the <strong>blue data points</strong>.</p>
+        <ol>
+            <li><strong>The Setup:</strong> We start with a random grid of neurons (red dots) and some data points (blue dots).</li>
+            <li><strong>Pick a Data Point (Yellow):</strong> At each step, one blue data point is chosen. It's highlighted in yellow.</li>
+            <li><strong>Find the Closest Neuron (Green):</strong> The algorithm finds the single red neuron that is closest to the yellow data point. This is the <strong>Best Matching Unit (BMU)</strong>, which is highlighted in green.</li>
+            <li><strong>Update the Grid:</strong> The BMU and its neighbors on the red grid are pulled towards the yellow data point. The BMU moves the most, and its neighbors are pulled along with it.</li>
+            <li><strong>Repeat & Refine:</strong> This process repeats thousands of times. Over time, the "pull" (Learning Rate) gets weaker, allowing the grid to make smaller, fine-tuning adjustments until it forms a map of the data.</li>
+        </ol>
+    </div>
+
+    <script>
+        // === Canvas and DOM Elements ===
+        const canvas = document.getElementById('somCanvas');
+        const ctx = canvas.getContext('2d');
+        const epochEl = document.getElementById('epoch');
+        const stepEl = document.getElementById('step');
+        const alphaEl = document.getElementById('alpha');
+        const sigmaEl = document.getElementById('sigma');
+        const startBtn = document.getElementById('startButton');
+        const pauseBtn = document.getElementById('pauseButton');
+        const stepBtn = document.getElementById('stepButton');
+        const resetBtn = document.getElementById('resetButton');
+
+        // === SOM Settings ===
+        const GRID_SHAPE = { m: 10, n: 10 };
+        const EPOCHS = 50;
+        const ALPHA0 = 0.8; // Initial learning rate
+        const SIGMA0 = Math.max(GRID_SHAPE.m, GRID_SHAPE.n) / 2.0;
+        const N_SAMPLES = 150;
+
+        // === State Variables ===
+        let X, W; // Data and Weights
+        let t = 0;
+        let currentEpoch = 0;
+        let isRunning = false;
+        let animationFrameId;
+        let currentOrder = [];
+        let currentOrderIndex = 0;
+        let totalSteps = 0;
+
+        // === Visualization State ===
+        let lastInput = null;
+        let lastBMU = null;
+        let lastH = null;
+
+        // === Main Logic ===
+        function initialize() {
+            t = 0;
+            currentEpoch = 0;
+            isRunning = false;
+            currentOrder = [];
+            currentOrderIndex = 0;
+            lastInput = null;
+            lastBMU = null;
+            lastH = null;
+
+            // 1. Generate sample data (three distinct clusters)
+            X = [];
+            for (let i = 0; i < N_SAMPLES / 3; i++) X.push([Math.random() * 0.3 + 0.1, Math.random() * 0.3 + 0.1]);
+            for (let i = 0; i < N_SAMPLES / 3; i++) X.push([Math.random() * 0.3 + 0.6, Math.random() * 0.3 + 0.6]);
+            for (let i = 0; i < N_SAMPLES / 3; i++) X.push([Math.random() * 0.3 + 0.1, Math.random() * 0.3 + 0.6]);
+            
+            // 2. Initialize weights randomly
+            W = Array.from({ length: GRID_SHAPE.m }, () => 
+                Array.from({ length: GRID_SHAPE.n }, () => [Math.random(), Math.random()])
+            );
+            
+            totalSteps = EPOCHS * X.length;
+            updateInfoPanel();
+            draw();
+            updateButtonState();
+        }
+
+        function trainingStep() {
+            if (currentEpoch >= EPOCHS) {
+                pauseTraining();
+                return;
+            }
+
+            // Check if we need to start a new epoch
+            if (currentOrderIndex === 0) {
+                currentEpoch++;
+                // Shuffle sample order for this epoch
+                currentOrder = Array.from({ length: X.length }, (_, i) => i)
+                                  .sort(() => Math.random() - 0.5);
+            }
+
+            const x = X[currentOrder[currentOrderIndex]];
+            
+            // Time-decayed learning rate and neighborhood radius
+            const alpha = ALPHA0 * Math.exp(-t / totalSteps);
+            const sigma = SIGMA0 * Math.exp(-t / totalSteps);
+
+            // 1) Locate BMU
+            const bmuCoord = findBMU(x, W);
+            lastBMU = bmuCoord;
+            lastInput = x;
+
+            // 2) Compute grid distance and neighborhood function `h`
+            const h = [];
+            for (let i = 0; i < GRID_SHAPE.m; i++) {
+                h[i] = [];
+                for (let j = 0; j < GRID_SHAPE.n; j++) {
+                    const gridDist2 = (i - bmuCoord.i)**2 + (j - bmuCoord.j)**2;
+                    h[i][j] = Math.exp(-gridDist2 / (2.0 * sigma**2));
+                }
+            }
+            lastH = h;
+
+            // 3) Update weights
+            for (let i = 0; i < GRID_SHAPE.m; i++) {
+                for (let j = 0; j < GRID_SHAPE.n; j++) {
+                    const weight = W[i][j];
+                    const influence = h[i][j];
+                    weight[0] += alpha * influence * (x[0] - weight[0]);
+                    weight[1] += alpha * influence * (x[1] - weight[1]);
+                }
+            }
+            
+            // Update state
+            t++;
+            currentOrderIndex = (currentOrderIndex + 1) % X.length;
+
+            updateInfoPanel(alpha, sigma);
+            draw();
+        }
+
+        function findBMU(x, W) {
+            let min_dist2 = Infinity;
+            let bmu_coord = { i: -1, j: -1 };
+            for (let i = 0; i < GRID_SHAPE.m; i++) {
+                for (let j = 0; j < GRID_SHAPE.n; j++) {
+                    const dist2 = (W[i][j][0] - x[0])**2 + (W[i][j][1] - x[1])**2;
+                    if (dist2 < min_dist2) {
+                        min_dist2 = dist2;
+                        bmu_coord = { i, j };
+                    }
+                }
+            }
+            return bmu_coord;
+        }
+
+        // === Drawing Functions ===
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw data points (blue)
+            ctx.fillStyle = 'rgba(0, 100, 200, 0.7)';
+            X.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point[0] * canvas.width, point[1] * canvas.height, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            // Highlight last input (yellow)
+            if (lastInput) {
+                ctx.fillStyle = 'gold';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(lastInput[0] * canvas.width, lastInput[1] * canvas.height, 8, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(200, 0, 0, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < GRID_SHAPE.m; i++) {
+                for (let j = 0; j < GRID_SHAPE.n; j++) {
+                    if (i < GRID_SHAPE.m - 1) drawLine(W[i][j], W[i + 1][j]);
+                    if (j < GRID_SHAPE.n - 1) drawLine(W[i][j], W[i][j + 1]);
+                }
+            }
+
+            // Draw neurons (red, with influence)
+            for (let i = 0; i < GRID_SHAPE.m; i++) {
+                for (let j = 0; j < GRID_SHAPE.n; j++) {
+                    let radius = 5;
+                    let color = 'rgba(200, 0, 0, 0.8)';
+                    // Highlight BMU (green)
+                    if (lastBMU && i === lastBMU.i && j === lastBMU.j) {
+                        color = 'limegreen';
+                        radius = 8;
+                    } else if (lastH) {
+                        // Show neighborhood influence
+                        const influence = lastH[i][j];
+                        const baseColor = 200 * (1 - influence);
+                        color = `rgba(${200}, ${baseColor}, ${baseColor}, 0.8)`;
+                        radius = 4 + 4 * influence;
+                    }
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(W[i][j][0] * canvas.width, W[i][j][1] * canvas.height, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function drawLine(p1, p2) {
+            ctx.beginPath();
+            ctx.moveTo(p1[0] * canvas.width, p1[1] * canvas.height);
+            ctx.lineTo(p2[0] * canvas.width, p2[1] * canvas.height);
+            ctx.stroke();
+        }
+
+        // === UI and Control Functions ===
+        function updateInfoPanel(alpha, sigma) {
+            epochEl.textContent = currentEpoch;
+            stepEl.textContent = t;
+            alphaEl.textContent = alpha ? alpha.toFixed(4) : ALPHA0.toFixed(4);
+            sigmaEl.textContent = sigma ? sigma.toFixed(4) : SIGMA0.toFixed(4);
+        }
+
+        function updateButtonState() {
+            startBtn.disabled = isRunning;
+            pauseBtn.disabled = !isRunning;
+            stepBtn.disabled = isRunning;
+        }
+
+        function loop() {
+            if (!isRunning) return;
+            trainingStep();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function startTraining() {
+            if (isRunning) return;
+            isRunning = true;
+            updateButtonState();
+            loop();
+        }
+
+        function pauseTraining() {
+            isRunning = false;
+            updateButtonState();
+            cancelAnimationFrame(animationFrameId);
+        }
+        
+        function doOneStep() {
+            if (isRunning) return;
+            trainingStep();
+        }
+
+        // === Event Listeners ===
+        startBtn.addEventListener('click', startTraining);
+        pauseBtn.addEventListener('click', pauseTraining);
+        stepBtn.addEventListener('click', doOneStep);
+        resetBtn.addEventListener('click', () => {
+            pauseTraining();
+            initialize();
+        });
+
+        // Initialize on page load
+        window.onload = initialize;
+    </script>
+</body>
+</html>
