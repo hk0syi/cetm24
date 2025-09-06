@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Analysis Teaching Tool with Clusters</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f9fafb;
+      color: #333;
+    }
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    h2 {
+      margin-top: 2rem;
+      color: #1d4ed8;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.3rem;
+    }
+    .event-box {
+      background: #ffffff;
+      border: 2px solid #2563eb;
+      border-radius: 8px;
+      padding: 1rem 2rem;
+      margin: 1rem 0;
+      font-weight: bold;
+      text-align: center;
+    }
+    .dimension-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .dimension {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+    .dimension:hover {
+      transform: translateY(-4px);
+      background: #f0f9ff;
+    }
+    .details {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #444;
+    }
+    .extension-title {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #1d4ed8;
+    }
+    .cluster-box {
+      background: #fff7ed;
+      border: 1px dashed #f97316;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    .cluster-box strong {
+      color: #c2410c;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Interactive Event Analysis Tool</h1>
+    <p>Explore core dimensions, extended data, and clustering for different events</p>
+  </header>
+
+  <div class="container">
+    <!-- PRODUCT PURCHASE EVENT -->
+    <h2>📦 Event 1: Customer buys a Product</h2>
+    <div class="event-box">
+      Event: A customer completes a purchase
+    </div>
+
+    <div class="dimension-grid">
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Who (Customer)</strong>
+        <div class="details">
+          <ul>
+            <li>Customer ID</li>
+            <li>Demographics (age, gender, income)</li>
+            <li>Loyalty program level</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>What (Product)</strong>
+        <div class="details">
+          <ul>
+            <li>Product ID, category</li>
+            <li>Brand, supplier</li>
+            <li>Quantity purchased</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>When (Time)</strong>
+        <div class="details">
+          <ul>
+            <li>Transaction timestamp</li>
+            <li>Date, weekday, season</li>
+            <li>Time of day</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Where (Location)</strong>
+        <div class="details">
+          <ul>
+            <li>Store branch, region, country</li>
+            <li>Shipping address</li>
+            <li>Online IP / device region</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>How (Channel)</strong>
+        <div class="details">
+          <ul>
+            <li>Mobile app, website, physical store</li>
+            <li>Payment method</li>
+            <li>Device type</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Why (Reason)</strong>
+        <div class="details">
+          <ul>
+            <li>Discount or coupon applied</li>
+            <li>Seasonal promotion</li>
+            <li>Customer feedback</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="extension-title">🔍 Extended Data</div>
+    <div class="dimension-grid">
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Customer Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Customer lifetime value (CLV)</li>
+            <li>Purchase frequency</li>
+            <li>Churn risk / engagement score</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Product Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Cost, profit margin</li>
+            <li>Stock availability</li>
+            <li>Product rating / review count</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Transaction Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Basket size (items per order)</li>
+            <li>Total order value</li>
+            <li>Shipping method & delivery speed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cluster-box" onclick="toggleDetails(this)">
+      <strong>✨ Cluster Dimension (Discovery)</strong>
+      <div class="details">
+        <p>At first, clusters are unknown. Analysis may reveal:</p>
+        <ul>
+          <li>Frequent buyers vs occasional buyers</li>
+          <li>Electronics-focused vs fashion-focused customers</li>
+          <li>High-value vs low-value spenders</li>
+          <li>App buyers vs in-store buyers</li>
+        </ul>
+        <p><em>Direction: Clustering helps marketers segment customers without predefined labels.</em></p>
+      </div>
+    </div>
+
+
+    <!-- TRAFFIC ACCIDENT EVENT -->
+    <h2>🚦 Event 2: Traffic Accident Investigation</h2>
+    <div class="event-box">
+      Event: A traffic accident is reported and investigated
+    </div>
+
+    <div class="dimension-grid">
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Who (Parties)</strong>
+        <div class="details">
+          <ul>
+            <li>Driver ID, vehicle ID, pedestrian ID</li>
+            <li>Age, gender of drivers</li>
+            <li>License / insurance status</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>What (Accident)</strong>
+        <div class="details">
+          <ul>
+            <li>Accident type (collision, pedestrian, single vehicle)</li>
+            <li>Vehicles involved</li>
+            <li>Severity (injury, fatality, property damage)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>When (Time)</strong>
+        <div class="details">
+          <ul>
+            <li>Date & time of accident</li>
+            <li>Day of week, time of day</li>
+            <li>Season / weather impact</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Where (Location)</strong>
+        <div class="details">
+          <ul>
+            <li>GPS coordinates, road name</li>
+            <li>Urban / rural / highway</li>
+            <li>Speed zone</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>How (Conditions)</strong>
+        <div class="details">
+          <ul>
+            <li>Road condition (wet, icy, dry)</li>
+            <li>Vehicle condition (brakes, tires)</li>
+            <li>Traffic signal status</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Why (Cause)</strong>
+        <div class="details">
+          <ul>
+            <li>Human factor (distracted, alcohol, speeding)</li>
+            <li>Environmental factor (fog, rain, poor lighting)</li>
+            <li>Mechanical failure</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="extension-title">🔍 Extended Data</div>
+    <div class="dimension-grid">
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Person Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Driver history, records</li>
+            <li>Insurance data</li>
+            <li>Medical condition (if relevant)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Vehicle Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Make, model, year</li>
+            <li>Maintenance records</li>
+            <li>Safety rating</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Accident Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Police report ID</li>
+            <li>Photos, witness statements</li>
+            <li>Damage cost estimates</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dimension" onclick="toggleDetails(this)">
+        <strong>Context Extensions</strong>
+        <div class="details">
+          <ul>
+            <li>Traffic volume data</li>
+            <li>Road design</li>
+            <li>Signage / crosswalk presence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cluster-box" onclick="toggleDetails(this)">
+      <strong>✨ Cluster Dimension (Discovery)</strong>
+      <div class="details">
+        <p>At first, clusters are unknown. Analysis may reveal:</p>
+        <ul>
+          <li>Accidents by location (intersections, highways)</li>
+          <li>Accidents by time (night vs rush hour)</li>
+          <li>Accidents by severity (minor vs fatal)</li>
+          <li>Accidents by cause (driver, vehicle, environment)</li>
+        </ul>
+        <p><em>Direction: Clustering helps investigators find accident patterns and hotspots.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDetails(element) {
+      const details = element.querySelector('.details');
+      const isVisible = details.style.display === 'block';
+      document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
+      details.style.display = isVisible ? 'none' : 'block';
+    }
+  </script>
+</body>
+</html>
