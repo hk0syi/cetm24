@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protein-Protein Interaction Network Analysis</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px 0;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo i {
+      font-size: 32px;
+      color: #667eea;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    .logo p {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin: 0;
+    }
+
+    .stats {
+      display: flex;
+      gap: 30px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 500px 1fr;
+      gap: 30px;
+      height: calc(100vh - 200px);
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-header i {
+      font-size: 20px;
+    }
+
+    .panel-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .panel-content {
+      height: calc(100% - 80px);
+      overflow: hidden;
+    }
+
+    .data-controls {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .search-box i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c757d;
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .filter-item input[type="range"] {
+      width: 80px;
+    }
+
+    .table-container {
+      height: calc(100% - 120px);
+      overflow: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      background: #f8f9fa;
+      position: sticky;
+      top: 0;
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 10;
+    }
+
+    .data-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #f1f3f4;
+      transition: background-color 0.2s;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .score-cell {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .score-high {
+      color: #28a745;
+      background-color: #d4edda;
+      border-radius: 4px;
+    }
+
+    .score-medium {
+      color: #ffc107;
+      background-color: #fff3cd;
+      border-radius: 4px;
+    }
+
+    .score-low {
+      color: #dc3545;
+      background-color: #f8d7da;
+      border-radius: 4px;
+    }
+
+    .protein-name {
+      font-weight: 600;
+      color: #667eea;
+      background-color: #e8ecff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .network-container {
+      position: relative;
+    }
+
+    .network-controls {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+
+    .control-btn:hover {
+      background: #5a6fd8;
+    }
+
+    .control-btn.secondary {
+      background: #6c757d;
+    }
+
+    .control-btn.secondary:hover {
+      background: #545b62;
+    }
+
+    #mynetwork {
+      height: calc(100% - 80px);
+      background: linear-gradient(45deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .legend h4 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .legend-line {
+      width: 30px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .legend-line.high { background: #28a745; }
+    .legend-line.medium { background: #ffc107; }
+    .legend-line.low { background: #dc3545; }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 1200px) {
+      .main-container {
+        grid-template-columns: 400px 1fr;
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .stats {
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-project-diagram"></i>
+        <div>
+          <h1>ProteinNet</h1>
+          <p>Protein-Protein Interaction Network Analysis</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-number" id="nodeCount">18</span>
+          <span class="stat-label">Proteins</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="edgeCount">12</span>
+          <span class="stat-label">Interactions</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="avgScore">0.742</span>
+          <span class="stat-label">Avg Score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="panel">
+      <div class="panel-header">
+        <i class="fas fa-table"></i>
+        <h3>Interaction Data</h3>
+      </div>
+      <div class="panel-content">
+        <div class="data-controls">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search proteins or interactions...">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="filter-controls">
+            <div class="filter-item">
+              <label>Min Score:</label>
+              <input type="range" id="scoreFilter" min="0" max="1" step="0.1" value="0">
+              <span id="scoreValue">0.0</span>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Protein 1</th>
+                <th>Protein 2</th>
+                <th>Combined Score</th>
+                <th>Experimental</th>
+                <th>Knowledge</th>
+                <th>Text Mining</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody">
+              <!-- Data will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <i class="fas fa-share-alt"></i>
+        <h3>Network Visualization</h3>
+      </div>
+      <div class="panel-content">
+        <div class="network-controls">
+          <div class="control-group">
+            <button class="control-btn" onclick="fitNetwork()">
+              <i class="fas fa-compress-arrows-alt"></i> Fit All
+            </button>
+            <button class="control-btn secondary" onclick="togglePhysics()">
+              <i class="fas fa-play"></i> <span id="physicsToggle">Stop</span>
+            </button>
+          </div>
+          <div class="control-group">
+            <label>Layout:</label>
+            <select id="layoutSelect" onchange="changeLayout()">
+              <option value="barnesHut">Force-directed</option>
+              <option value="hierarchical">Hierarchical</option>
+              <option value="random">Random</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Node Size:</label>
+            <input type="range" id="nodeSizeSlider" min="10" max="30" value="15" onchange="updateNodeSize()">
+          </div>
+        </div>
+        <div class="network-container">
+          <div id="mynetwork"></div>
+          <div class="legend">
+            <h4>Interaction Strength</h4>
+            <div class="legend-item">
+              <div class="legend-line high"></div>
+              <span>High (≥0.8)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-line medium"></div>
+              <span>Medium (0.5-0.8)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-line low"></div>
+              <span>Low (<0.5)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Original data
+    const proteinData = [
+      {node1:"E2F2", node2:"TP53", experimental:0.000, knowledge:0.000, textmining:0.540, combined_score:0.540},
+      {node1:"MDM2", node2:"RB1", experimental:0.999, knowledge:0.900, textmining:0.623, combined_score:0.999},
+      {node1:"CDK1", node2:"UBC", experimental:0.997, knowledge:0.900, textmining:0.197, combined_score:0.999},
+      {node1:"UBC", node2:"CDK4", experimental:0.974, knowledge:0.000, textmining:0.212, combined_score:0.979},
+      {node1:"TP53", node2:"PIK3CA", experimental:0.000, knowledge:0.000, textmining:0.948, combined_score:0.948},
+      {node1:"CCND3", node2:"E2F2", experimental:0.184, knowledge:0.900, textmining:0.652, combined_score:0.969},
+      {node1:"SP1", node2:"CCND2", experimental:0.000, knowledge:0.900, textmining:0.243, combined_score:0.921},
+      {node1:"BMI1", node2:"CDKN2C", experimental:0.000, knowledge:0.000, textmining:0.416, combined_score:0.416},
+      {node1:"E2F2", node2:"CDK6", experimental:0.244, knowledge:0.900, textmining:0.740, combined_score:0.978},
+      {node1:"WRN", node2:"CDK6", experimental:0.000, knowledge:0.279, textmining:0.467, combined_score:0.467},
+      {node1:"ABL1", node2:"CDKN1A", experimental:0.000, knowledge:0.000, textmining:0.507, combined_score:0.507},
+      {node1:"UCHL1", node2:"CDKN1B", experimental:0.000, knowledge:0.169, textmining:0.624, combined_score:0.624}
+    ];
+
+    let filteredData = [...proteinData];
+    let network;
+    let nodes, edges;
+    let physicsEnabled = true;
+
+    // Initialize the application
+    function init() {
+      populateTable();
+      createNetwork();
+      setupEventListeners();
+    }
+
+    function populateTable() {
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = '';
+      
+      filteredData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="protein-name">${row.node1}</span></td>
+          <td><span class="protein-name">${row.node2}</span></td>
+          <td class="score-cell ${getScoreClass(row.combined_score)}">${row.combined_score.toFixed(3)}</td>
+          <td class="score-cell">${row.experimental.toFixed(3)}</td>
+          <td class="score-cell">${row.knowledge.toFixed(3)}</td>
+          <td class="score-cell">${row.textmining.toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getScoreClass(score) {
+      if (score >= 0.8) return 'score-high';
+      if (score >= 0.5) return 'score-medium';
+      return 'score-low';
+    }
+
+    function getEdgeColor(score) {
+      if (score >= 0.8) return '#28a745';
+      if (score >= 0.5) return '#ffc107';
+      return '#dc3545';
+    }
+
+    function createNetwork() {
+      // Create nodes
+      const nodeSet = new Set();
+      filteredData.forEach(row => {
+        nodeSet.add(row.node1);
+        nodeSet.add(row.node2);
+      });
+
+      const nodeArray = Array.from(nodeSet).map(id => ({
+        id: id,
+        label: id,
+        shape: 'dot',
+        size: 15,
+        font: { size: 14, color: '#2c3e50', face: 'Segoe UI' },
+        color: {
+          background: '#667eea',
+          border: '#4c63d2',
+          highlight: { background: '#764ba2', border: '#5a4682' }
+        },
+        borderWidth: 2,
+        shadow: { enabled: true, color: 'rgba(0,0,0,0.2)', size: 5 }
+      }));
+
+      // Create edges
+      const edgeArray = filteredData.map(row => ({
+        from: row.node1,
+        to: row.node2,
+        value: row.combined_score,
+        title: `${row.node1} ↔ ${row.node2}<br/>Score: ${row.combined_score.toFixed(3)}<br/>Experimental: ${row.experimental.toFixed(3)}<br/>Knowledge: ${row.knowledge.toFixed(3)}<br/>Text Mining: ${row.textmining.toFixed(3)}`,
+        width: 1 + row.combined_score * 8,
+        color: {
+          color: getEdgeColor(row.combined_score),
+          highlight: getEdgeColor(row.combined_score),
+          opacity: 0.8
+        },
+        smooth: {
+          enabled: true,
+          type: 'continuous',
+          roundness: 0.2
+        }
+      }));
+
+      nodes = new vis.DataSet(nodeArray);
+      edges = new vis.DataSet(edgeArray);
+
+      const options = {
+        interaction: {
+          hover: true,
+          tooltipDelay: 200,
+          hideEdgesOnDrag: false,
+          hideNodesOnDrag: false
+        },
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -30000,
+            centralGravity: 0.3,
+            springLength: 95,
+            springConstant: 0.04,
+            damping: 0.09,
+            avoidOverlap: 0.1
+          },
+          maxVelocity: 146,
+          minVelocity: 0.75,
+          timestep: 0.35,
+          stabilization: {
+            enabled: true,
+            iterations: 1000,
+            updateInterval: 25
+          }
+        },
+        edges: {
+          smooth: true,
+          arrows: {
+            to: { enabled: false }
+          }
+        },
+        nodes: {
+          chosen: {
+            node: function(values, id, selected, hovering) {
+              values.shadowColor = 'rgba(102, 126, 234, 0.5)';
+              values.shadowSize = 10;
+            }
+          }
+        }
+      };
+
+      const container = document.getElementById('mynetwork');
+      const data = { nodes: nodes, edges: edges };
+      network = new vis.Network(container, data, options);
+
+      // Update stats
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('nodeCount').textContent = nodes.length;
+      document.getElementById('edgeCount').textContent = edges.length;
+      const avgScore = filteredData.reduce((sum, row) => sum + row.combined_score, 0) / filteredData.length;
+      document.getElementById('avgScore').textContent = avgScore.toFixed(3);
+    }
+
+    function setupEventListeners() {
+      // Search functionality
+      document.getElementById('searchInput').addEventListener('input', function() {
+        filterData();
+      });
+
+      // Score filter
+      document.getElementById('scoreFilter').addEventListener('input', function() {
+        document.getElementById('scoreValue').textContent = this.value;
+        filterData();
+      });
+    }
+
+    function filterData() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const minScore = parseFloat(document.getElementById('scoreFilter').value);
+
+      filteredData = proteinData.filter(row => {
+        const matchesSearch = !searchTerm || 
+          row.node1.toLowerCase().includes(searchTerm) || 
+          row.node2.toLowerCase().includes(searchTerm);
+        const matchesScore = row.combined_score >= minScore;
+        return matchesSearch && matchesScore;
+      });
+
+      populateTable();
+      createNetwork();
+    }
+
+    function fitNetwork() {
+      network.fit({
+        animation: {
+          duration: 1000,
+          easingFunction: 'easeInOutQuad'
+        }
+      });
+    }
+
+    function togglePhysics() {
+      physicsEnabled = !physicsEnabled;
+      network.setOptions({ physics: { enabled: physicsEnabled } });
+      document.getElementById('physicsToggle').textContent = physicsEnabled ? 'Stop' : 'Start';
+    }
+
+    function changeLayout() {
+      const layout = document.getElementById('layoutSelect').value;
+      let options = { physics: { enabled: false } };
+
+      if (layout === 'hierarchical') {
+        options.layout = {
+          hierarchical: {
+            enabled: true,
+            direction: 'UD',
+            sortMethod: 'directed',
+            levelSeparation: 150,
+            nodeSpacing: 100
+          }
+        };
+      } else if (layout === 'random') {
+        options.layout = { randomSeed: Math.random() };
+      } else {
+        options.physics = { enabled: true };
+        options.layout = { hierarchical: { enabled: false } };
+      }
+
+      network.setOptions(options);
+    }
+
+    function updateNodeSize() {
+      const size = parseInt(document.getElementById('nodeSizeSlider').value);
+      const nodeUpdate = nodes.map(node => ({ ...node, size: size }));
+      nodes.update(nodeUpdate);
+    }
+
+    // Initialize when the page loads
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
