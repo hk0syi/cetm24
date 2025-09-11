@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein Interaction Network - Graph Theory</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 15px 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .content {
+            display: flex;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .visualization {
+            flex: 2;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .controls {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .controls button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #0056b3;
+        }
+        
+        .controls button.active {
+            background: #28a745;
+        }
+        
+        .info-panel {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .info-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+        
+        .info-section p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .stats {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .stats div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .stats div:last-child {
+            margin-bottom: 0;
+        }
+        
+        .node-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        #network-svg {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        
+        .node:hover {
+            stroke: #333;
+            stroke-width: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Protein Interaction Network</h1>
+            <p>Understanding Graph Theory Through Biological Networks</p>
+        </div>
+        
+        <div class="content">
+            <div class="visualization">
+                <div class="controls">
+                    <button id="resetBtn">Reset View</button>
+                    <button id="highlightHubs">Highlight Hubs</button>
+                    <button id="showPaths">Show Shortest Paths</button>
+                    <button id="toggleLabels">Toggle Labels</button>
+                </div>
+                <svg id="network-svg"></svg>
+                <div class="node-tooltip" id="tooltip"></div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-circle" style="background-color: #ff6b35;"></div>
+                        <span>Hub Proteins (High Connectivity)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-circle" style="background-color: #4ecdc4;"></div>
+                        <span>Regular Proteins</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-circle" style="background-color: #45b7d1;"></div>
+                        <span>Peripheral Proteins</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>Graph Theory Basics</h3>
+                    <p><strong>Graph G = (V, E)</strong></p>
+                    <p><strong>V (Vertices/Nodes):</strong> Individual proteins in the cell</p>
+                    <p><strong>E (Edges/Links):</strong> Interactions between proteins</p>
+                    <p>In this undirected graph, edges represent bidirectional protein interactions without implying causation.</p>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Hub Proteins</h3>
+                    <p>Proteins with many connections (high degree) are called <strong>hubs</strong>. These are often essential for cellular function and may be:</p>
+                    <p>• Critical for cell survival</p>
+                    <p>• Involved in multiple pathways</p>
+                    <p>• Potential drug targets</p>
+                    <p>• Evolutionary conserved</p>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Network Properties</h3>
+                    <div class="stats" id="networkStats">
+                        <div><span>Total Nodes:</span> <span id="nodeCount">-</span></div>
+                        <div><span>Total Edges:</span> <span id="edgeCount">-</span></div>
+                        <div><span>Hub Proteins:</span> <span id="hubCount">-</span></div>
+                        <div><span>Average Degree:</span> <span id="avgDegree">-</span></div>
+                        <div><span>Network Density:</span> <span id="density">-</span></div>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Applications</h3>
+                    <p>Graph theory is used in:</p>
+                    <p>• <strong>Biology:</strong> Protein networks, gene regulation</p>
+                    <p>• <strong>Social Science:</strong> Social media, collaboration networks</p>
+                    <p>• <strong>Technology:</strong> Internet topology, recommendation systems</p>
+                    <p>• <strong>Transportation:</strong> Route optimization, traffic flow</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate sample protein interaction network data
+        function generateProteinNetwork() {
+            const nodes = [];
+            const edges = [];
+            const numNodes = 40;
+            const hubThreshold = 8; // Nodes with degree >= 8 are hubs
+            
+            // Create nodes (proteins)
+            for (let i = 0; i < numNodes; i++) {
+                nodes.push({
+                    id: i,
+                    name: `Protein_${String.fromCharCode(65 + (i % 26))}${Math.floor(i/26) + 1}`,
+                    degree: 0,
+                    isHub: false
+                });
+            }
+            
+            // Create a scale-free network (typical of biological networks)
+            // Some nodes will have many connections (hubs)
+            const connectionProbabilities = nodes.map((_, i) => {
+                if (i < 5) return 0.4; // High probability for first few nodes (hubs)
+                if (i < 15) return 0.2; // Medium probability
+                return 0.1; // Low probability for others
+            });
+            
+            // Generate edges
+            for (let i = 0; i < numNodes; i++) {
+                for (let j = i + 1; j < numNodes; j++) {
+                    const prob = (connectionProbabilities[i] + connectionProbabilities[j]) / 2;
+                    if (Math.random() < prob) {
+                        edges.push({
+                            source: i,
+                            target: j,
+                            id: `edge_${i}_${j}`
+                        });
+                        nodes[i].degree++;
+                        nodes[j].degree++;
+                    }
+                }
+            }
+            
+            // Identify hubs
+            nodes.forEach(node => {
+                node.isHub = node.degree >= hubThreshold;
+            });
+            
+            return { nodes, edges };
+        }
+        
+        // D3.js visualization
+        class ProteinNetworkViz {
+            constructor() {
+                this.data = generateProteinNetwork();
+                this.width = 600;
+                this.height = 500;
+                this.showLabels = false;
+                this.highlightedHubs = false;
+                
+                this.initSVG();
+                this.initSimulation();
+                this.updateStats();
+                this.bindEvents();
+                this.render();
+            }
+            
+            initSVG() {
+                this.svg = d3.select("#network-svg")
+                    .attr("viewBox", `0 0 ${this.width} ${this.height}`);
+                
+                // Create groups for links and nodes
+                this.linkGroup = this.svg.append("g").attr("class", "links");
+                this.nodeGroup = this.svg.append("g").attr("class", "nodes");
+                this.labelGroup = this.svg.append("g").attr("class", "labels");
+            }
+            
+            initSimulation() {
+                this.simulation = d3.forceSimulation(this.data.nodes)
+                    .force("link", d3.forceLink(this.data.edges).id(d => d.id).distance(50))
+                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+                    .force("collision", d3.forceCollide().radius(d => this.getNodeRadius(d) + 2));
+            }
+            
+            getNodeRadius(d) {
+                if (d.isHub) return Math.max(8, Math.min(15, d.degree));
+                return Math.max(4, Math.min(8, d.degree));
+            }
+            
+            getNodeColor(d) {
+                if (d.isHub) return "#ff6b35"; // Orange for hubs
+                if (d.degree >= 4) return "#4ecdc4"; // Teal for regular
+                return "#45b7d1"; // Blue for peripheral
+            }
+            
+            render() {
+                // Render links
+                const links = this.linkGroup.selectAll(".link")
+                    .data(this.data.edges)
+                    .enter()
+                    .append("line")
+                    .attr("class", "link");
+                
+                // Render nodes
+                const nodes = this.nodeGroup.selectAll(".node")
+                    .data(this.data.nodes)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "node")
+                    .attr("r", d => this.getNodeRadius(d))
+                    .attr("fill", d => this.getNodeColor(d))
+                    .call(d3.drag()
+                        .on("start", (event, d) => this.dragStarted(event, d))
+                        .on("drag", (event, d) => this.dragged(event, d))
+                        .on("end", (event, d) => this.dragEnded(event, d)))
+                    .on("mouseover", (event, d) => this.showTooltip(event, d))
+                    .on("mouseout", () => this.hideTooltip());
+                
+                // Render labels (initially hidden)
+                const labels = this.labelGroup.selectAll(".label")
+                    .data(this.data.nodes)
+                    .enter()
+                    .append("text")
+                    .attr("class", "label")
+                    .text(d => d.name)
+                    .attr("font-size", "10px")
+                    .attr("text-anchor", "middle")
+                    .attr("dy", 3)
+                    .style("opacity", 0)
+                    .style("pointer-events", "none");
+                
+                // Update positions on simulation tick
+                this.simulation.on("tick", () => {
+                    links
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
+                    
+                    nodes
+                        .attr("cx", d => d.x)
+                        .attr("cy", d => d.y);
+                    
+                    labels
+                        .attr("x", d => d.x)
+                        .attr("y", d => d.y);
+                });
+            }
+            
+            dragStarted(event, d) {
+                if (!event.active) this.simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            dragEnded(event, d) {
+                if (!event.active) this.simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+            
+            showTooltip(event, d) {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("opacity", 1)
+                    .html(`
+                        <strong>${d.name}</strong><br/>
+                        Degree: ${d.degree}<br/>
+                        Type: ${d.isHub ? 'Hub Protein' : 'Regular Protein'}
+                    `)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 10) + "px");
+            }
+            
+            hideTooltip() {
+                d3.select("#tooltip").style("opacity", 0);
+            }
+            
+            updateStats() {
+                const totalNodes = this.data.nodes.length;
+                const totalEdges = this.data.edges.length;
+                const hubCount = this.data.nodes.filter(n => n.isHub).length;
+                const avgDegree = (totalEdges * 2 / totalNodes).toFixed(2);
+                const density = (totalEdges / (totalNodes * (totalNodes - 1) / 2)).toFixed(3);
+                
+                document.getElementById("nodeCount").textContent = totalNodes;
+                document.getElementById("edgeCount").textContent = totalEdges;
+                document.getElementById("hubCount").textContent = hubCount;
+                document.getElementById("avgDegree").textContent = avgDegree;
+                document.getElementById("density").textContent = density;
+            }
+            
+            bindEvents() {
+                document.getElementById("resetBtn").addEventListener("click", () => {
+                    this.simulation.alpha(1).restart();
+                });
+                
+                document.getElementById("highlightHubs").addEventListener("click", (e) => {
+                    this.highlightedHubs = !this.highlightedHubs;
+                    e.target.classList.toggle("active");
+                    
+                    this.nodeGroup.selectAll(".node")
+                        .transition()
+                        .duration(300)
+                        .style("opacity", d => {
+                            if (!this.highlightedHubs) return 1;
+                            return d.isHub ? 1 : 0.3;
+                        });
+                    
+                    this.linkGroup.selectAll(".link")
+                        .transition()
+                        .duration(300)
+                        .style("opacity", this.highlightedHubs ? 0.2 : 0.6);
+                });
+                
+                document.getElementById("toggleLabels").addEventListener("click", (e) => {
+                    this.showLabels = !this.showLabels;
+                    e.target.classList.toggle("active");
+                    
+                    this.labelGroup.selectAll(".label")
+                        .transition()
+                        .duration(300)
+                        .style("opacity", this.showLabels ? 1 : 0);
+                });
+                
+                document.getElementById("showPaths").addEventListener("click", (e) => {
+                    e.target.classList.toggle("active");
+                    // Simple demonstration - highlight connections of the largest hub
+                    const largestHub = this.data.nodes.reduce((max, node) => 
+                        node.degree > max.degree ? node : max);
+                    
+                    const connectedEdges = this.data.edges.filter(edge => 
+                        edge.source.id === largestHub.id || edge.target.id === largestHub.id);
+                    
+                    this.linkGroup.selectAll(".link")
+                        .style("stroke", edge => 
+                            connectedEdges.includes(edge) ? "#ff6b35" : "#999")
+                        .style("stroke-width", edge => 
+                            connectedEdges.includes(edge) ? 3 : 1.5);
+                });
+            }
+        }
+        
+        // Initialize visualization when page loads
+        document.addEventListener("DOMContentLoaded", () => {
+            new ProteinNetworkViz();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bridges of Königsberg – Introduction to Graph Theory</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    line-height: 1.6;
+    background: #f9f9f9;
+    color: #333;
+  }
+  header {
+    background: #6a5acd;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+  }
+  section {
+    padding: 1.5rem;
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    margin-top: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  }
+  h2 {
+    color: #6a5acd;
+    margin-top: 0;
+  }
+  table {
+    border-collapse: collapse;
+    margin: auto;
+    margin-bottom: 1rem;
+  }
+  td, th {
+    border: 1px solid #999;
+    padding: 6px 10px;
+    text-align: center;
+  }
+  .note-list {
+    list-style-type: square;
+    margin-left: 1.2rem;
+  }
+  .graph-diagram {
+    text-align: center;
+    margin: 1rem;
+  }
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9em;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Bridges of Königsberg</h1>
+  <p>Understanding the Birth of Graph Theory</p>
+</header>
+
+<section>
+  <h2>The Problem</h2>
+  <p>
+    In the city of Königsberg (today Kaliningrad, Russia), there were four landmasses connected by seven bridges. 
+    The challenge: <strong>Can you walk through the city crossing each bridge exactly once?</strong>
+  </p>
+  <div class="graph-diagram">
+    <!-- Simple SVG graph -->
+    <svg width="400" height="250">
+      <!-- Landmasses -->
+      <circle cx="80" cy="80" r="25" fill="lightblue"/><text x="80" y="85" text-anchor="middle">A</text>
+      <circle cx="320" cy="80" r="25" fill="lightblue"/><text x="320" y="85" text-anchor="middle">B</text>
+      <circle cx="80" cy="190" r="25" fill="lightblue"/><text x="80" y="195" text-anchor="middle">C</text>
+      <circle cx="320" cy="190" r="25" fill="lightblue"/><text x="320" y="195" text-anchor="middle">D</text>
+      <!-- Bridges (edges) -->
+      <line x1="105" y1="80" x2="295" y2="80" stroke="black" stroke-width="2"/>
+      <line x1="105" y1="75" x2="295" y2="75" stroke="black" stroke-width="2"/>
+      <line x1="80" y1="105" x2="80" y2="165" stroke="black" stroke-width="2"/>
+      <line x1="75" y1="105" x2="75" y2="165" stroke="black" stroke-width="2"/>
+      <line x1="105" y1="95" x2="295" y2="175" stroke="black" stroke-width="2"/>
+      <line x1="305" y1="105" x2="305" y2="165" stroke="black" stroke-width="2"/>
+      <line x1="105" y1="175" x2="295" y2="175" stroke="black" stroke-width="2"/>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <h2>Graph Representation</h2>
+  <p>
+    Euler abstracted the landmasses as <strong>vertices (A–D)</strong> and the bridges as <strong>edges (a–g)</strong>.
+  </p>
+  <h3>Adjacency Matrix</h3>
+  <table>
+    <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+    <tr><th>A</th><td>0</td><td>2</td><td>2</td><td>1</td></tr>
+    <tr><th>B</th><td>2</td><td>0</td><td>0</td><td>1</td></tr>
+    <tr><th>C</th><td>2</td><td>0</td><td>0</td><td>1</td></tr>
+    <tr><th>D</th><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+  </table>
+
+  <h3>Incidence Matrix</h3>
+  <table>
+    <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+    <tr><th>a</th><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+    <tr><th>b</th><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+    <tr><th>c</th><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+    <tr><th>d</th><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+    <tr><th>e</th><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+    <tr><th>f</th><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+    <tr><th>g</th><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Euler's Insight</h2>
+  <p>
+    The solution depends only on the <strong>degrees of the vertices</strong>:
+  </p>
+  <ul>
+    <li>A: degree 5</li>
+    <li>B: degree 3</li>
+    <li>C: degree 3</li>
+    <li>D: degree 3</li>
+  </ul>
+  <p>
+    A graph has:
+  </p>
+  <ul>
+    <li><strong>Eulerian circuit</strong> if all vertices have even degree</li>
+    <li><strong>Eulerian path</strong> if exactly 2 vertices have odd degree</li>
+  </ul>
+  <p><strong>Here: all 4 vertices are odd → No Eulerian walk exists.</strong></p>
+</section>
+
+<section>
+  <h2>Points to Note</h2>
+  <ul class="note-list">
+    <li>Euler was first to solve such a problem using <strong>graphs</strong>.</li>
+    <li>By representing reality as a graph, puzzles become <strong>solvable by rules</strong>.</li>
+    <li>The existence (or non-existence) of a path <strong>does not depend on ingenuity</strong>.</li>
+    <li>It is a <strong>mathematical property of the graph itself</strong>.</li>
+    <li>Networks encode properties in their <strong>structure</strong>, defining behavior.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>© Teaching Example – Bridges of Königsberg & Graph Theory</p>
+</footer>
+
+</body>
+</html>
