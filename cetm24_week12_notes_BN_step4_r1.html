@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Networks (BN) - Complete CPT Calculations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6b6b;
+        }
+        
+        h3 {
+            color: #666;
+            margin: 20px 0 10px 0;
+        }
+        
+        .network-diagram {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e9ecef;
+            transition: background-color 0.3s;
+        }
+        
+        .calculation-step {
+            background: #f8f9fa;
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .formula-box {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #ddd;
+        }
+        
+        .prior-info {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .prior-calculation {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .loan-yes-list {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .loan-no-list {
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .cpt-table {
+            display: inline-block;
+            margin: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .cpt-table-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            color: #ff6b6b;
+        }
+        
+        .cpt-table table {
+            margin: 0;
+        }
+        
+        .cpt-table th {
+            background: #ff6b6b;
+            padding: 8px;
+        }
+        
+        .cpt-table td {
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+        }
+        
+        .calculation-detail {
+            background: #fffbf0;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .calc-line {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+        
+        .highlight-formula {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+            margin: 15px 0;
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+        }
+        
+        .final-query {
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .query-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .node-diagram {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin: 30px 0;
+        }
+        
+        .node {
+            width: 120px;
+            height: 60px;
+            background: #ff6b6b;
+            border: 3px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        .arrow {
+            font-size: 2em;
+            color: #333;
+        }
+        
+        .highlight-yes {
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+        
+        .highlight-no {
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+        
+        .big-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2196F3;
+            display: inline-block;
+            margin: 0 10px;
+        }
+        
+        .prob-calculation {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .cpt-table {
+                margin: 10px;
+                display: block;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bayesian Networks (BN) - Complete Analysis</h1>
+        
+        <div class="network-diagram">
+            <h2>Network Structure</h2>
+            <div class="node-diagram">
+                <div class="node">Age</div>
+                <span class="arrow">→</span>
+                <div class="node" style="background: #4ecdc4;">Loan</div>
+                <span class="arrow">←</span>
+                <div class="node">Insurance</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Step 1: Training Dataset</h2>
+            <table id="datasetTable">
+                <thead>
+                    <tr>
+                        <th>Record</th>
+                        <th>Age</th>
+                        <th>Salary</th>
+                        <th>Profession</th>
+                        <th>Insurance</th>
+                        <th>Loan</th>
+                    </tr>
+                </thead>
+                <tbody id="datasetBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Step 2: Prior Probabilities (Hypothesis) - Detailed Calculation</h2>
+            <div class="prior-info">
+                <h3>Counting Loan Approvals in the Dataset:</h3>
+                
+                <div class="prior-calculation">
+                    <h4>Records with Loan = "Yes" (Approved):</h4>
+                    <div class="loan-yes-list" id="loanYesList"></div>
+                    
+                    <h4>Records with Loan = "No" (Rejected):</h4>
+                    <div class="loan-no-list" id="loanNoList"></div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                        <h4>Prior Probability Calculations:</h4>
+                        <div class="prob-calculation">
+                            P(YES) = <span id="yesCount">9</span> / 14 = <span class="big-number" id="yesProb">0.643</span>
+                        </div>
+                        <div class="prob-calculation">
+                            P(NO) = <span id="noCount">5</span> / 14 = <span class="big-number" id="noProb">0.357</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 5px;">
+                    <strong>Verification:</strong> P(YES) + P(NO) = 0.643 + 0.357 = 1.000 ✓
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Step 3: Calculate CPT for Insurance</h2>
+            
+            <div class="calculation-detail">
+                <h3>Insurance = "WithPro" when Loan = YES</h3>
+                <div class="highlight-formula">
+                    <strong>Formula: P(YES | WithPro) / P(YES)</strong>
+                </div>
+                <div class="calc-line">
+                    • Records with Insurance="WithPro" AND Loan="Yes": <span id="withProYesRecords"></span>
+                </div>
+                <div class="calc-line">
+                    • "YES" appears 3/14 times when Insurance="WithPro"
+                </div>
+                <div class="calc-line">
+                    • Calculation: (3/14) ÷ (9/14) = 3/14 × 14/9 = 3/9 = <strong>0.33</strong>
+                </div>
+            </div>
+            
+            <div class="calculation-detail">
+                <h3>Insurance = "WithPro" when Loan = NO</h3>
+                <div class="highlight-formula">
+                    <strong>Formula: P(NO | WithPro) / P(NO)</strong>
+                </div>
+                <div class="calc-line">
+                    • Records with Insurance="WithPro" AND Loan="No": <span id="withProNoRecords"></span>
+                </div>
+                <div class="calc-line">
+                    • "NO" appears 3/14 times when Insurance="WithPro"
+                </div>
+                <div class="calc-line">
+                    • Calculation: (3/14) ÷ (5/14) = 3/14 × 14/5 = 3/5 = <strong>0.6</strong>
+                </div>
+            </div>
+            
+            <div class="calculation-detail">
+                <h3>Insurance = "NoPro" when Loan = YES</h3>
+                <div class="highlight-formula">
+                    <strong>Formula: P(YES | NoPro) / P(YES)</strong>
+                </div>
+                <div class="calc-line">
+                    • Records with Insurance="NoPro" AND Loan="Yes": <span id="noProYesRecords"></span>
+                </div>
+                <div class="calc-line">
+                    • "YES" appears 6/14 times when Insurance="NoPro"
+                </div>
+                <div class="calc-line">
+                    • Calculation: (6/14) ÷ (9/14) = 6/14 × 14/9 = 6/9 = <strong>0.66</strong>
+                </div>
+            </div>
+            
+            <div class="calculation-detail">
+                <h3>Insurance = "NoPro" when Loan = NO</h3>
+                <div class="highlight-formula">
+                    <strong>Formula: P(NO | NoPro) / P(NO)</strong>
+                </div>
+                <div class="calc-line">
+                    • Records with Insurance="NoPro" AND Loan="No": <span id="noProNoRecords"></span>
+                </div>
+                <div class="calc-line">
+                    • "NO" appears 2/14 times when Insurance="NoPro"
+                </div>
+                <div class="calc-line">
+                    • Calculation: (2/14) ÷ (5/14) = 2/14 × 14/5 = 2/5 = <strong>0.4</strong>
+                </div>
+            </div>
+            
+            <div class="cpt-table">
+                <div class="cpt-table-title">CPT for Insurance</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Insurance</th>
+                            <th colspan="2">Loan</th>
+                        </tr>
+                        <tr>
+                            <th>Yes</th>
+                            <th>No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: bold;">NoProtect</td>
+                            <td>0.66</td>
+                            <td>0.44</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">WithProtect</td>
+                            <td>0.33</td>
+                            <td>0.6</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Step 4: Calculate CPT for Age</h2>
+            <div id="ageCPTCalculations"></div>
+            
+            <div class="cpt-table">
+                <div class="cpt-table-title">CPT for Age</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Age</th>
+                            <th colspan="2">Loan</th>
+                        </tr>
+                        <tr>
+                            <th>Yes</th>
+                            <th>No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: bold;">Young</td>
+                            <td>0.22</td>
+                            <td>0.6</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Middle</td>
+                            <td>0.44</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Old</td>
+                            <td>0.33</td>
+                            <td>0.4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="final-query">
+            <div class="query-title">
+                🔮 Final Query: P(Loan | Insurance="NoPro", Age="Young")
+            </div>
+            
+            <div style="background: white; color: #333; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <h3>Step 1: Calculate P(YES | Insurance=NoPro, Age=Young)</h3>
+                <div class="calc-line">
+                    P(YES | Insurance=NoPro, Age=Young) = 0.64 × 0.66 × 0.22 = <strong>0.093</strong>
+                </div>
+                
+                <h3 style="margin-top: 20px;">Step 2: Calculate P(NO | Insurance=NoPro, Age=Young)</h3>
+                <div class="calc-line">
+                    P(NO | Insurance=NoPro, Age=Young) = 0.35 × 0.4 × 0.6 = <strong>0.084</strong>
+                </div>
+                
+                <h3 style="margin-top: 20px;">Step 3: Multiply by priors and compare</h3>
+                <div class="calc-line">
+                    Score for YES: 0.093 × 0.64 = 0.06 (for hypothesis we DO grant a loan)
+                </div>
+                <div class="calc-line">
+                    Score for NO: 0.084 × 0.35 = 0.03 (for hypothesis we do NOT grant a loan)
+                </div>
+                
+                <div class="result-box" style="margin-top: 20px;">
+                    <strong>Final Decision: GRANT LOAN</strong><br>
+                    (0.06 > 0.03)
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dataset
+        const dataset = [
+            { record: 1, age: 'Young', salary: 'High', profession: 'Yes', insurance: 'NoPro', loan: 'No' },
+            { record: 2, age: 'Young', salary: 'High', profession: 'Yes', insurance: 'WithPro', loan: 'No' },
+            { record: 3, age: 'Middle', salary: 'High', profession: 'Yes', insurance: 'NoPro', loan: 'Yes' },
+            { record: 4, age: 'Old', salary: 'Average', profession: 'Yes', insurance: 'NoPro', loan: 'Yes' },
+            { record: 5, age: 'Old', salary: 'Low', profession: 'No', insurance: 'NoPro', loan: 'Yes' },
+            { record: 6, age: 'Old', salary: 'Low', profession: 'No', insurance: 'WithPro', loan: 'No' },
+            { record: 7, age: 'Middle', salary: 'Low', profession: 'No', insurance: 'NoPro', loan: 'Yes' },
+            { record: 8, age: 'Young', salary: 'Average', profession: 'Yes', insurance: 'NoPro', loan: 'No' },
+            { record: 9, age: 'Young', salary: 'VeryLow', profession: 'No', insurance: 'NoPro', loan: 'Yes' },
+            { record: 10, age: 'Old', salary: 'Average', profession: 'No', insurance: 'WithPro', loan: 'Yes' },
+            { record: 11, age: 'Young', salary: 'Average', profession: 'No', insurance: 'WithPro', loan: 'Yes' },
+            { record: 12, age: 'Middle', salary: 'Average', profession: 'Yes', insurance: 'WithPro', loan: 'Yes' },
+            { record: 13, age: 'Middle', salary: 'High', profession: 'No', insurance: 'NoPro', loan: 'Yes' },
+            { record: 14, age: 'Old', salary: 'Average', profession: 'Yes', insurance: 'WithPro', loan: 'No' }
+        ];
+        
+        // Populate dataset table
+        function populateDataset() {
+            const tbody = document.getElementById('datasetBody');
+            dataset.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = row.loan === 'Yes' ? 'highlight-yes' : 'highlight-no';
+                tr.innerHTML = `
+                    <td>${row.record}</td>
+                    <td>${row.age}</td>
+                    <td>${row.salary}</td>
+                    <td>${row.profession}</td>
+                    <td>${row.insurance}</td>
+                    <td><strong>${row.loan}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Calculate and display prior probabilities
+        function calculatePriors() {
+            const loanYes = dataset.filter(d => d.loan === 'Yes');
+            const loanNo = dataset.filter(d => d.loan === 'No');
+            
+            // Display Yes records
+            const yesRecords = loanYes.map(d => `#${d.record}`).join(', ');
+            document.getElementById('loanYesList').innerHTML = `
+                <strong>9 records:</strong> Records ${yesRecords}
+            `;
+            
+            // Display No records  
+            const noRecords = loanNo.map(d => `#${d.record}`).join(', ');
+            document.getElementById('loanNoList').innerHTML = `
+                <strong>5 records:</strong> Records ${noRecords}
+            `;
+            
+            // Update counts and probabilities
+            document.getElementById('yesCount').textContent = loanYes.length;
+            document.getElementById('noCount').textContent = loanNo.length;
+            document.getElementById('yesProb').textContent = (loanYes.length / dataset.length).toFixed(3);
+            document.getElementById('noProb').textContent = (loanNo.length / dataset.length).toFixed(3);
+        }
+        
+        // Calculate Insurance CPT details
+        function calculateInsuranceCPT() {
+            // WithPro + Yes
+            const withProYes = dataset.filter(d => d.insurance === 'WithPro' && d.loan === 'Yes');
+            document.getElementById('withProYesRecords').textContent = 
+                `${withProYes.length} records (#${withProYes.map(d => d.record).join(', #')})`;
+            
+            // WithPro + No
+            const withProNo = dataset.filter(d => d.insurance === 'WithPro' && d.loan === 'No');
+            document.getElementById('withProNoRecords').textContent = 
+                `${withProNo.length} records (#${withProNo.map(d => d.record).join(', #')})`;
+            
+            // NoPro + Yes
+            const noProYes = dataset.filter(d => d.insurance === 'NoPro' && d.loan === 'Yes');
+            document.getElementById('noProYesRecords').textContent = 
+                `${noProYes.length} records (#${noProYes.map(d => d.record).join(', #')})`;
+            
+            // NoPro + No
+            const noProNo = dataset.filter(d => d.insurance === 'NoPro' && d.loan === 'No');
+            document.getElementById('noProNoRecords').textContent = 
+                `${noProNo.length} records (#${noProNo.map(d => d.record).join(', #')})`;
+        }
+        
+        // Calculate Age CPT details
+        function calculateAgeCPT() {
+            const ageGroups = ['Young', 'Middle', 'Old'];
+            let html = '';
+            
+            // Count occurrences
+            const youngYes = dataset.filter(d => d.age === 'Young' && d.loan === 'Yes');
+            const youngNo = dataset.filter(d => d.age === 'Young' && d.loan === 'No');
+            const middleYes = dataset.filter(d => d.age === 'Middle' && d.loan === 'Yes');
+            const middleNo = dataset.filter(d => d.age === 'Middle' && d.loan === 'No');
+            const oldYes = dataset.filter(d => d.age === 'Old' && d.loan === 'Yes');
+            const oldNo = dataset.filter(d => d.age === 'Old' && d.loan === 'No');
+            
+            html = `
+                <div class="calculation-detail">
+                    <h3>Age = "Young"</h3>
+                    <div class="calc-line">
+                        • Young with Loan=Yes: ${youngYes.length} records (#${youngYes.map(d => d.record).join(', #')})
+                    </div>
+                    <div class="calc-line">
+                        • Young with Loan=No: ${youngNo.length} records (#${youngNo.map(d => d.record).join(', #')})
+                    </div>
+                    <div class="calc-line">
+                        • P(Young|Yes) = ${youngYes.length} / 9 = <strong>${(youngYes.length/9).toFixed(2)}</strong>
+                    </div>
+                    <div class="calc-line">
+                        • P(Young|No) = ${youngNo.length} / 5 = <strong>${(youngNo.length/5).toFixed(1)}</strong>
+                    </div>
+                </div>
+                
+                <div class="calculation-detail">
+                    <h3>Age = "Middle"</h3>
+                    <div class="calc-line">
+                        • Middle with Loan=Yes: ${middleYes.length} records (#${middleYes.map(d => d.record).join(', #')})
+                    </div>
+                    <div class="calc-line">
+                        • Middle with Loan=No: ${middleNo.length} records (None)
+                    </div>
+                    <div class="calc-line">
+                        • P(Middle|Yes) = ${middleYes.length} / 9 = <strong>${(middleYes.length/9).toFixed(2)}</strong>
+                    </div>
+                    <div class="calc-line">
+                        • P(Middle|No) = ${middleNo.length} / 5 = <strong>0</strong>
+                    </div>
+                </div>
+                
+                <div class="calculation-detail">
+                    <h3>Age = "Old"</h3>
+                    <div class="calc-line">
+                        • Old with Loan=Yes: ${oldYes.length} records (#${oldYes.map(d => d.record).join(', #')})
+                    </div>
+                    <div class="calc-line">
+                        • Old with Loan=No: ${oldNo.length} records (#${oldNo.map(d => d.record).join(', #')})
+                    </div>
+                    <div class="calc-line">
+                        • P(Old|Yes) = ${oldYes.length} / 9 = <strong>${(oldYes.length/9).toFixed(2)}</strong>
+                    </div>
+                    <div class="calc-line">
+                        • P(Old|No) = ${oldNo.length} / 5 = <strong>${(oldNo.length/5).toFixed(1)}</strong>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('ageCPTCalculations').innerHTML = html;
+        }
+        
+        // Initialize
+        populateDataset();
+        calculatePriors();
+        calculateInsuranceCPT();
+        calculateAgeCPT();
+    </script>
+</body>
+</html>
