@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naive Bayes Classifier - Detailed Step-by-Step Calculations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        h3 {
+            color: #666;
+            margin: 20px 0 10px 0;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e9ecef;
+            transition: background-color 0.3s;
+        }
+        
+        .calculation-step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .step-formula {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #ddd;
+        }
+        
+        .step-calculation {
+            color: #555;
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .step-result {
+            background: #e8f4f8;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .count-table {
+            display: inline-block;
+            margin: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .count-table th {
+            background: #6c757d;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+        
+        .count-table td {
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .highlight-go-out {
+            background-color: #d4edda !important;
+            color: #155724;
+        }
+        
+        .highlight-stay-home {
+            background-color: #f8d7da !important;
+            color: #721c24;
+        }
+        
+        .predictor-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .predictor-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .detailed-calculation {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .detailed-calculation.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .prediction-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .prediction-box {
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        
+        .prediction-box.winner {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .prediction-box h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .calculation-line {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .final-result {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .math-notation {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            color: #0066cc;
+        }
+        
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+        
+        .fraction-top {
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+        
+        .fraction-bottom {
+            padding-top: 2px;
+        }
+        
+        .example-box {
+            background: #fffbf0;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .example-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .prediction-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Naïve Bayes Classifier - Step-by-Step Detailed Calculations</h1>
+        
+        <div class="section">
+            <h2>📊 Step 1: Understanding the Training Dataset</h2>
+            <table id="datasetTable">
+                <thead>
+                    <tr>
+                        <th>Sample #</th>
+                        <th>Weather</th>
+                        <th>Car</th>
+                        <th>Class</th>
+                    </tr>
+                </thead>
+                <tbody id="datasetBody">
+                </tbody>
+            </table>
+            
+            <div class="example-box">
+                <div class="example-title">📝 Dataset Summary:</div>
+                <div id="datasetSummary"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Step 2: Calculate Prior Probabilities (Class Probabilities)</h2>
+            
+            <div class="calculation-step">
+                <div class="step-title">Prior Probability Calculation Formula:</div>
+                <div class="step-formula">
+                    P(Class) = (Number of samples with this class) / (Total number of samples)
+                </div>
+                
+                <div class="step-calculation">
+                    <h4>For "go-out" class:</h4>
+                    <div id="goOutPriorCalc"></div>
+                </div>
+                
+                <div class="step-calculation">
+                    <h4>For "stay-home" class:</h4>
+                    <div id="stayHomePriorCalc"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Step 3: Calculate Conditional Probabilities</h2>
+            
+            <div class="calculation-step">
+                <div class="step-title">Conditional Probability Formula:</div>
+                <div class="step-formula">
+                    P(Feature | Class) = (Number of samples with this feature AND this class) / (Number of samples with this class)
+                </div>
+            </div>
+            
+            <h3>Weather Conditional Probabilities:</h3>
+            <div id="weatherConditionalCalcs"></div>
+            
+            <h3>Car Status Conditional Probabilities:</h3>
+            <div id="carConditionalCalcs"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Step 4: Summary of All Calculated Probabilities</h2>
+            <div id="probabilitySummaryTables"></div>
+        </div>
+        
+        <div class="predictor-section">
+            <div class="predictor-box">
+                <h2 style="border: none; margin-top: 0;">🔮 Step 5: Make a Prediction Using Naive Bayes</h2>
+                
+                <div class="example-box">
+                    <div class="example-title">Naive Bayes Formula:</div>
+                    <div class="step-formula">
+                        P(Class | Features) ∝ P(Class) × P(Feature₁ | Class) × P(Feature₂ | Class) × ... × P(Featureₙ | Class)
+                    </div>
+                    <div style="margin-top: 10px;">
+                        For our case: P(Class | Weather, Car) ∝ P(Class) × P(Weather | Class) × P(Car | Class)
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div>
+                        <label for="weatherInput">Weather:</label>
+                        <select id="weatherInput">
+                            <option value="sunny">☀️ Sunny</option>
+                            <option value="rainy">🌧️ Rainy</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="carInput">Car Status:</label>
+                        <select id="carInput">
+                            <option value="working">✅ Working</option>
+                            <option value="broken">❌ Broken</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="makePrediction()">Calculate Prediction Step-by-Step</button>
+                
+                <div id="detailedCalculation" class="detailed-calculation">
+                    <h3>Detailed Calculation Steps:</h3>
+                    <div id="calculationSteps"></div>
+                    
+                    <div class="prediction-comparison" id="predictionComparison"></div>
+                    
+                    <div class="final-result" id="finalResult"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Step 6: Test on All Training Data</h2>
+            <table id="predictionsTable">
+                <thead>
+                    <tr>
+                        <th>Weather</th>
+                        <th>Car</th>
+                        <th>Actual Class</th>
+                        <th>P(go-out|features)</th>
+                        <th>P(stay-home|features)</th>
+                        <th>Prediction</th>
+                        <th>Correct?</th>
+                    </tr>
+                </thead>
+                <tbody id="predictionsBody">
+                </tbody>
+            </table>
+            <div id="accuracyResult" style="margin-top: 20px; font-size: 1.2em; font-weight: bold; text-align: center;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Dataset
+        const dataset = [
+            { id: 1, weather: 'sunny', car: 'working', class: 'go-out' },
+            { id: 2, weather: 'rainy', car: 'broken', class: 'go-out' },
+            { id: 3, weather: 'sunny', car: 'working', class: 'go-out' },
+            { id: 4, weather: 'sunny', car: 'working', class: 'go-out' },
+            { id: 5, weather: 'sunny', car: 'working', class: 'go-out' },
+            { id: 6, weather: 'rainy', car: 'broken', class: 'stay-home' },
+            { id: 7, weather: 'rainy', car: 'broken', class: 'stay-home' },
+            { id: 8, weather: 'sunny', car: 'working', class: 'stay-home' },
+            { id: 9, weather: 'sunny', car: 'broken', class: 'stay-home' },
+            { id: 10, weather: 'rainy', car: 'broken', class: 'stay-home' }
+        ];
+        
+        // Populate dataset table
+        function populateDataset() {
+            const tbody = document.getElementById('datasetBody');
+            dataset.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = row.class === 'go-out' ? 'highlight-go-out' : 'highlight-stay-home';
+                tr.innerHTML = `
+                    <td>#${row.id}</td>
+                    <td>${row.weather === 'sunny' ? '☀️ ' : '🌧️ '}${row.weather}</td>
+                    <td>${row.car === 'working' ? '✅ ' : '❌ '}${row.car}</td>
+                    <td>${row.class === 'go-out' ? '🚶 ' : '🏠 '}${row.class}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Dataset summary
+            const goOutCount = dataset.filter(d => d.class === 'go-out').length;
+            const stayHomeCount = dataset.filter(d => d.class === 'stay-home').length;
+            
+            document.getElementById('datasetSummary').innerHTML = `
+                <div>• Total samples: <strong>${dataset.length}</strong></div>
+                <div>• Go-out samples: <strong>${goOutCount}</strong> (Rows: #1, #2, #3, #4, #5)</div>
+                <div>• Stay-home samples: <strong>${stayHomeCount}</strong> (Rows: #6, #7, #8, #9, #10)</div>
+            `;
+        }
+        
+        // Calculate and display all probabilities with detailed steps
+        function calculateAndDisplayProbabilities() {
+            const total = dataset.length;
+            const goOutData = dataset.filter(d => d.class === 'go-out');
+            const stayHomeData = dataset.filter(d => d.class === 'stay-home');
+            
+            // Prior probabilities with detailed calculation
+            document.getElementById('goOutPriorCalc').innerHTML = `
+                <div class="calculation-line">
+                    Count of "go-out" samples = ${goOutData.length} (samples #${goOutData.map(d => d.id).join(', #')})
+                </div>
+                <div class="calculation-line">
+                    P(go-out) = ${goOutData.length} / ${total} = <strong>${(goOutData.length/total).toFixed(3)}</strong>
+                </div>
+            `;
+            
+            document.getElementById('stayHomePriorCalc').innerHTML = `
+                <div class="calculation-line">
+                    Count of "stay-home" samples = ${stayHomeData.length} (samples #${stayHomeData.map(d => d.id).join(', #')})
+                </div>
+                <div class="calculation-line">
+                    P(stay-home) = ${stayHomeData.length} / ${total} = <strong>${(stayHomeData.length/total).toFixed(3)}</strong>
+                </div>
+            `;
+            
+            // Weather conditional probabilities
+            const sunnyGoOut = goOutData.filter(d => d.weather === 'sunny');
+            const rainyGoOut = goOutData.filter(d => d.weather === 'rainy');
+            const sunnyStayHome = stayHomeData.filter(d => d.weather === 'sunny');
+            const rainyStayHome = stayHomeData.filter(d => d.weather === 'rainy');
+            
+            document.getElementById('weatherConditionalCalcs').innerHTML = `
+                <div class="calculation-step">
+                    <div class="step-title">P(weather = sunny | class = go-out)</div>
+                    <div class="step-calculation">
+                        Count of sunny days when go-out = ${sunnyGoOut.length} (samples #${sunnyGoOut.map(d => d.id).join(', #')})<br>
+                        Total go-out samples = ${goOutData.length}<br>
+                        <div class="calculation-line">
+                            P(sunny | go-out) = ${sunnyGoOut.length} / ${goOutData.length} = <strong>${(sunnyGoOut.length/goOutData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(weather = rainy | class = go-out)</div>
+                    <div class="step-calculation">
+                        Count of rainy days when go-out = ${rainyGoOut.length} (samples #${rainyGoOut.map(d => d.id).join(', #') || 'none'})<br>
+                        Total go-out samples = ${goOutData.length}<br>
+                        <div class="calculation-line">
+                            P(rainy | go-out) = ${rainyGoOut.length} / ${goOutData.length} = <strong>${(rainyGoOut.length/goOutData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(weather = sunny | class = stay-home)</div>
+                    <div class="step-calculation">
+                        Count of sunny days when stay-home = ${sunnyStayHome.length} (samples #${sunnyStayHome.map(d => d.id).join(', #')})<br>
+                        Total stay-home samples = ${stayHomeData.length}<br>
+                        <div class="calculation-line">
+                            P(sunny | stay-home) = ${sunnyStayHome.length} / ${stayHomeData.length} = <strong>${(sunnyStayHome.length/stayHomeData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(weather = rainy | class = stay-home)</div>
+                    <div class="step-calculation">
+                        Count of rainy days when stay-home = ${rainyStayHome.length} (samples #${rainyStayHome.map(d => d.id).join(', #')})<br>
+                        Total stay-home samples = ${stayHomeData.length}<br>
+                        <div class="calculation-line">
+                            P(rainy | stay-home) = ${rainyStayHome.length} / ${stayHomeData.length} = <strong>${(rainyStayHome.length/stayHomeData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Car conditional probabilities
+            const workingGoOut = goOutData.filter(d => d.car === 'working');
+            const brokenGoOut = goOutData.filter(d => d.car === 'broken');
+            const workingStayHome = stayHomeData.filter(d => d.car === 'working');
+            const brokenStayHome = stayHomeData.filter(d => d.car === 'broken');
+            
+            document.getElementById('carConditionalCalcs').innerHTML = `
+                <div class="calculation-step">
+                    <div class="step-title">P(car = working | class = go-out)</div>
+                    <div class="step-calculation">
+                        Count of working car when go-out = ${workingGoOut.length} (samples #${workingGoOut.map(d => d.id).join(', #')})<br>
+                        Total go-out samples = ${goOutData.length}<br>
+                        <div class="calculation-line">
+                            P(working | go-out) = ${workingGoOut.length} / ${goOutData.length} = <strong>${(workingGoOut.length/goOutData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(car = broken | class = go-out)</div>
+                    <div class="step-calculation">
+                        Count of broken car when go-out = ${brokenGoOut.length} (samples #${brokenGoOut.map(d => d.id).join(', #') || 'none'})<br>
+                        Total go-out samples = ${goOutData.length}<br>
+                        <div class="calculation-line">
+                            P(broken | go-out) = ${brokenGoOut.length} / ${goOutData.length} = <strong>${(brokenGoOut.length/goOutData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(car = working | class = stay-home)</div>
+                    <div class="step-calculation">
+                        Count of working car when stay-home = ${workingStayHome.length} (samples #${workingStayHome.map(d => d.id).join(', #')})<br>
+                        Total stay-home samples = ${stayHomeData.length}<br>
+                        <div class="calculation-line">
+                            P(working | stay-home) = ${workingStayHome.length} / ${stayHomeData.length} = <strong>${(workingStayHome.length/stayHomeData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">P(car = broken | class = stay-home)</div>
+                    <div class="step-calculation">
+                        Count of broken car when stay-home = ${brokenStayHome.length} (samples #${brokenStayHome.map(d => d.id).join(', #')})<br>
+                        Total stay-home samples = ${stayHomeData.length}<br>
+                        <div class="calculation-line">
+                            P(broken | stay-home) = ${brokenStayHome.length} / ${stayHomeData.length} = <strong>${(brokenStayHome.length/stayHomeData.length).toFixed(3)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Summary tables
+            document.getElementById('probabilitySummaryTables').innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+                    <table class="count-table">
+                        <thead>
+                            <tr><th colspan="2">Prior Probabilities</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>P(go-out)</td><td>${(goOutData.length/total).toFixed(3)}</td></tr>
+                            <tr><td>P(stay-home)</td><td>${(stayHomeData.length/total).toFixed(3)}</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <table class="count-table">
+                        <thead>
+                            <tr><th colspan="3">Weather Conditionals</th></tr>
+                            <tr><th>Weather</th><th>go-out</th><th>stay-home</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>sunny</td>
+                                <td>${(sunnyGoOut.length/goOutData.length).toFixed(3)}</td>
+                                <td>${(sunnyStayHome.length/stayHomeData.length).toFixed(3)}</td>
+                            </tr>
+                            <tr>
+                                <td>rainy</td>
+                                <td>${(rainyGoOut.length/goOutData.length).toFixed(3)}</td>
+                                <td>${(rainyStayHome.length/stayHomeData.length).toFixed(3)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <table class="count-table">
+                        <thead>
+                            <tr><th colspan="3">Car Conditionals</th></tr>
+                            <tr><th>Car</th><th>go-out</th><th>stay-home</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>working</td>
+                                <td>${(workingGoOut.length/goOutData.length).toFixed(3)}</td>
+                                <td>${(workingStayHome.length/stayHomeData.length).toFixed(3)}</td>
+                            </tr>
+                            <tr>
+                                <td>broken</td>
+                                <td>${(brokenGoOut.length/goOutData.length).toFixed(3)}</td>
+                                <td>${(brokenStayHome.length/stayHomeData.length).toFixed(3)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            return {
+                priorGoOut: goOutData.length/total,
+                priorStayHome: stayHomeData.length/total,
+                sunnyGoOut: sunnyGoOut.length/goOutData.length,
+                rainyGoOut: rainyGoOut.length/goOutData.length,
+                sunnyStayHome: sunnyStayHome.length/stayHomeData.length,
+                rainyStayHome: rainyStayHome.length/stayHomeData.length,
+                workingGoOut: workingGoOut.length/goOutData.length,
+                brokenGoOut: brokenGoOut.length/goOutData.length,
+                workingStayHome: workingStayHome.length/stayHomeData.length,
+                brokenStayHome: brokenStayHome.length/stayHomeData.length
+            };
+        }
+        
+        function makePrediction() {
+            const weather = document.getElementById('weatherInput').value;
+            const car = document.getElementById('carInput').value;
+            const probs = calculateAndDisplayProbabilities();
+            
+            // Get the appropriate probabilities
+            const weatherGoOutProb = weather === 'sunny' ? probs.sunnyGoOut : probs.rainyGoOut;
+            const weatherStayHomeProb = weather === 'sunny' ? probs.sunnyStayHome : probs.rainyStayHome;
+            const carGoOutProb = car === 'working' ? probs.workingGoOut : probs.brokenGoOut;
+            const carStayHomeProb = car === 'working' ? probs.workingStayHome : probs.brokenStayHome;
+            
+            // Calculate posterior probabilities
+            const goOutScore = probs.priorGoOut * weatherGoOutProb * carGoOutProb;
+            const stayHomeScore = probs.priorStayHome * weatherStayHomeProb * carStayHomeProb;
+            
+            // Display detailed calculation steps
+            document.getElementById('calculationSteps').innerHTML = `
+                <div class="example-box">
+                    <div class="example-title">Given Input:</div>
+                    <div>• Weather = <strong>${weather}</strong></div>
+                    <div>• Car = <strong>${car}</strong></div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">Step 1: Apply Naive Bayes Formula</div>
+                    <div class="step-calculation">
+                        We need to calculate and compare:
+                        <ul>
+                            <li>P(go-out | weather=${weather}, car=${car})</li>
+                            <li>P(stay-home | weather=${weather}, car=${car})</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="calculation-step">
+                    <div class="step-title">Step 2: Calculate Unnormalized Posterior Probabilities</div>
+                    <div class="step-calculation">
+                        Since we only need to compare the two classes, we can use unnormalized probabilities:
+                    </div>
+                </div>
+            `;
+            
+            // Display comparison
+            document.getElementById('predictionComparison').innerHTML = `
+                <div class="prediction-box ${goOutScore > stayHomeScore ? 'winner' : ''}">
+                    <h4>🚶 Go-Out Score Calculation:</h4>
+                    <div class="calculation-line">
+                        Score = P(go-out) × P(${weather}|go-out) × P(${car}|go-out)
+                    </div>
+                    <div class="calculation-line">
+                        Score = ${probs.priorGoOut.toFixed(3)} × ${weatherGoOutProb.toFixed(3)} × ${carGoOutProb.toFixed(3)}
+                    </div>
+                    <div class="calculation-line">
+                        <strong>Score = ${goOutScore.toFixed(6)}</strong>
+                    </div>
+                </div>
+                
+                <div class="prediction-box ${stayHomeScore > goOutScore ? 'winner' : ''}">
+                    <h4>🏠 Stay-Home Score Calculation:</h4>
+                    <div class="calculation-line">
+                        Score = P(stay-home) × P(${weather}|stay-home) × P(${car}|stay-home)
+                    </div>
+                    <div class="calculation-line">
+                        Score = ${probs.priorStayHome.toFixed(3)} × ${weatherStayHomeProb.toFixed(3)} × ${carStayHomeProb.toFixed(3)}
+                    </div>
+                    <div class="calculation-line">
+                        <strong>Score = ${stayHomeScore.toFixed(6)}</strong>
+                    </div>
+                </div>
+            `;
+            
+            // Display final result
+            const prediction = goOutScore > stayHomeScore ? 'GO OUT' : 'STAY HOME';
+            const icon = goOutScore > stayHomeScore ? '🚶' : '🏠';
+            
+            document.getElementById('finalResult').innerHTML = `
+                ${icon} Final Prediction: <strong>${prediction}</strong><br>
+                <small style="font-size: 0.7em; font-weight: normal;">
+                    (${goOutScore.toFixed(6)} ${goOutScore > stayHomeScore ? '>' : '<'} ${stayHomeScore.toFixed(6)})
+                </small>
+            `;
+            
+            document.getElementById('detailedCalculation').classList.add('show');
+        }
+        
+        // Test all predictions
+        function testAllPredictions() {
+            const probs = calculateAndDisplayProbabilities();
+            const tbody = document.getElementById('predictionsBody');
+            tbody.innerHTML = '';
+            
+            let correct = 0;
+            
+            dataset.forEach(row => {
+                const weatherGoOutProb = row.weather === 'sunny' ? probs.sunnyGoOut : probs.rainyGoOut;
+                const weatherStayHomeProb = row.weather === 'sunny' ? probs.sunnyStayHome : probs.rainyStayHome;
+                const carGoOutProb = row.car === 'working' ? probs.workingGoOut : probs.brokenGoOut;
+                const carStayHomeProb = row.car === 'working' ? probs.workingStayHome : probs.brokenStayHome;
+                
+                const goOutScore = probs.priorGoOut * weatherGoOutProb * carGoOutProb;
+                const stayHomeScore = probs.priorStayHome * weatherStayHomeProb * carStayHomeProb;
+                
+                const prediction = goOutScore > stayHomeScore ? 'go-out' : 'stay-home';
+                const isCorrect = prediction === row.class;
+                if (isCorrect) correct++;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.weather === 'sunny' ? '☀️' : '🌧️'} ${row.weather}</td>
+                    <td>${row.car === 'working' ? '✅' : '❌'} ${row.car}</td>
+                    <td>${row.class === 'go-out' ? '🚶' : '🏠'} ${row.class}</td>
+                    <td>${goOutScore.toFixed(6)}</td>
+                    <td>${stayHomeScore.toFixed(6)}</td>
+                    <td>${prediction === 'go-out' ? '🚶' : '🏠'} ${prediction}</td>
+                    <td style="background-color: ${isCorrect ? '#d4edda' : '#f8d7da'}">
+                        ${isCorrect ? '✅ Yes' : '❌ No'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            const accuracy = (correct / dataset.length * 100).toFixed(1);
+            document.getElementById('accuracyResult').innerHTML = `
+                Model Accuracy: ${correct}/${dataset.length} = ${accuracy}%
+            `;
+        }
+        
+        // Initialize
+        populateDataset();
+        calculateAndDisplayProbabilities();
+        testAllPredictions();
+    </script>
+</body>
+</html>

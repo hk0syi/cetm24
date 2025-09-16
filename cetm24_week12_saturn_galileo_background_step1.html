@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galileo and Saturn - Interactive Explanation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #ee7752, #e73c7e, #23a6d5);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .timeline-item {
+            text-align: center;
+            padding: 20px;
+            flex: 1;
+            min-width: 200px;
+            transition: transform 0.3s;
+        }
+        
+        .timeline-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .observation-box {
+            background: #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .saturn-display {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        /* Saturn actual view elements */
+        .saturn-actual {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+        
+        .saturn-actual.active {
+            display: block;
+        }
+        
+        .planet {
+            width: 60px;
+            height: 60px;
+            background: #f4d03f;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(244, 208, 63, 0.5);
+        }
+        
+        .ring {
+            width: 120px;
+            height: 40px;
+            border: 8px solid #d4af37;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(70deg);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .show-rings .ring {
+            opacity: 1;
+        }
+        
+        .blob {
+            width: 40px;
+            height: 40px;
+            background: #f4d03f;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .blob.left {
+            left: 10px;
+            transform: translateY(-50%);
+        }
+        
+        .blob.right {
+            right: 10px;
+            transform: translateY(-50%);
+        }
+        
+        .show-blobs .blob {
+            opacity: 0.7;
+        }
+        
+        .show-blobs .planet {
+            filter: blur(3px);
+        }
+        
+        /* Galileo's drawing view */
+        .galileo-drawing {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .galileo-drawing.active {
+            display: flex;
+        }
+        
+        .drawing-circle {
+            background: #333;
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+        
+        .drawing-circle.small {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .drawing-circle.large {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        button.active {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        
+        .explanation {
+            background: #e8f4f8;
+            border-left: 4px solid #23a6d5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .key-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .point-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 3px solid #e73c7e;
+            transition: all 0.3s;
+        }
+        
+        .point-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .point-card h3 {
+            color: #e73c7e;
+            margin-bottom: 10px;
+        }
+        
+        .bayesian-demo {
+            background: #fff3e0;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .probability-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔭 Galileo and Saturn</h1>
+            <p>Understanding Uncertain Observations Through Bayesian Analysis</p>
+        </header>
+        
+        <div class="content">
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h2>📅 1610</h2>
+                    <p>Galileo's First Observation</p>
+                </div>
+                <div class="timeline-item">
+                    <h2>🔍 The Challenge</h2>
+                    <p>Limited Telescope Technology</p>
+                </div>
+                <div class="timeline-item">
+                    <h2>📊 Modern Solution</h2>
+                    <p>Bayesian Analysis</p>
+                </div>
+            </div>
+            
+            <div class="observation-box">
+                <h2 style="text-align: center; margin-bottom: 20px;">Interactive Saturn Observation</h2>
+                <div id="saturnDisplay" class="saturn-display">
+                    <!-- Saturn actual view -->
+                    <div id="saturnActual" class="saturn-actual active show-blobs">
+                        <div class="planet pulse"></div>
+                        <div class="ring"></div>
+                        <div class="blob left"></div>
+                        <div class="blob right"></div>
+                    </div>
+                    
+                    <!-- Galileo's drawing -->
+                    <div id="galileoDrawing" class="galileo-drawing">
+                        <div class="drawing-circle small"></div>
+                        <div class="drawing-circle large"></div>
+                        <div class="drawing-circle small"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button onclick="showModernView()" id="modernBtn">Modern View (with Rings)</button>
+                    <button onclick="showGalileoView()" id="galileoBtn" class="active">Galileo's View (Blurry)</button>
+                    <button onclick="showDrawing()" id="drawingBtn">Galileo's Drawing</button>
+                </div>
+                
+                <p id="viewDescription" style="text-align: center; margin-top: 20px; font-style: italic;">
+                    This is how Saturn appeared through Galileo's primitive telescope - unclear blobs on either side.
+                </p>
+            </div>
+            
+            <div class="key-points">
+                <div class="point-card">
+                    <h3>🌟 The Observation Problem</h3>
+                    <p>Galileo saw Saturn but couldn't resolve its true shape. The rings appeared as mysterious "ears" or blobs on either side of the planet.</p>
+                </div>
+                
+                <div class="point-card">
+                    <h3>🎯 Not Sampling Variation</h3>
+                    <p>The uncertainty wasn't due to random sampling - looking multiple times or having others look wouldn't change what was seen through the limited optics.</p>
+                </div>
+                
+                <div class="point-card">
+                    <h3>📈 Bayesian Solution</h3>
+                    <p>Bayesian methods can model the uncertainty and "noise" in observations using probability distributions rather than frequencies.</p>
+                </div>
+            </div>
+            
+            <div class="bayesian-demo">
+                <h2>🧮 Bayesian Analysis Demonstration</h2>
+                <p style="margin: 20px 0;">Bayesian methods help us understand what Galileo might have actually been observing:</p>
+                
+                <div style="margin: 30px 0;">
+                    <h4>Probability it's a single sphere:</h4>
+                    <div class="probability-bar">
+                        <div class="probability-fill" id="singleProb" style="width: 20%;">20%</div>
+                    </div>
+                    
+                    <h4>Probability it's a triple system:</h4>
+                    <div class="probability-bar">
+                        <div class="probability-fill" id="tripleProb" style="width: 45%;">45%</div>
+                    </div>
+                    
+                    <h4>Probability it's a ringed planet:</h4>
+                    <div class="probability-bar">
+                        <div class="probability-fill" id="ringProb" style="width: 35%;">35%</div>
+                    </div>
+                </div>
+                
+                <button onclick="updateBayesian()">Update with New Evidence</button>
+            </div>
+            
+            <div class="explanation">
+                <h2>💡 Key Insight</h2>
+                <p><strong>Bayesian methods don't equate probability with frequency.</strong></p>
+                <p style="margin-top: 15px;">
+                    In Galileo's case, the uncertainty wasn't about repeated observations giving different results (frequency), 
+                    but about the inherent limitations and noise in the observation itself. Bayesian analysis can model this 
+                    type of uncertainty by treating the observation as evidence that updates our beliefs about what Saturn 
+                    actually looks like.
+                </p>
+                <p style="margin-top: 15px;">
+                    This approach is now fundamental in modern image analysis, helping us extract meaningful information 
+                    from noisy or unclear data - from medical imaging to astronomical observations.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const saturnActual = document.getElementById('saturnActual');
+        const galileoDrawing = document.getElementById('galileoDrawing');
+        const viewDescription = document.getElementById('viewDescription');
+        const modernBtn = document.getElementById('modernBtn');
+        const galileoBtn = document.getElementById('galileoBtn');
+        const drawingBtn = document.getElementById('drawingBtn');
+        
+        function resetButtons() {
+            modernBtn.classList.remove('active');
+            galileoBtn.classList.remove('active');
+            drawingBtn.classList.remove('active');
+        }
+        
+        function showModernView() {
+            resetButtons();
+            modernBtn.classList.add('active');
+            
+            // Show saturn actual view with rings
+            saturnActual.classList.add('active');
+            galileoDrawing.classList.remove('active');
+            
+            // Remove blobs and add rings
+            saturnActual.classList.remove('show-blobs');
+            saturnActual.classList.add('show-rings');
+            
+            // Remove pulse from planet when showing rings
+            const planet = saturnActual.querySelector('.planet');
+            planet.classList.remove('pulse');
+            
+            viewDescription.textContent = 'Modern telescopes reveal Saturn\'s magnificent ring system clearly.';
+        }
+        
+        function showGalileoView() {
+            resetButtons();
+            galileoBtn.classList.add('active');
+            
+            // Show saturn actual view with blobs
+            saturnActual.classList.add('active');
+            galileoDrawing.classList.remove('active');
+            
+            // Remove rings and add blobs
+            saturnActual.classList.remove('show-rings');
+            saturnActual.classList.add('show-blobs');
+            
+            // Add pulse to planet
+            const planet = saturnActual.querySelector('.planet');
+            planet.classList.add('pulse');
+            
+            viewDescription.textContent = 'This is how Saturn appeared through Galileo\'s primitive telescope - unclear blobs on either side.';
+        }
+        
+        function showDrawing() {
+            resetButtons();
+            drawingBtn.classList.add('active');
+            
+            // Hide saturn actual and show drawing
+            saturnActual.classList.remove('active');
+            galileoDrawing.classList.add('active');
+            
+            viewDescription.textContent = 'Galileo drew Saturn as three separate bodies - a large central disk with two smaller companions.';
+        }
+        
+        let evidenceCount = 0;
+        function updateBayesian() {
+            evidenceCount++;
+            
+            // Simulate Bayesian updating with new evidence
+            const singleProb = Math.max(5, 20 - evidenceCount * 3);
+            const tripleProb = Math.max(10, 45 - evidenceCount * 5);
+            const ringProb = Math.min(85, 35 + evidenceCount * 8);
+            
+            document.getElementById('singleProb').style.width = singleProb + '%';
+            document.getElementById('singleProb').textContent = singleProb + '%';
+            
+            document.getElementById('tripleProb').style.width = tripleProb + '%';
+            document.getElementById('tripleProb').textContent = tripleProb + '%';
+            
+            document.getElementById('ringProb').style.width = ringProb + '%';
+            document.getElementById('ringProb').textContent = ringProb + '%';
+            
+            if (evidenceCount >= 6) {
+                evidenceCount = 0;
+            }
+        }
+        
+        // Initialize with Galileo's view
+        showGalileoView();
+    </script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galileo and Saturn - Bayesian Analysis Explained</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #ee7752, #e73c7e, #23a6d5);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .bayesian-explanation {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .formula-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .formula {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .bayesian-demo {
+            background: #fff3e0;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .hypothesis-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .hypothesis-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .hypothesis-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+        
+        .probability-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.8s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .probability-fill.single {
+            background: linear-gradient(90deg, #ff9800, #ff5722);
+        }
+        
+        .probability-fill.triple {
+            background: linear-gradient(90deg, #2196f3, #03a9f4);
+        }
+        
+        .probability-fill.ring {
+            background: linear-gradient(90deg, #9c27b0, #e91e63);
+        }
+        
+        .evidence-section {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .evidence-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .evidence-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .evidence-item.selected {
+            background: #c8e6c9;
+            border-left-color: #2e7d32;
+        }
+        
+        .calculation-details {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .calculation-details.show {
+            display: block;
+        }
+        
+        .step {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #03a9f4;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(45deg, #f44336, #e91e63);
+        }
+        
+        .show-calc-btn {
+            background: linear-gradient(45deg, #4caf50, #8bc34a);
+        }
+        
+        .timeline-evidence {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f4f8;
+            border-radius: 10px;
+        }
+        
+        .timeline-item {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+        }
+        
+        .timeline-item h4 {
+            color: #5e72e4;
+            margin-bottom: 5px;
+        }
+        
+        .prior-posterior {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .prior-box, .posterior-box {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .prior-box {
+            background: #ffe0b2;
+            border: 2px solid #ff9800;
+        }
+        
+        .posterior-box {
+            background: #e1bee7;
+            border: 2px solid #9c27b0;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .updating {
+            animation: pulse 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔭 Bayesian Analysis of Galileo's Saturn Observation</h1>
+            <p>How probability theory helps us understand uncertain observations</p>
+        </header>
+        
+        <div class="content">
+            <div class="bayesian-explanation">
+                <h2>📚 Understanding Bayesian Analysis</h2>
+                
+                <div class="formula-box">
+                    <h3>Bayes' Theorem</h3>
+                    <div class="formula">
+                        P(Hypothesis|Evidence) = P(Evidence|Hypothesis) × P(Hypothesis) / P(Evidence)
+                    </div>
+                    <p style="margin-top: 15px; color: #666;">
+                        <strong>Posterior</strong> = <strong>Likelihood</strong> × <strong>Prior</strong> / <strong>Evidence</strong>
+                    </p>
+                </div>
+                
+                <p style="margin: 20px 0;">
+                    In Galileo's case, we're trying to determine what Saturn actually is, given his blurry observation. 
+                    We start with initial beliefs (prior probabilities) and update them as we consider how likely 
+                    each hypothesis would be to produce what Galileo saw.
+                </p>
+            </div>
+            
+            <div class="bayesian-demo">
+                <h2>🧮 Interactive Bayesian Analysis</h2>
+                
+                <div class="timeline-evidence">
+                    <div class="timeline-item">
+                        <h4>Initial Belief (Prior)</h4>
+                        <p>What we think before observation</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>→</h4>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>Evidence</h4>
+                        <p>Galileo sees blurry blobs</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>→</h4>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>Updated Belief (Posterior)</h4>
+                        <p>What we think after observation</p>
+                    </div>
+                </div>
+                
+                <div class="hypothesis-card">
+                    <div class="hypothesis-header">
+                        <span class="hypothesis-icon">⚫</span>
+                        <div>
+                            <h3>Hypothesis 1: Single Sphere</h3>
+                            <p style="color: #666; font-size: 0.9em;">Saturn is just a regular spherical planet</p>
+                        </div>
+                    </div>
+                    
+                    <div class="prior-posterior">
+                        <div class="prior-box">
+                            <strong>Prior:</strong> <span id="singlePrior">33%</span>
+                            <br><small>Initial belief</small>
+                        </div>
+                        <div class="posterior-box">
+                            <strong>Posterior:</strong> <span id="singlePost">20%</span>
+                            <br><small>After evidence</small>
+                        </div>
+                    </div>
+                    
+                    <div class="probability-bar">
+                        <div class="probability-fill single" id="singleProb" style="width: 20%;">20%</div>
+                    </div>
+                    
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <strong>Likelihood:</strong> How likely would a single sphere produce blobs on sides? <strong>Very Low (5%)</strong>
+                        <br>A simple sphere wouldn't naturally appear to have appendages.
+                    </p>
+                </div>
+                
+                <div class="hypothesis-card">
+                    <div class="hypothesis-header">
+                        <span class="hypothesis-icon">⚫⚫⚫</span>
+                        <div>
+                            <h3>Hypothesis 2: Triple System</h3>
+                            <p style="color: #666; font-size: 0.9em;">Saturn has two companion moons very close to it</p>
+                        </div>
+                    </div>
+                    
+                    <div class="prior-posterior">
+                        <div class="prior-box">
+                            <strong>Prior:</strong> <span id="triplePrior">33%</span>
+                            <br><small>Initial belief</small>
+                        </div>
+                        <div class="posterior-box">
+                            <strong>Posterior:</strong> <span id="triplePost">45%</span>
+                            <br><small>After evidence</small>
+                        </div>
+                    </div>
+                    
+                    <div class="probability-bar">
+                        <div class="probability-fill triple" id="tripleProb" style="width: 45%;">45%</div>
+                    </div>
+                    
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <strong>Likelihood:</strong> How likely would three bodies produce this view? <strong>High (60%)</strong>
+                        <br>Three close objects would blur into this pattern through a poor telescope.
+                    </p>
+                </div>
+                
+                <div class="hypothesis-card">
+                    <div class="hypothesis-header">
+                        <span class="hypothesis-icon">🪐</span>
+                        <div>
+                            <h3>Hypothesis 3: Ringed Planet</h3>
+                            <p style="color: #666; font-size: 0.9em;">Saturn has a ring system around it</p>
+                        </div>
+                    </div>
+                    
+                    <div class="prior-posterior">
+                        <div class="prior-box">
+                            <strong>Prior:</strong> <span id="ringPrior">34%</span>
+                            <br><small>Initial belief</small>
+                        </div>
+                        <div class="posterior-box">
+                            <strong>Posterior:</strong> <span id="ringPost">35%</span>
+                            <br><small>After evidence</small>
+                        </div>
+                    </div>
+                    
+                    <div class="probability-bar">
+                        <div class="probability-fill ring" id="ringProb" style="width: 35%;">35%</div>
+                    </div>
+                    
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <strong>Likelihood:</strong> How likely would rings produce this view? <strong>Moderate (40%)</strong>
+                        <br>Angled rings could appear as blobs on either side when blurred.
+                    </p>
+                </div>
+                
+                <div class="evidence-section">
+                    <h3>📊 Add New Evidence</h3>
+                    <p style="margin-bottom: 15px;">Click to add evidence and see how probabilities update:</p>
+                    
+                    <div class="evidence-item" onclick="addEvidence('symmetric')">
+                        <strong>Evidence: Symmetric Appearance</strong>
+                        <br>The blobs appear equally sized on both sides
+                        <br><small style="color: #666;">Favors: Rings (+++) or Triple System (++)</small>
+                    </div>
+                    
+                    <div class="evidence-item" onclick="addEvidence('changes')">
+                        <strong>Evidence: Changes Over Time</strong>
+                        <br>The appearance changes over months/years
+                        <br><small style="color: #666;">Favors: Rings (+++), as viewing angle changes</small>
+                    </div>
+                    
+                    <div class="evidence-item" onclick="addEvidence('connected')">
+                        <strong>Evidence: Appears Connected</strong>
+                        <br>The blobs seem attached to the central body
+                        <br><small style="color: #666;">Favors: Rings (+++)</small>
+                    </div>
+                    
+                    <div class="evidence-item" onclick="addEvidence('moons')">
+                        <strong>Evidence: Jupiter Has Moons</strong>
+                        <br>Galileo discovered Jupiter has moons
+                        <br><small style="color: #666;">Favors: Triple System (++)</small>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="showCalculations()" class="show-calc-btn">Show Calculation Details</button>
+                    <button onclick="resetProbabilities()" class="reset-btn">Reset to Initial State</button>
+                </div>
+                
+                <div id="calculationDetails" class="calculation-details">
+                    <h3>📐 Calculation Example</h3>
+                    <div class="step">
+                        <strong>Step 1: Define Prior Probabilities</strong>
+                        <br>P(Single) = 0.33, P(Triple) = 0.33, P(Ring) = 0.34
+                    </div>
+                    <div class="step">
+                        <strong>Step 2: Define Likelihoods</strong>
+                        <br>P(Blobs|Single) = 0.05 (very unlikely)
+                        <br>P(Blobs|Triple) = 0.60 (quite likely)
+                        <br>P(Blobs|Ring) = 0.40 (moderately likely)
+                    </div>
+                    <div class="step">
+                        <strong>Step 3: Calculate Total Evidence</strong>
+                        <br>P(Blobs) = 0.05×0.33 + 0.60×0.33 + 0.40×0.34 = 0.35
+                    </div>
+                    <div class="step">
+                        <strong>Step 4: Apply Bayes' Theorem</strong>
+                        <br>P(Single|Blobs) = (0.05 × 0.33) / 0.35 = 0.047 ≈ 5%
+                        <br>P(Triple|Blobs) = (0.60 × 0.33) / 0.35 = 0.566 ≈ 57%
+                        <br>P(Ring|Blobs) = (0.40 × 0.34) / 0.35 = 0.389 ≈ 39%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bayesian-explanation" style="background: #e8f4f8;">
+                <h2>💡 Why This Matters</h2>
+                <p style="margin: 15px 0;">
+                    <strong>Key Insights:</strong>
+                </p>
+                <ul style="margin-left: 20px; line-height: 1.8;">
+                    <li><strong>Not Frequency-Based:</strong> We're not running repeated experiments. We're updating beliefs based on limited evidence.</li>
+                    <li><strong>Handles Uncertainty:</strong> Even with blurry, unclear data, we can make probabilistic inferences.</li>
+                    <li><strong>Sequential Learning:</strong> Each new piece of evidence updates our beliefs in a mathematically rigorous way.</li>
+                    <li><strong>Historical Context:</strong> In 1610, the idea of rings was almost inconceivable, so the prior would have been even lower!</li>
+                </ul>
+                
+                <p style="margin-top: 20px;">
+                    <strong>The Power of Bayesian Thinking:</strong> It took 45 more years (1655) for Christiaan Huygens to correctly 
+                    identify Saturn's rings with better telescopes. But even with Galileo's poor data, Bayesian analysis could have 
+                    suggested rings as a plausible hypothesis worth investigating!
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let evidenceApplied = {
+            symmetric: false,
+            changes: false,
+            connected: false,
+            moons: false
+        };
+        
+        let currentProbs = {
+            single: 20,
+            triple: 45,
+            ring: 35
+        };
+        
+        function addEvidence(type) {
+            if (evidenceApplied[type]) return;
+            
+            evidenceApplied[type] = true;
+            document.querySelectorAll('.evidence-item')[getEvidenceIndex(type)].classList.add('selected');
+            
+            // Update probabilities based on evidence type
+            switch(type) {
+                case 'symmetric':
+                    currentProbs.single -= 5;
+                    currentProbs.triple += 2;
+                    currentProbs.ring += 3;
+                    break;
+                case 'changes':
+                    currentProbs.single -= 3;
+                    currentProbs.triple -= 5;
+                    currentProbs.ring += 8;
+                    break;
+                case 'connected':
+                    currentProbs.single -= 2;
+                    currentProbs.triple -= 8;
+                    currentProbs.ring += 10;
+                    break;
+                case 'moons':
+                    currentProbs.single -= 2;
+                    currentProbs.triple += 5;
+                    currentProbs.ring -= 3;
+                    break;
+            }
+            
+            // Normalize probabilities to sum to 100
+            normalizeProbabilities();
+            updateDisplay();
+        }
+        
+        function getEvidenceIndex(type) {
+            const map = { symmetric: 0, changes: 1, connected: 2, moons: 3 };
+            return map[type];
+        }
+        
+        function normalizeProbabilities() {
+            const total = currentProbs.single + currentProbs.triple + currentProbs.ring;
+            currentProbs.single = Math.max(1, Math.round((currentProbs.single / total) * 100));
+            currentProbs.triple = Math.max(1, Math.round((currentProbs.triple / total) * 100));
+            currentProbs.ring = Math.max(1, Math.round((currentProbs.ring / total) * 100));
+            
+            // Ensure they sum to 100
+            const newTotal = currentProbs.single + currentProbs.triple + currentProbs.ring;
+            if (newTotal !== 100) {
+                currentProbs.ring += 100 - newTotal;
+            }
+        }
+        
+        function updateDisplay() {
+            // Update probability bars with animation
+            document.getElementById('singleProb').style.width = currentProbs.single + '%';
+            document.getElementById('singleProb').textContent = currentProbs.single + '%';
+            document.getElementById('singlePost').textContent = currentProbs.single + '%';
+            
+            document.getElementById('tripleProb').style.width = currentProbs.triple + '%';
+            document.getElementById('tripleProb').textContent = currentProbs.triple + '%';
+            document.getElementById('triplePost').textContent = currentProbs.triple + '%';
+            
+            document.getElementById('ringProb').style.width = currentProbs.ring + '%';
+            document.getElementById('ringProb').textContent = currentProbs.ring + '%';
+            document.getElementById('ringPost').textContent = currentProbs.ring + '%';
+            
+            // Add pulse animation
+            document.querySelectorAll('.probability-fill').forEach(el => {
+                el.classList.add('updating');
+                setTimeout(() => el.classList.remove('updating'), 500);
+            });
+        }
+        
+        function resetProbabilities() {
+            currentProbs = { single: 20, triple: 45, ring: 35 };
+            evidenceApplied = { symmetric: false, changes: false, connected: false, moons: false };
+            
+            document.querySelectorAll('.evidence-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            updateDisplay();
+        }
+        
+        function showCalculations() {
+            const details = document.getElementById('calculationDetails');
+            details.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

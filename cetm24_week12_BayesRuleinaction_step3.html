@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Medical Diagnosis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .step-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .probability-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 30px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.8s ease;
+        }
+
+        .chickenpox-bar {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+        }
+
+        .smallpox-bar {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+        }
+
+        .calculation {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .formula {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .value-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transform: perspective(1000px) rotateX(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: perspective(1000px) rotateX(5deg);
+        }
+
+        .value-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .value-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .interpretation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .odds-calc {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .interactive-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .result-highlight {
+            background: linear-gradient(45deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Bayesian Medical Diagnosis</h1>
+            <p>Interactive demonstration of probabilistic reasoning in medicine</p>
+        </div>
+
+        <!-- Step 0: Observation -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">0</div>
+                <div class="step-title">Observation</div>
+            </div>
+            <p><strong>Patient symptom:</strong> Shows spots on skin 🔴</p>
+            <p>We need to determine the most likely cause of this symptom.</p>
+        </div>
+
+        <!-- Step 1: Define Hypotheses -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Define Competing Hypotheses</div>
+            </div>
+            <div class="grid">
+                <div class="value-card">
+                    <h3>Hypothesis C</h3>
+                    <div class="number">Chickenpox</div>
+		    <div class="number">Likelihoods 80%</div>
+		    <div class="number">Frequency in population (theta) = 0.1</div>
+                </div>
+                <div class="value-card">
+                    <h3>Hypothesis S</h3>
+                    <div class="number">Smallpox</div>
+                    <div class="number">Likelihoods 90%</div>
+		    <div class="number">Frequency in population (theta) = 0.0011</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Prior Probabilities -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Prior Probabilities (Prevalence)</div>
+            </div>
+            <p>How common is each disease before seeing any symptoms?</p>
+            
+            <div style="margin: 20px 0;">
+                <h4>Chickenpox: P(C) = 0.10 (10%)</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill chickenpox-bar" style="width: 10%;">10%</div>
+                </div>
+                
+                <h4>Smallpox: P(S) = 0.0011 (0.11%)</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill smallpox-bar" style="width: 1.1%;">0.11%</div>
+                </div>
+            </div>
+            
+            <p><em>Note: Smallpox is extremely rare due to vaccination programs!</em></p>
+        </div>
+
+        <!-- Step 3: Likelihoods -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Likelihoods</div>
+            </div>
+            <p>How typical are spots for each disease? </p>
+            <h4>80% of people with chickenpox have spots</h4>
+            <h4>but also 90% of people with smallpox have spots</h4>
+            
+            <div style="margin: 20px 0;">
+                <h4>P(spots | Chickenpox) = 0.8 (80%)</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill chickenpox-bar" style="width: 80%;">80%</div>
+                </div>
+                
+                <h4>P(spots | Smallpox) = 0.9 (90%)</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill smallpox-bar" style="width: 90%;">90%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Evidence -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">Calculate Evidence P(spots)</div>
+            </div>
+            <p>Overall probability of seeing spots across all causes:</p>
+            
+            <div class="formula">
+                P(spots) = P(spots|C)×P(C) + P(spots|S)×P(S)
+            </div>
+            
+            <div class="calculation">
+                P(spots) = 0.8 × 0.10 + 0.9 × 0.0011<br>
+                P(spots) = 0.08 + 0.00099<br>
+                P(spots) = 0.08099 ≈ 0.081 (8.1%)
+            </div>
+        </div>
+
+        <!-- Step 5: Bayes' Rule -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">5</div>
+                <div class="step-title">Apply Bayes' Rule</div>
+            </div>
+            
+            <div class="formula">
+                P(Disease | spots) = [P(spots | Disease) × P(Disease)] / P(spots)
+            </div>
+            
+            <h3>For Smallpox:</h3>
+            <div class="calculation">
+                P(S | spots) = (0.9 × 0.0011) / 0.08099<br>
+                P(S | spots) = 0.00099 / 0.08099<br>
+                P(S | spots) ≈ 0.0122 = 1.22%
+            </div>
+            
+            <h3>For Chickenpox:</h3>
+            <div class="calculation">
+                P(C | spots) = (0.8 × 0.10) / 0.08099<br>
+                P(C | spots) = 0.08 / 0.08099<br>
+                P(C | spots) ≈ 0.9878 = 98.78%
+            </div>
+        </div>
+
+        <!-- Step 6: Results -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">6</div>
+                <div class="step-title">Final Diagnosis Probabilities</div>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h4>Chickenpox Probability: 98.78%</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill chickenpox-bar" style="width: 98.78%;">98.78%</div>
+                </div>
+                
+                <h4>Smallpox Probability: 1.22%</h4>
+                <div class="probability-bar">
+                    <div class="probability-fill smallpox-bar" style="width: 12.2%;">1.22%</div>
+                </div>
+            </div>
+            
+            <div class="interpretation">
+                <h3>🧠 Key Insight</h3>
+                <p>Even though spots are MORE typical for smallpox (90% vs 80%), chickenpox is so much more common that it remains the most likely diagnosis. The rarity of smallpox (0.11% vs 10%) overwhelms the slightly higher likelihood of spots.</p>
+            </div>
+        </div>
+
+        <!-- Interactive Section -->
+        <div class="step-container">
+            <div class="step-header">
+                <div class="step-number">🎛️</div>
+                <div class="step-title">Interactive Exploration</div>
+            </div>
+            
+            <div class="interactive-section">
+                <p>Adjust the parameters below to see how they affect the diagnosis:</p>
+                
+                <div class="slider-container">
+                    <label>Chickenpox Prevalence: <span id="cp-prev">10</span>%</label>
+                    <input type="range" class="slider" id="cpPrev" min="1" max="50" value="10">
+                </div>
+                
+                <div class="slider-container">
+                    <label>Smallpox Prevalence: <span id="sp-prev">0.11</span>%</label>
+                    <input type="range" class="slider" id="spPrev" min="0.01" max="5" step="0.01" value="0.11">
+                </div>
+                
+                <div class="slider-container">
+                    <label>P(spots | Chickenpox): <span id="cp-like">80</span>%</label>
+                    <input type="range" class="slider" id="cpLike" min="10" max="100" value="80">
+                </div>
+                
+                <div class="slider-container">
+                    <label>P(spots | Smallpox): <span id="sp-like">90</span>%</label>
+                    <input type="range" class="slider" id="spLike" min="10" max="100" value="90">
+                </div>
+                
+                <div id="interactive-result" class="result-highlight">
+                    Update parameters above to see new results!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Interactive calculation function
+        function updateCalculation() {
+            const cpPrev = parseFloat(document.getElementById('cpPrev').value) / 100;
+            const spPrev = parseFloat(document.getElementById('spPrev').value) / 100;
+            const cpLike = parseFloat(document.getElementById('cpLike').value) / 100;
+            const spLike = parseFloat(document.getElementById('spLike').value) / 100;
+            
+            // Update display values
+            document.getElementById('cp-prev').textContent = (cpPrev * 100).toFixed(1);
+            document.getElementById('sp-prev').textContent = (spPrev * 100).toFixed(2);
+            document.getElementById('cp-like').textContent = (cpLike * 100).toFixed(0);
+            document.getElementById('sp-like').textContent = (spLike * 100).toFixed(0);
+            
+            // Calculate evidence
+            const evidence = cpLike * cpPrev + spLike * spPrev;
+            
+            // Calculate posteriors
+            const cpPost = (cpLike * cpPrev) / evidence;
+            const spPost = (spLike * spPrev) / evidence;
+            
+            // Update result
+            const resultDiv = document.getElementById('interactive-result');
+            resultDiv.innerHTML = `
+                <strong>Updated Results:</strong><br>
+                Chickenpox: ${(cpPost * 100).toFixed(2)}%<br>
+                Smallpox: ${(spPost * 100).toFixed(2)}%
+            `;
+        }
+        
+        // Add event listeners
+        document.getElementById('cpPrev').addEventListener('input', updateCalculation);
+        document.getElementById('spPrev').addEventListener('input', updateCalculation);
+        document.getElementById('cpLike').addEventListener('input', updateCalculation);
+        document.getElementById('spLike').addEventListener('input', updateCalculation);
+        
+        // Add smooth animations on load
+        window.addEventListener('load', function() {
+            const steps = document.querySelectorAll('.step-container');
+            steps.forEach((step, index) => {
+                step.style.opacity = '0';
+                step.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    step.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    step.style.opacity = '1';
+                    step.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
