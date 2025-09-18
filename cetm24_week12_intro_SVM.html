@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Support Vectors - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 10px;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab:hover:not(.active) {
+            background: #d5dbdb;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .visualization-container {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+
+        #svmCanvas {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: crosshair;
+        }
+
+        .explanation {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .concept-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .concept-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        .btn.secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .legend {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .quiz-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .quiz-question {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .quiz-option {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quiz-option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Understanding Support Vectors</h1>
+        <p class="subtitle">Interactive Learning Module for Support Vector Machines</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('intro')">📚 Introduction</button>
+            <button class="tab" onclick="showTab('interactive')">🎮 Interactive Demo</button>
+            <button class="tab" onclick="showTab('stepbystep')">📝 Step by Step</button>
+        </div>
+
+        <!-- Introduction Section -->
+        <div id="intro" class="content-section active">
+            <div class="concept-card">
+                <h3>
+                    <span class="icon">🎯</span>
+                    What are Support Vectors?
+                </h3>
+                <p>Support vectors are the <strong>critical data points</strong> that lie closest to the decision boundary in a Support Vector Machine (SVM). They are the only points that actually determine where the decision boundary is placed.</p>
+            </div>
+
+            <div class="concept-card">
+                <h3>
+                    <span class="icon">🔑</span>
+                    Key Characteristics
+                </h3>
+                <ul style="margin-left: 40px; line-height: 1.8;">
+                    <li><strong>Location:</strong> They sit exactly on the margin boundaries</li>
+                    <li><strong>Importance:</strong> Only these points define the decision boundary</li>
+                    <li><strong>Efficiency:</strong> We only need to store these points for classification</li>
+                    <li><strong>Robustness:</strong> Other points don't affect the model</li>
+                </ul>
+            </div>
+
+            <div class="concept-card">
+                <h3>
+                    <span class="icon">💡</span>
+                    Why are they important?
+                </h3>
+                <p>Think of support vectors as the "🏛️pillars♖♖♖♖" that hold up a bridge (the decision boundary). Just like a bridge only needs a few strong 🏛️pillars♖♖♖♖ to stand, an SVM only needs support vectors to define its decision boundary. All other data points are essentially redundant once we have identified the support vectors.</p>
+            </div>
+
+            <div class="info-box">
+                <h4>🎓 Learning Tip</h4>
+                <p>Remember: Support vectors are called "support" vectors because they literally support the decision boundary - remove them, and the boundary would change. Remove any other points, and the boundary stays the same!</p>
+            </div>
+        </div>
+
+        <!-- Interactive Demo Section -->
+        <div id="interactive" class="content-section">
+            <div class="visualization-container">
+                <div class="canvas-wrapper">
+                    <canvas id="svmCanvas"></canvas>
+                    <div class="controls">
+                        <button class="btn" onclick="addRandomPoints()">Add Random Points</button>
+                        <button class="btn" onclick="findSupportVectors()">Find Support Vectors</button>
+                        <button class="btn secondary" onclick="clearCanvas()">Clear All</button>
+                        <button class="btn secondary" onclick="toggleAnimation()">Toggle Animation</button>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h3>How to use:</h3>
+                    <ol style="line-height: 2;">
+                        <li>Click "Add Random Points" to generate sample data</li>
+                        <li>Click "Find Support Vectors" to identify them</li>
+                        <li>Watch as the support vectors are highlighted</li>
+                        <li>Notice how they define the margin boundaries</li>
+                    </ol>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #3498db;"></div>
+                            <span>Class A</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e74c3c;"></div>
+                            <span>Class B</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f39c12;"></div>
+                            <span>Support Vectors</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #2ecc71;"></div>
+                            <span>Decision Boundary</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step by Step Section -->
+        <div id="stepbystep" class="content-section">
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+                <div class="step" id="step4">4</div>
+            </div>
+
+            <div id="stepContent">
+                <div class="concept-card">
+                    <h3>Step 1: Data Points</h3>
+                    <p>We start with two classes of data points scattered in 2D space. Each point belongs to either the blue class or the red class.</p>
+                    <canvas id="step1Canvas" width="600" height="300" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px;"></canvas>
+                </div>
+            </div>
+
+            <div class="controls" style="justify-content: center;">
+                <button class="btn secondary" onclick="previousStep()">← Previous</button>
+                <button class="btn" onclick="nextStep()">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Initialize canvas if interactive tab is selected
+            if (tabName === 'interactive') {
+                initializeCanvas();
+            } else if (tabName === 'stepbystep') {
+                drawStep1();
+            }
+        }
+
+        // Canvas variables
+        let canvas, ctx;
+        let points = [];
+        let supportVectors = [];
+        let animating = false;
+
+        // Initialize canvas
+        function initializeCanvas() {
+            canvas = document.getElementById('svmCanvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+        }
+
+        // Add random points
+        function addRandomPoints() {
+            initializeCanvas();
+            points = [];
+            
+            // Add Class A points (left side)
+            for (let i = 0; i < 10; i++) {
+                points.push({
+                    x: Math.random() * (canvas.width / 2 - 50) + 25,
+                    y: Math.random() * (canvas.height - 50) + 25,
+                    class: 'A'
+                });
+            }
+            
+            // Add Class B points (right side)
+            for (let i = 0; i < 10; i++) {
+                points.push({
+                    x: Math.random() * (canvas.width / 2 - 50) + canvas.width / 2 + 25,
+                    y: Math.random() * (canvas.height - 50) + 25,
+                    class: 'B'
+                });
+            }
+            
+            drawPoints();
+        }
+
+        // Draw points on canvas
+        function drawPoints() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = point.class === 'A' ? '#3498db' : '#e74c3c';
+                ctx.fill();
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // Find and highlight support vectors
+        function findSupportVectors() {
+            if (points.length === 0) {
+                alert('Please add some points first!');
+                return;
+            }
+            
+            // Simplified support vector identification
+            // In a real SVM, this would involve optimization
+            supportVectors = [];
+            
+            // Find rightmost point of class A
+            let rightmostA = points.filter(p => p.class === 'A')
+                .reduce((max, p) => p.x > max.x ? p : max);
+            supportVectors.push(rightmostA);
+            
+            // Find leftmost point of class B
+            let leftmostB = points.filter(p => p.class === 'B')
+                .reduce((min, p) => p.x < min.x ? p : min);
+            supportVectors.push(leftmostB);
+            
+            // Add one more support vector from each class (closest to boundary)
+            let boundaryX = (rightmostA.x + leftmostB.x) / 2;
+            
+            let closestA = points.filter(p => p.class === 'A' && p !== rightmostA)
+                .reduce((closest, p) => 
+                    Math.abs(p.x - boundaryX) < Math.abs(closest.x - boundaryX) ? p : closest
+                );
+            if (closestA) supportVectors.push(closestA);
+            
+            let closestB = points.filter(p => p.class === 'B' && p !== leftmostB)
+                .reduce((closest, p) => 
+                    Math.abs(p.x - boundaryX) < Math.abs(closest.x - boundaryX) ? p : closest
+                );
+            if (closestB) supportVectors.push(closestB);
+            
+            drawWithSupportVectors();
+        }
+
+        // Draw points with support vectors highlighted
+        function drawWithSupportVectors() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw decision boundary
+            let boundaryX = (supportVectors[0].x + supportVectors[1].x) / 2;
+            ctx.beginPath();
+            ctx.moveTo(boundaryX, 0);
+            ctx.lineTo(boundaryX, canvas.height);
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw margin lines
+            let margin = 30;
+            ctx.beginPath();
+            ctx.moveTo(boundaryX - margin, 0);
+            ctx.lineTo(boundaryX - margin, canvas.height);
+            ctx.moveTo(boundaryX + margin, 0);
+            ctx.lineTo(boundaryX + margin, canvas.height);
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw all points
+            points.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = point.class === 'A' ? '#3498db' : '#e74c3c';
+                ctx.fill();
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            // Highlight support vectors
+            supportVectors.forEach(sv => {
+                ctx.beginPath();
+                ctx.arc(sv.x, sv.y, 15, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#f39c12';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // Add pulsing animation
+                if (animating) {
+                    ctx.beginPath();
+                    ctx.arc(sv.x, sv.y, 20, 0, 2 * Math.PI);
+                    ctx.strokeStyle = 'rgba(243, 156, 18, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Clear canvas
+        function clearCanvas() {
+            points = [];
+            supportVectors = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Toggle animation
+        function toggleAnimation() {
+            animating = !animating;
+            if (supportVectors.length > 0) {
+                drawWithSupportVectors();
+            }
+        }
+
+        // Step by step functionality
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function drawStep1() {
+            const canvas = document.getElementById('step1Canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 300;
+            
+            // Draw sample points
+            const classA = [
+                {x: 100, y: 100}, {x: 150, y: 150}, {x: 120, y: 200},
+                {x: 80, y: 180}, {x: 140, y: 120}
+            ];
+            
+            const classB = [
+                {x: 400, y: 100}, {x: 450, y: 150}, {x: 420, y: 200},
+                {x: 480, y: 180}, {x: 440, y: 120}
+            ];
+            
+            // Draw Class A
+            classA.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+            });
+            
+            // Draw Class B
+            classB.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+            });
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStepDisplay();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        }
+
+        function updateStepDisplay() {
+            // Update step indicators
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                if (i <= currentStep) {
+                    stepEl.classList.add('active');
+                } else {
+                    stepEl.classList.remove('active');
+                }
+            }
+            
+            // Update content based on current step
+            const content = document.getElementById('stepContent');
+            
+            switch(currentStep) {
+                case 1:
+                    content.innerHTML = `
+                        <div class="concept-card">
+                            <h3>Step 1: Data Points</h3>
+                            <p>We start with two classes of data points scattered in 2D space. Each point belongs to either the blue class or the red class.</p>
+                            <canvas id="step1Canvas" width="600" height="300" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px;"></canvas>
+                        </div>
+                    `;
+                    setTimeout(drawStep1, 100);
+                    break;
+                    
+                case 2:
+                    content.innerHTML = `
+                        <div class="concept-card">
+                            <h3>Step 2: Finding the Decision Boundary</h3>
+                            <p>The SVM algorithm searches for the best line (hyperplane) that separates the two classes. But there are many possible lines - which one is best?</p>
+                            <canvas id="step2Canvas" width="600" height="300" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px;"></canvas>
+                        </div>
+                    `;
+                    setTimeout(drawStep2, 100);
+                    break;
+                    
+                case 3:
+                    content.innerHTML = `
+                        <div class="concept-card">
+                            <h3>Step 3: Maximizing the Margin</h3>
+                            <p>SVM chooses the line that maximizes the margin - the distance between the line and the nearest points from each class. These nearest points are the support vectors!</p>
+                            <canvas id="step3Canvas" width="600" height="300" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px;"></canvas>
+                        </div>
+                    `;
+                    setTimeout(drawStep3, 100);
+                    break;
+                    
+                case 4:
+                    content.innerHTML = `
+                        <div class="concept-card">
+                            <h3>Step 4: Support Vectors Identified</h3>
+                            <p>The support vectors (highlighted in orange) are the only points that matter for defining the decision boundary. You could remove all other points, and the boundary would stay the same!</p>
+                            <canvas id="step4Canvas" width="600" height="300" style="width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px;"></canvas>
+                        </div>
+                    `;
+                    setTimeout(drawStep4, 100);
+                    break;
+            }
+        }
+
+        function drawStep2() {
+            const canvas = document.getElementById('step2Canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 300;
+            
+            // Draw sample points
+            const classA = [
+                {x: 100, y: 100}, {x: 150, y: 150}, {x: 120, y: 200},
+                {x: 80, y: 180}, {x: 140, y: 120}
+            ];
+            
+            const classB = [
+                {x: 400, y: 100}, {x: 450, y: 150}, {x: 420, y: 200},
+                {x: 480, y: 180}, {x: 440, y: 120}
+            ];
+            
+            // Draw multiple possible boundaries
+            ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
+            ctx.lineWidth = 2;
+            
+            // Line 1
+            ctx.beginPath();
+            ctx.moveTo(250, 50);
+            ctx.lineTo(250, 250);
+            ctx.stroke();
+            
+            // Line 2
+            ctx.beginPath();
+            ctx.moveTo(270, 50);
+            ctx.lineTo(270, 250);
+            ctx.stroke();
+            
+            // Line 3
+            ctx.beginPath();
+            ctx.moveTo(290, 50);
+            ctx.lineTo(290, 250);
+            ctx.stroke();
+            
+            // Draw points
+            classA.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+            });
+            
+            classB.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+            });
+        }
+
+        function drawStep3() {
+            const canvas = document.getElementById('step3Canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 300;
+            
+            // Draw sample points
+            const classA = [
+                {x: 100, y: 100}, {x: 150, y: 150}, {x: 120, y: 200},
+                {x: 80, y: 180}, {x: 140, y: 120}
+            ];
+            
+            const classB = [
+                {x: 400, y: 100}, {x: 450, y: 150}, {x: 420, y: 200},
+                {x: 480, y: 180}, {x: 440, y: 120}
+            ];
+            
+            // Draw optimal boundary
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(275, 50);
+            ctx.lineTo(275, 250);
+            ctx.stroke();
+            
+            // Draw margin lines
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            ctx.moveTo(175, 50);
+            ctx.lineTo(175, 250);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(375, 50);
+            ctx.lineTo(375, 250);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // Draw margin area
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.1)';
+            ctx.fillRect(175, 50, 200, 200);
+            
+            // Draw points
+            classA.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+            });
+            
+            classB.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+            });
+        }
+
+        function drawStep4() {
+            const canvas = document.getElementById('step4Canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 300;
+            
+            // Draw sample points
+            const classA = [
+                {x: 100, y: 100}, {x: 150, y: 150}, {x: 120, y: 200},
+                {x: 80, y: 180}, {x: 140, y: 120}
+            ];
+            
+            const classB = [
+                {x: 400, y: 100}, {x: 450, y: 150}, {x: 420, y: 200},
+                {x: 480, y: 180}, {x: 440, y: 120}
+            ];
+            
+            // Support vectors (closest points)
+            const supportVectorsIndices = {
+                A: [1, 4], // indices in classA
+                B: [0, 4]  // indices in classB
+            };
+            
+            // Draw optimal boundary
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(275, 50);
+            ctx.lineTo(275, 250);
+            ctx.stroke();
+            
+            // Draw margin lines
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            ctx.moveTo(175, 50);
+            ctx.lineTo(175, 250);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(375, 50);
+            ctx.lineTo(375, 250);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // Draw points
+            classA.forEach((point, index) => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#3498db';
+                ctx.fill();
+                
+                // Highlight support vectors
+                if (supportVectorsIndices.A.includes(index)) {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 15, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                }
+            });
+            
+            classB.forEach((point, index) => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+                
+                // Highlight support vectors
+                if (supportVectorsIndices.B.includes(index)) {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 15, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Quiz functionality
+        function checkAnswer(element, isCorrect) {
+            // Reset all options
+            const options = element.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+                opt.onclick = null;
+            });
+            
+            // Mark the selected answer
+            if (isCorrect) {
+                element.classList.add('correct');
+                showFeedback('feedback', true, 'Correct! Support vectors are indeed the critical points closest to the decision boundary that define its position.');
+            } else {
+                element.classList.add('incorrect');
+                showFeedback('feedback', false, 'Not quite. Support vectors are specifically the data points closest to the decision boundary that determine where it\'s placed.');
+            }
+        }
+
+        function checkAnswer2(element, isCorrect) {
+            // Reset all options
+            const options = element.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+                opt.onclick = null;
+            });
+            
+            // Mark the selected answer
+            if (isCorrect) {
+                element.classList.add('correct');
+                showFeedback('feedback2', true, 'Exactly right! Non-support vectors don\'t affect the decision boundary at all. This is what makes SVMs so efficient!');
+            } else {
+                element.classList.add('incorrect');
+                showFeedback('feedback2', false, 'Think again. Remember, only support vectors determine the decision boundary position.');
+            }
+        }
+
+        function showFeedback(feedbackId, isCorrect, message) {
+            const feedback = document.getElementById(feedbackId);
+            feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'incorrect');
+            feedback.textContent = message;
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            // Initialize first canvas if needed
+            if (document.getElementById('intro').classList.contains('active')) {
+                // Introduction is already active
+            }
+        };
+    </script>
+</body>
+</html>
