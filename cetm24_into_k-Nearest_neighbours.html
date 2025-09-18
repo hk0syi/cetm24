@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>k-Nearest Neighbors (kNN) Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .key-concepts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .concept-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .concept-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .concept-card h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+        
+        .interactive-demo {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100px;
+        }
+        
+        .control-group select, .control-group button {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-group button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        #canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+        
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .status-display {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .status-display strong {
+            color: #667eea;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .pros {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .cons {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        
+        .pros h3 {
+            color: #2e7d32;
+        }
+        
+        .cons h3 {
+            color: #c62828;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        li {
+            margin: 5px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>k-Nearest Neighbors (kNN)</h1>
+            <p>An Interactive Tutorial for Understanding Instance-Based Learning</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📚 What is kNN?</h2>
+                <p style="line-height: 1.6; margin-bottom: 15px;">
+                    k-Nearest Neighbors is a simple, yet powerful supervised learning algorithm that makes predictions based on the 
+                    similarity of data points. It's called "lazy" because it doesn't build an explicit model during training - 
+                    it simply stores all the data and makes decisions at query time.
+                </p>
+                
+                <div class="key-concepts">
+                    <div class="concept-card">
+                        <h3>🎯 Core Idea</h3>
+                        <p>Treat each data point as a location in n-dimensional space. To classify a new point, 
+                        look at its k closest neighbors and take a vote.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>📊 Classification</h3>
+                        <p>Take a majority vote among the k neighbors' classes. Can be weighted by distance for better accuracy.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>📈 Regression</h3>
+                        <p>Average the k neighbors' target values. Distance weighting can make closer neighbors more influential.</p>
+                    </div>
+                    <div class="concept-card">
+                        <h3>⚡ Lazy Learning</h3>
+                        <p>No model is fitted upfront. Training data is stored, and computation happens at prediction time.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎮 Interactive Demo</h2>
+                <div class="interactive-demo">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>k value:</label>
+                            <input type="range" id="kValue" min="1" max="9" value="3" step="2">
+                            <span id="kDisplay" style="font-size: 1.2em; font-weight: bold; color: #667eea;">3</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Next class:</label>
+                            <select id="classSelect">
+                                <option value="apple">🍎 Apple (Red)</option>
+                                <option value="orange">🍊 Orange (Orange)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <button id="clearBtn">Clear All</button>
+                        </div>
+                        <div class="control-group">
+                            <button id="addRandomBtn">Add Sample Data</button>
+                        </div>
+                    </div>
+                    
+                    <canvas id="canvas" width="800" height="400"></canvas>
+                    
+                    <div class="status-display" id="statusDisplay">
+                        Click to add training points • Right-click to add a query point
+                    </div>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff6b6b;"></div>
+                            <span>Apple</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ffa500;"></div>
+                            <span>Orange</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4ecdc4;"></div>
+                            <span>Query Point</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>How to use:</h3>
+                        <p>1. Click "Add Sample Data" or click on the canvas to add training points</p>
+                        <p>2. Right-click to add a query point (cyan) - it will be classified based on k nearest neighbors</p>
+                        <p>3. <strong>Adjust the k value slider to see how the number of neighbors affects classification!</strong></p>
+                        <p>4. Watch the connecting lines change - they show which neighbors are being considered</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>⚙️ Key Parameters</h2>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Important Choices:</h3>
+                    <ul>
+                        <li><strong>k value:</strong> Small k = more flexible but noisy; Large k = smoother but may blur boundaries</li>
+                        <li><strong>Distance metric:</strong> Euclidean (continuous), Manhattan (grid), Cosine (text vectors)</li>
+                        <li><strong>Feature scaling:</strong> Standardize features so no single feature dominates</li>
+                        <li><strong>Weighting:</strong> Distance-weighted voting can improve accuracy</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>✅ Pros vs ❌ Cons</h2>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h3>Advantages</h3>
+                        <ul>
+                            <li>Simple to understand and implement</li>
+                            <li>No training phase required</li>
+                            <li>Naturally handles multi-class problems</li>
+                            <li>Works well with clear clusters</li>
+                            <li>Can capture complex patterns</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h3>Disadvantages</h3>
+                        <ul>
+                            <li>Slow prediction on large datasets</li>
+                            <li>Sensitive to feature scaling</li>
+                            <li>Suffers from curse of dimensionality</li>
+                            <li>Memory intensive (stores all data)</li>
+                            <li>Sensitive to noisy data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>💡 Practical Tips</h2>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <ul>
+                        <li>📊 Always scale your features (z-score normalization or min-max scaling)</li>
+                        <li>🔍 Use cross-validation to find optimal k (odd numbers for binary classification)</li>
+                        <li>🚀 For large datasets, use k-d trees or ball trees for efficient neighbor search</li>
+                        <li>⚖️ Consider distance weighting: weight = 1/(distance + ε)</li>
+                        <li>🎯 Remove irrelevant features to avoid the curse of dimensionality</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const kValueInput = document.getElementById('kValue');
+        const kDisplay = document.getElementById('kDisplay');
+        const classSelect = document.getElementById('classSelect');
+        const clearBtn = document.getElementById('clearBtn');
+        const addRandomBtn = document.getElementById('addRandomBtn');
+        const statusDisplay = document.getElementById('statusDisplay');
+        
+        let points = [];
+        let queryPoint = null;
+        
+        // Adjust canvas size for mobile
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const maxWidth = Math.min(800, rect.width);
+            canvas.width = maxWidth;
+            canvas.height = maxWidth * 0.5;
+            draw();
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        kValueInput.addEventListener('input', (e) => {
+            kDisplay.textContent = e.target.value;
+            draw();
+            if (queryPoint) {
+                updateStatus();
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            points = [];
+            queryPoint = null;
+            statusDisplay.textContent = 'Click to add training points • Right-click to add a query point';
+            draw();
+        });
+        
+        addRandomBtn.addEventListener('click', () => {
+            // Clear existing points
+            points = [];
+            queryPoint = null;
+            
+            // Add clustered points for apples
+            for (let i = 0; i < 8; i++) {
+                const centerX = canvas.width * 0.25;
+                const centerY = canvas.height * 0.4;
+                points.push({
+                    x: centerX + (Math.random() - 0.5) * 150,
+                    y: centerY + (Math.random() - 0.5) * 150,
+                    class: 'apple'
+                });
+            }
+            
+            // Add clustered points for oranges
+            for (let i = 0; i < 8; i++) {
+                const centerX = canvas.width * 0.75;
+                const centerY = canvas.height * 0.6;
+                points.push({
+                    x: centerX + (Math.random() - 0.5) * 150,
+                    y: centerY + (Math.random() - 0.5) * 150,
+                    class: 'orange'
+                });
+            }
+            
+            // Add a query point in the middle
+            queryPoint = {
+                x: canvas.width * 0.5,
+                y: canvas.height * 0.5
+            };
+            
+            draw();
+            updateStatus();
+        });
+        
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // Left click
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+                
+                points.push({
+                    x: x,
+                    y: y,
+                    class: classSelect.value
+                });
+                
+                draw();
+                if (queryPoint) {
+                    updateStatus();
+                }
+            }
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            
+            queryPoint = { x: x, y: y };
+            draw();
+            updateStatus();
+        });
+        
+        function euclideanDistance(p1, p2) {
+            return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        }
+        
+        function knn(query, k) {
+            if (points.length === 0) return null;
+            
+            const distances = points.map(p => ({
+                point: p,
+                distance: euclideanDistance(query, p)
+            }));
+            
+            distances.sort((a, b) => a.distance - b.distance);
+            
+            const kNearest = distances.slice(0, Math.min(k, distances.length));
+            
+            const votes = {};
+            kNearest.forEach(item => {
+                votes[item.point.class] = (votes[item.point.class] || 0) + 1;
+            });
+            
+            let maxVotes = 0;
+            let prediction = null;
+            for (const cls in votes) {
+                if (votes[cls] > maxVotes) {
+                    maxVotes = votes[cls];
+                    prediction = cls;
+                }
+            }
+            
+            return { 
+                prediction, 
+                neighbors: kNearest,
+                votes: votes
+            };
+        }
+        
+        function updateStatus() {
+            if (queryPoint && points.length > 0) {
+                const k = parseInt(kValueInput.value);
+                const result = knn(queryPoint, k);
+                if (result) {
+                    const appleVotes = result.votes.apple || 0;
+                    const orangeVotes = result.votes.orange || 0;
+                    statusDisplay.innerHTML = `
+                        <strong>k = ${k}</strong> | 
+                        Prediction: <strong style="color: ${result.prediction === 'apple' ? '#ff6b6b' : '#ffa500'}">
+                        ${result.prediction === 'apple' ? '🍎 Apple' : '🍊 Orange'}</strong> | 
+                        Votes: Apple (${appleVotes}), Orange (${orangeVotes})
+                    `;
+                }
+            }
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#f0f0f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            // Draw connections to k nearest neighbors
+            if (queryPoint && points.length > 0) {
+                const result = knn(queryPoint, parseInt(kValueInput.value));
+                if (result) {
+                    // Draw lines to neighbors
+                    result.neighbors.forEach((item, index) => {
+                        const opacity = 0.6 - (index * 0.05);
+                        ctx.strokeStyle = `rgba(100, 126, 234, ${opacity})`;
+                        ctx.lineWidth = 3 - (index * 0.2);
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        ctx.moveTo(queryPoint.x, queryPoint.y);
+                        ctx.lineTo(item.point.x, item.point.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        
+                        // Highlight the k nearest neighbors
+                        ctx.fillStyle = `rgba(100, 126, 234, 0.2)`;
+                        ctx.beginPath();
+                        ctx.arc(item.point.x, item.point.y, 15, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                }
+            }
+            
+            // Draw points
+            points.forEach(p => {
+                // Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.beginPath();
+                ctx.arc(p.x + 2, p.y + 2, 8, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Point
+                ctx.fillStyle = p.class === 'apple' ? '#ff6b6b' : '#ffa500';
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Inner highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(p.x - 2, p.y - 2, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            
+            // Draw query point
+            if (queryPoint) {
+                const result = knn(queryPoint, parseInt(kValueInput.value));
+                
+                // Draw prediction background
+                if (result && result.prediction) {
+                    ctx.fillStyle = result.prediction === 'apple' ? 
+                        'rgba(255, 107, 107, 0.2)' : 'rgba(255, 165, 0, 0.2)';
+                    ctx.beginPath();
+                    ctx.arc(queryPoint.x, queryPoint.y, 30, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                
+                // Query point shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.beginPath();
+                ctx.arc(queryPoint.x + 2, queryPoint.y + 2, 10, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Query point
+                ctx.fillStyle = '#4ecdc4';
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(queryPoint.x, queryPoint.y, 10, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Query point highlight
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(queryPoint.x - 3, queryPoint.y - 3, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw prediction label
+                if (result && result.prediction) {
+                    ctx.fillStyle = '#333';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 4;
+                    const text = `${result.prediction === 'apple' ? '🍎' : '🍊'}`;
+                    ctx.strokeText(text, queryPoint.x, queryPoint.y - 35);
+                    ctx.fillText(text, queryPoint.x, queryPoint.y - 35);
+                }
+            }
+        }
+        
+        // Initial setup - add sample data automatically
+        setTimeout(() => {
+            addRandomBtn.click();
+        }, 500);
+    </script>
+</body>
+</html>
