@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Nearest Neighbors (KNN) Algorithm - Interactive Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            animation: fadeInDown 1s;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            animation: fadeInUp 1s;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            animation: fadeIn 1s;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 20px 0 15px 0;
+            font-size: 1.3em;
+        }
+
+        .problem-statement {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .problem-statement h3 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .ruth-card {
+            display: inline-block;
+            background: white;
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+            transform: scale(1.01);
+            transition: all 0.3s;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight-row {
+            background-color: #fff3cd !important;
+            font-weight: bold;
+        }
+
+        .nearest {
+            background-color: #d4edda !important;
+            font-weight: bold;
+        }
+
+        .step-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .step-box:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            position: absolute;
+            left: -25px;
+            top: 15px;
+            background: #667eea;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .formula-box {
+            background: #f0f8ff;
+            border: 2px solid #4169e1;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+        }
+
+        .calculation-example {
+            background: #fffacd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .vote-box {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .vote-item {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 150px;
+            text-align: center;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .vote-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .vote-count {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .winner {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border-color: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        .interactive-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .k-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .k-selector label {
+            font-size: 1.2em;
+            margin-right: 15px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .k-selector input[type="range"] {
+            width: 200px;
+            margin: 0 15px;
+        }
+
+        .k-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #764ba2;
+            min-width: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 1.3em;
+            animation: slideIn 1s;
+        }
+
+        .distance-visual {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .distance-bar {
+            height: 25px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 12px;
+            margin-left: 10px;
+            transition: width 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .gender-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .male {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .female {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .sport-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .cricket {
+            background-color: #28a745;
+        }
+
+        .football {
+            background-color: #007bff;
+        }
+
+        .neither {
+            background-color: #6c757d;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 K-Nearest Neighbors (KNN) Algorithm</h1>
+            <div class="subtitle">An Interactive Tutorial for Classification</div>
+        </header>
+
+        <div class="content">
+            <!-- Problem Statement -->
+            <div class="section">
+                <div class="problem-statement">
+                    <h3>🎮 The Problem: Predict Ruth's Favorite Sport!</h3>
+                    <p>We have data about 10 people's sports preferences. Now, we need to predict what sport Ruth might prefer based on her age and gender.</p>
+                    <div class="ruth-card">
+                        <strong>Ruth's Profile:</strong> Age: 5 years | Gender: Female | Sport: ???
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dataset -->
+            <div class="section">
+                <h2>📊 Step 1: Our Training Dataset</h2>
+                <p>This is our training data - information about 10 people and their sport preferences:</p>
+                
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Sport</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mahesh</td>
+                            <td>32</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge football">Football</span></td>
+                        </tr>
+                        <tr>
+                            <td>Arjun</td>
+                            <td>40</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge neither">Neither</span></td>
+                        </tr>
+                        <tr>
+                            <td>Pooja</td>
+                            <td>16</td>
+                            <td><span class="gender-badge female">F</span></td>
+                            <td><span class="sport-badge cricket">Cricket</span></td>
+                        </tr>
+                        <tr>
+                            <td>Shruthi</td>
+                            <td>34</td>
+                            <td><span class="gender-badge female">F</span></td>
+                            <td><span class="sport-badge cricket">Cricket</span></td>
+                        </tr>
+                        <tr>
+                            <td>Sachin</td>
+                            <td>55</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge neither">Neither</span></td>
+                        </tr>
+                        <tr>
+                            <td>Rahul</td>
+                            <td>40</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge cricket">Cricket</span></td>
+                        </tr>
+                        <tr>
+                            <td>Soundarya</td>
+                            <td>20</td>
+                            <td><span class="gender-badge female">F</span></td>
+                            <td><span class="sport-badge neither">Neither</span></td>
+                        </tr>
+                        <tr>
+                            <td>Arun</td>
+                            <td>15</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge cricket">Cricket</span></td>
+                        </tr>
+                        <tr>
+                            <td>Damini</td>
+                            <td>55</td>
+                            <td><span class="gender-badge female">F</span></td>
+                            <td><span class="sport-badge football">Football</span></td>
+                        </tr>
+                        <tr>
+                            <td>Priyanshu</td>
+                            <td>15</td>
+                            <td><span class="gender-badge male">M</span></td>
+                            <td><span class="sport-badge football">Football</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="sport-badge cricket">Cricket</span>
+                        <span>4 people</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="sport-badge football">Football</span>
+                        <span>3 people</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="sport-badge neither">Neither</span>
+                        <span>3 people</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- K Selection -->
+            <div class="section">
+                <h2>🎯 Step 2: Choose the Value of K</h2>
+                <div class="interactive-section">
+                    <p>K represents the number of nearest neighbors to consider. Try different values:</p>
+                    <div class="k-selector">
+                        <label for="kValue">Select K value:</label>
+                        <input type="range" id="kValue" min="1" max="9" value="3" step="2">
+                        <span class="k-value" id="kDisplay">3</span>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px;">
+                        <em>💡 Tip: Odd numbers (1, 3, 5, 7, 9) help avoid ties in voting!</em>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Distance Calculation -->
+            <div class="section">
+                <h2>📏 Step 3: Calculate Distances</h2>
+                
+                <div class="formula-box">
+                    <strong>Euclidean Distance Formula:</strong><br>
+                    Distance = √[(Age₁ - Age₂)² + (Gender₁ - Gender₂)²]<br>
+                    <small>Gender: Male = 0, Female = 1</small>
+                </div>
+
+                <div class="calculation-example">
+                    <strong>Example Calculation for Mahesh:</strong><br>
+                    Ruth: Age = 5, Gender = F (1)<br>
+                    Mahesh: Age = 32, Gender = M (0)<br>
+                    Distance = √[(32-5)² + (0-1)²] = √[729 + 1] = √730 = 27.02
+                </div>
+
+                <h3>Calculated Distances from Ruth:</h3>
+                <table id="distanceTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Sport</th>
+                            <th>Distance</th>
+                            <th>Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="distanceTableBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Voting -->
+            <div class="section">
+                <h2>🗳️ Step 4: Voting by K-Nearest Neighbors</h2>
+                <div class="interactive-section">
+                    <button onclick="calculateKNN()">Calculate KNN Prediction</button>
+                    
+                    <div id="votingResult" style="display: none;">
+                        <h3>Top K=<span id="kValueResult">3</span> Nearest Neighbors:</h3>
+                        <div id="nearestNeighbors"></div>
+                        
+                        <h3>Voting Results:</h3>
+                        <div class="vote-box" id="voteBox">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="section" id="resultSection" style="display: none;">
+                <div class="result-box">
+                    <h3>🎉 Prediction Result</h3>
+                    <p>Based on K=<span id="kFinal">3</span> nearest neighbors,</p>
+                    <p style="font-size: 1.5em; margin-top: 15px;">
+                        Ruth will most likely prefer: <strong id="finalPrediction">Cricket</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Algorithm Steps Summary -->
+            <div class="section">
+                <h2>📝 KNN Algorithm Steps Summary</h2>
+                
+                <div class="step-box">
+                    <div class="step-number">1</div>
+                    <h3 style="margin-left: 40px;">Load Dataset</h3>
+                    <p style="margin-left: 40px;">Prepare training data (known examples) and test data (what we want to predict)</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">2</div>
+                    <h3 style="margin-left: 40px;">Choose K Value</h3>
+                    <p style="margin-left: 40px;">Select the number of nearest neighbors to consider (usually odd number)</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">3</div>
+                    <h3 style="margin-left: 40px;">Calculate Distances</h3>
+                    <p style="margin-left: 40px;">Compute distance between test point and all training points</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">4</div>
+                    <h3 style="margin-left: 40px;">Sort & Select</h3>
+                    <p style="margin-left: 40px;">Sort distances and select K nearest neighbors</p>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-number">5</div>
+                    <h3 style="margin-left: 40px;">Vote & Predict</h3>
+                    <p style="margin-left: 40px;">Count votes from K neighbors and predict the majority class</p>
+                </div>
+            </div>
+
+            <!-- Key Concepts -->
+            <div class="section">
+                <h2>💡 Key Concepts to Remember</h2>
+                <ul style="line-height: 2; font-size: 1.1em;">
+                    <li><strong>Lazy Learning:</strong> KNN doesn't build a model; it stores all data and makes predictions at query time</li>
+                    <li><strong>Distance Metrics:</strong> Euclidean (most common), Manhattan, Hamming</li>
+                    <li><strong>K Selection:</strong> Small K = more noise sensitive, Large K = smoother boundaries</li>
+                    <li><strong>Feature Scaling:</strong> Important when features have different scales</li>
+                    <li><strong>Ties:</strong> Use odd K values to avoid voting ties</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const trainingData = [
+            {name: 'Mahesh', age: 32, gender: 'M', sport: 'Football'},
+            {name: 'Arjun', age: 40, gender: 'M', sport: 'Neither'},
+            {name: 'Pooja', age: 16, gender: 'F', sport: 'Cricket'},
+            {name: 'Shruthi', age: 34, gender: 'F', sport: 'Cricket'},
+            {name: 'Sachin', age: 55, gender: 'M', sport: 'Neither'},
+            {name: 'Rahul', age: 40, gender: 'M', sport: 'Cricket'},
+            {name: 'Soundarya', age: 20, gender: 'F', sport: 'Neither'},
+            {name: 'Arun', age: 15, gender: 'M', sport: 'Cricket'},
+            {name: 'Damini', age: 55, gender: 'F', sport: 'Football'},
+            {name: 'Priyanshu', age: 15, gender: 'M', sport: 'Football'}
+        ];
+
+        const ruth = {name: 'Ruth', age: 5, gender: 'F'};
+
+        // Calculate distances
+        function calculateDistance(person) {
+            const genderNum1 = person.gender === 'M' ? 0 : 1;
+            const genderNum2 = ruth.gender === 'M' ? 0 : 1;
+            const distance = Math.sqrt(
+                Math.pow(person.age - ruth.age, 2) + 
+                Math.pow(genderNum1 - genderNum2, 2)
+            );
+            return distance;
+        }
+
+        // Update K value display
+        document.getElementById('kValue').addEventListener('input', function(e) {
+            document.getElementById('kDisplay').textContent = e.target.value;
+        });
+
+        // Initialize distance table
+        function initializeDistanceTable() {
+            const tbody = document.getElementById('distanceTableBody');
+            
+            // Calculate and sort distances
+            const dataWithDistances = trainingData.map(person => ({
+                ...person,
+                distance: calculateDistance(person)
+            })).sort((a, b) => a.distance - b.distance);
+
+            // Populate table
+            tbody.innerHTML = '';
+            dataWithDistances.forEach((person, index) => {
+                const row = tbody.insertRow();
+                row.className = index < 3 ? 'nearest' : '';
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${person.name}</td>
+                    <td>${person.age}</td>
+                    <td><span class="gender-badge ${person.gender === 'M' ? 'male' : 'female'}">${person.gender}</span></td>
+                    <td><span class="sport-badge ${person.sport.toLowerCase().replace(' ', '')}">${person.sport}</span></td>
+                    <td>${person.distance.toFixed(2)}</td>
+                    <td>
+                        <div class="distance-visual">
+                            <div class="distance-bar" style="width: ${Math.min(person.distance * 3, 200)}px">
+                                ${person.distance.toFixed(2)}
+                            </div>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        // Calculate KNN
+        function calculateKNN() {
+            const k = parseInt(document.getElementById('kValue').value);
+            
+            // Calculate and sort distances
+            const dataWithDistances = trainingData.map(person => ({
+                ...person,
+                distance: calculateDistance(person)
+            })).sort((a, b) => a.distance - b.distance);
+
+            // Get k nearest neighbors
+            const kNearest = dataWithDistances.slice(0, k);
+            
+            // Display nearest neighbors
+            const nearestDiv = document.getElementById('nearestNeighbors');
+            nearestDiv.innerHTML = '<table><tr><th>Name</th><th>Distance</th><th>Sport</th></tr>' +
+                kNearest.map(p => `<tr><td>${p.name}</td><td>${p.distance.toFixed(2)}</td><td><span class="sport-badge ${p.sport.toLowerCase().replace(' ', '')}">${p.sport}</span></td></tr>`).join('') +
+                '</table>';
+
+            // Count votes
+            const votes = {};
+            kNearest.forEach(person => {
+                votes[person.sport] = (votes[person.sport] || 0) + 1;
+            });
+
+            // Display votes
+            const voteBox = document.getElementById('voteBox');
+            voteBox.innerHTML = '';
+            let maxVotes = 0;
+            let prediction = '';
+            
+            Object.entries(votes).forEach(([sport, count]) => {
+                const isWinner = count > maxVotes;
+                if (isWinner) {
+                    maxVotes = count;
+                    prediction = sport;
+                }
+            });
+
+            Object.entries(votes).forEach(([sport, count]) => {
+                const voteItem = document.createElement('div');
+                voteItem.className = 'vote-item' + (count === maxVotes ? ' winner' : '');
+                voteItem.innerHTML = `
+                    <div class="vote-count">${count}</div>
+                    <div>${sport}</div>
+                `;
+                voteBox.appendChild(voteItem);
+            });
+
+            // Update result
+            document.getElementById('kValueResult').textContent = k;
+            document.getElementById('kFinal').textContent = k;
+            document.getElementById('finalPrediction').textContent = prediction;
+            
+            // Show results
+            document.getElementById('votingResult').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // Update distance table highlighting
+            const tbody = document.getElementById('distanceTableBody');
+            Array.from(tbody.rows).forEach((row, index) => {
+                row.className = index < k ? 'nearest' : '';
+            });
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            initializeDistanceTable();
+        };
+    </script>
+</body>
+</html>
